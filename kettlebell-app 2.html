@@ -1,0 +1,2401 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IRON BELL — Kettlebell Trening</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #111214;
+    --surface: #1a1c1f;
+    --surface2: #222529;
+    --border: #2e3135;
+    --accent: #f07700;
+    --accent-dim: #f0770022;
+    --accent2: #ffb347;
+    --text: #e8eaed;
+    --text-muted: #8b8f97;
+    --text-dim: #555a63;
+    --green: #4ade80;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --radius: 12px;
+    --radius-lg: 18px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 3px;
+    color: var(--text);
+  }
+  .logo span { color: var(--accent); }
+  .header-badge {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── STEP INDICATOR ── */
+  .step-bar {
+    display: flex;
+    gap: 6px;
+    padding: 20px 28px 0;
+  }
+  .step-dot {
+    height: 3px;
+    flex: 1;
+    background: var(--border);
+    border-radius: 2px;
+    transition: background 0.3s;
+  }
+  .step-dot.done { background: var(--accent); }
+
+  /* ── SECTION HEADER ── */
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 2px;
+    padding: 24px 28px 8px;
+    color: var(--text);
+  }
+  .section-subtitle {
+    padding: 0 28px 20px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  /* ── EXERCISE GRID ── */
+  .exercise-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+    padding: 0 28px 24px;
+  }
+
+  .ex-card {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 14px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    user-select: none;
+  }
+  .ex-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .ex-card.selected {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, #1a1c1f, #221500);
+  }
+  .ex-card.selected::after {
+    content: attr(data-order);
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    background: var(--accent);
+    color: #111;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ex-card.selected .check { display: flex; }
+  .check { display: none; }
+
+  .ex-icon {
+    font-size: 2.6rem;
+    margin-bottom: 10px;
+    display: block;
+    text-align: center;
+  }
+  .ex-svg {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 10px;
+    display: block;
+  }
+  .ex-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .ex-muscles {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 4px;
+  }
+  .ex-difficulty {
+    display: flex;
+    justify-content: center;
+    gap: 3px;
+    margin-top: 8px;
+  }
+  .dot-level {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+  .dot-level.on { background: var(--accent); }
+
+  /* ── SELECTED STRIP ── */
+  .selected-strip {
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 0;
+    min-height: 60px;
+  }
+  .strip-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .strip-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    flex: 1;
+  }
+  .strip-tag {
+    background: var(--accent-dim);
+    color: var(--accent2);
+    border: 1px solid #f0770044;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .strip-tag:hover { background: #f0770040; }
+  .strip-empty {
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    font-style: italic;
+  }
+
+  /* ── BOTTOM CTA ── */
+  .bottom-cta {
+    padding: 20px 28px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #111;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    font-family: 'Inter', sans-serif;
+  }
+  .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+  .btn-primary:disabled { background: var(--border); color: var(--text-dim); cursor: not-allowed; transform: none; }
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+  .btn-secondary:hover { border-color: var(--text-muted); color: var(--text); }
+
+  /* ── CONFIG SCREEN ── */
+  .config-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 16px 28px 28px;
+  }
+  @media (max-width: 520px) {
+    .config-grid { grid-template-columns: 1fr; }
+  }
+  .config-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  .config-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .config-label .icon { font-size: 1rem; }
+
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .stepper-btn {
+    width: 40px; height: 40px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    border-radius: 8px;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', sans-serif;
+  }
+  .stepper-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .stepper-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    color: var(--accent);
+    min-width: 50px;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  .stepper-unit {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+
+  .config-selected-list {
+    grid-column: 1 / -1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  .mini-exercise-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .mini-ex {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: background 0.15s, box-shadow 0.15s;
+    user-select: none;
+  }
+  .mini-ex.dragging { opacity: 0.4; box-shadow: 0 0 0 2px var(--accent); }
+  .mini-ex.drag-over { background: #221500; border-color: var(--accent); }
+  .mini-ex-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    color: var(--accent);
+    width: 22px;
+    flex-shrink: 0;
+    text-align: center;
+  }
+  .mini-ex-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .mini-ex-name { font-size: 0.85rem; font-weight: 500; flex: 1; }
+  .drag-handle {
+    color: var(--text-dim);
+    font-size: 1.1rem;
+    cursor: grab;
+    flex-shrink: 0;
+    padding: 0 2px;
+    line-height: 1;
+  }
+  .drag-handle:active { cursor: grabbing; }
+  .mini-ex-arrows { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
+  .arrow-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 26px; height: 22px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.65rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    line-height: 1;
+  }
+  .arrow-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+  .arrow-btn:disabled { opacity: 0.2; cursor: default; }
+  .drag-hint {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  .summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-key { color: var(--text-muted); font-size: 0.85rem; }
+  .summary-val { font-weight: 700; color: var(--accent); font-size: 1rem; }
+
+  /* ── WORKOUT SCREEN ── */
+  #workout-screen {
+    padding-bottom: 40px;
+  }
+
+  .workout-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .workout-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .round-info {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+  .round-info span { color: var(--accent); }
+  .progress-bar-wrap {
+    width: 200px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .quit-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+  }
+  .quit-btn:hover { border-color: var(--red); color: var(--red); }
+
+  /* Countdown overlay */
+  .countdown-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 18, 20, 0.96);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .countdown-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 4px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+  .countdown-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 8rem;
+    line-height: 1;
+    color: var(--accent);
+    text-shadow: 0 0 60px #f0770060;
+    transition: all 0.1s;
+  }
+  .countdown-number.pulse { transform: scale(1.05); }
+  .countdown-sub {
+    margin-top: 20px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+  .skip-btn {
+    margin-top: 30px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+  .skip-btn:hover { border-color: var(--text-muted); color: var(--text); }
+
+  /* Exercise cards row */
+  .ex-cards-container {
+    padding: 24px 28px 16px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .ex-cards-row {
+    display: flex;
+    gap: 12px;
+    min-width: max-content;
+  }
+
+  .workout-ex-card {
+    width: 150px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    transition: all 0.3s;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .workout-ex-card.active {
+    border-color: var(--accent);
+    background: linear-gradient(160deg, #1f1200, #1a1c1f);
+    transform: scale(1.04);
+    box-shadow: 0 0 30px #f0770030;
+  }
+  .workout-ex-card.done-card {
+    opacity: 0.45;
+    border-color: var(--border);
+  }
+  .workout-ex-card.done-card::after {
+    content: '✓';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--green);
+    background: rgba(17,18,20,0.5);
+    border-radius: calc(var(--radius) - 2px);
+  }
+  .wex-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .workout-ex-card.active .wex-num { color: var(--accent); }
+  .wex-icon { font-size: 2.2rem; text-align: center; display: block; margin-bottom: 6px; }
+  .wex-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .workout-ex-card.active .wex-name { color: var(--accent2); }
+
+  /* Current exercise display */
+  .current-ex-display {
+    padding: 20px 28px;
+    text-align: center;
+  }
+  .current-ex-big-icon {
+    font-size: 7rem;
+    display: block;
+    margin-bottom: 16px;
+    animation: bounceIn 0.4s ease;
+  }
+  @keyframes bounceIn {
+    0% { transform: scale(0.7); opacity: 0; }
+    70% { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .current-ex-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.8rem;
+    letter-spacing: 3px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .current-ex-muscles {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+  }
+  .current-ex-tips {
+    max-width: 400px;
+    margin: 0 auto 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    text-align: left;
+    line-height: 1.6;
+  }
+  .tips-label {
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  /* Timer & controls */
+  .timer-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 0 28px 32px;
+  }
+  .exercise-timer {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 3px;
+    color: var(--text-muted);
+  }
+  .next-btn-wrap { display: flex; gap: 12px; justify-content: center; width: 100%; }
+  .btn-next {
+    background: var(--accent);
+    color: #111;
+    border: none;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+    box-shadow: 0 0 0 6px #f0770022, 0 8px 32px #f0770030;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+  }
+  .btn-next:hover { background: var(--accent2); transform: scale(1.05); box-shadow: 0 0 0 10px #f0770030, 0 12px 40px #f0770040; }
+  .btn-next:active { transform: scale(0.96); }
+  .btn-next .space-hint {
+    display: block;
+    font-size: 0.62rem;
+    font-weight: 500;
+    color: #11111199;
+    margin-top: 4px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* stopwatch */
+  .stopwatch-display {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .stopwatch-display span { color: var(--text-muted); font-size: 1.4rem; }
+
+  /* ── COMPLETION ── */
+  .completion-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    padding: 40px 28px;
+    text-align: center;
+  }
+  .trophy { font-size: 5rem; margin-bottom: 20px; animation: trophyBounce 0.8s ease forwards; }
+  @keyframes trophyBounce {
+    0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+    60% { transform: scale(1.15) rotate(5deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+  .completion-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3.5rem;
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .completion-sub {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-bottom: 40px;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 420px;
+    margin-bottom: 36px;
+  }
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 10px;
+    text-align: center;
+  }
+  .stat-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+  .stat-key {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  /* Scrollable exercises */
+  .exercises-wrapper {
+    max-height: calc(100vh - 280px);
+    overflow-y: auto;
+  }
+
+  /* ── SAVED WORKOUTS ── */
+  .saved-workouts-section {
+    padding: 0 28px 8px;
+  }
+  .saved-workouts-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .saved-workouts-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .saved-workout-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .saved-workout-card:hover {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, #1f1200, #1a1c1f);
+  }
+  .swc-icon {
+    font-size: 1.8rem;
+    flex-shrink: 0;
+  }
+  .swc-body { flex: 1; min-width: 0; }
+  .swc-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+  .swc-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .swc-exercises {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .swc-ex-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 2px 7px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .swc-arrow {
+    color: var(--accent);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .saved-section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 16px 28px 0;
+  }
+  .search-wrap {
+    padding: 0 28px 16px;
+  }
+  .search-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-size: 0.9rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input::placeholder { color: var(--text-dim); }
+  .search-input:focus { border-color: var(--accent); }
+
+  /* category filter */
+  .cat-filter {
+    display: flex;
+    gap: 8px;
+    padding: 0 28px 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .cat-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+  }
+  .cat-btn.active, .cat-btn:hover {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .field-notice {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  /* ── EXERCISE CARD IMAGE ── */
+  .ex-img-wrap {
+    width: 100%;
+    height: 90px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .ex-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  .ex-img-fallback {
+    font-size: 2.6rem;
+    line-height: 1;
+  }
+
+  /* big workout image */
+  .workout-img-wrap {
+    width: 200px;
+    height: 200px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin: 0 auto 16px;
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+  }
+  .workout-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .workout-img-fallback { font-size: 7rem; }
+
+  /* ── LOADING SCREEN ── */
+  .loading-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 20px;
+  }
+  .spinner {
+    width: 48px; height: 48px;
+    border: 4px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+  .loading-error {
+    color: var(--red);
+    font-size: 0.85rem;
+    text-align: center;
+    max-width: 320px;
+    line-height: 1.5;
+  }
+
+  /* ── SETTINGS PANEL ── */
+  .settings-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .settings-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .settings-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(17,18,20,0.92);
+    z-index: 300;
+    display: flex;
+    align-items: flex-end;
+    animation: fadeIn 0.2s ease;
+  }
+  .settings-panel {
+    width: 100%;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 28px;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .settings-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .settings-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.4rem;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .settings-field { margin-bottom: 18px; }
+  .settings-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    display: block;
+  }
+  .settings-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-size: 0.85rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .settings-input:focus { border-color: var(--accent); }
+  .settings-hint {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    margin-top: 5px;
+    line-height: 1.5;
+  }
+  .sheet-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    margin-top: 10px;
+    font-weight: 500;
+  }
+  .sheet-status.ok { background: #0a2a1a; color: var(--green); border: 1px solid #1a4a2a; }
+  .sheet-status.err { background: #2a0a0a; color: var(--red); border: 1px solid #4a1a1a; }
+  .sheet-status.loading { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+
+  /* ── MODE TOGGLE ── */
+  .mode-toggle {
+    display: flex;
+    gap: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .mode-btn {
+    flex: 1;
+    padding: 11px 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .mode-btn.active {
+    background: var(--accent);
+    color: #111;
+    border-radius: 8px;
+  }
+  .mode-btn:not(.active):hover { color: var(--text); }
+  .mode-sub { display: none; margin-top: 12px; }
+  .mode-sub.visible { display: block; }
+
+  /* ── EXERCISE COUNTDOWN RING ── */
+  .ex-ring-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 4px 0 16px;
+  }
+  .ex-ring-svg { transform: rotate(-90deg); }
+  .ex-ring-bg { fill: none; stroke: var(--border); stroke-width: 6; }
+  .ex-ring-fill {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 6;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.95s linear;
+  }
+  .ex-ring-text-wrap {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    inset: 0;
+  }
+  .ex-ring-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+  }
+  .ex-ring-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.6rem;
+    color: var(--accent);
+    line-height: 1;
+    letter-spacing: 1px;
+  }
+  .ex-ring-unit {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .ex-ring-label {
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">IRON<span>BELL</span></div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="header-badge" id="header-badge">VELG ØVELSER</div>
+    <button class="settings-btn" onclick="openSettings()" title="Innstillinger">⚙️</button>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════
+     LOADING SCREEN
+══════════════════════════════════════════ -->
+<div class="screen active" id="screen-loading">
+  <div class="loading-screen">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loading-text">Laster øvelser…</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 1: VELG ØVELSER
+══════════════════════════════════════════ -->
+<div class="screen active" id="screen-select">
+  <div class="step-bar">
+    <div class="step-dot done" id="s1"></div>
+    <div class="step-dot" id="s2"></div>
+    <div class="step-dot" id="s3"></div>
+  </div>
+
+  <div class="section-title">Velg Øvelser</div>
+  <div class="section-subtitle">Velg 1–10 øvelser for din økt. Trykk for å legge til.</div>
+
+  <!-- Saved workouts from Sheet -->
+  <div class="saved-workouts-section" id="saved-workouts-section" style="display:none">
+    <div class="saved-workouts-title">⚡ Lagrede økter fra Sheet</div>
+    <div class="saved-workouts-grid" id="saved-workouts-grid"></div>
+    <hr class="saved-section-divider">
+  </div>
+
+  <div class="search-wrap">
+    <input type="text" class="search-input" id="search-input" placeholder="🔍  Søk øvelse…" oninput="filterExercises()">
+  </div>
+
+  <div class="cat-filter" id="cat-filter">
+    <button class="cat-btn active" onclick="filterCat('Alle', this)">Alle</button>
+    <button class="cat-btn" onclick="filterCat('Grunnleg.', this)">Grunnleg.</button>
+    <button class="cat-btn" onclick="filterCat('Kondis', this)">Kondis</button>
+    <button class="cat-btn" onclick="filterCat('Styrke', this)">Styrke</button>
+    <button class="cat-btn" onclick="filterCat('Core', this)">Core</button>
+    <button class="cat-btn" onclick="filterCat('Bilateral', this)">Bilateral</button>
+  </div>
+
+  <div class="selected-strip" id="selected-strip">
+    <span class="strip-label">Valgt:</span>
+    <div class="strip-tags" id="strip-tags">
+      <span class="strip-empty">Ingen øvelser valgt ennå</span>
+    </div>
+  </div>
+
+  <div class="exercise-grid" id="exercise-grid"></div>
+
+  <div class="bottom-cta">
+    <button class="btn-primary" id="btn-to-config" onclick="goToConfig()" disabled>
+      Neste: Konfigurer →
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 2: KONFIGURER ØKT
+══════════════════════════════════════════ -->
+<div class="screen" id="screen-config">
+  <div class="step-bar">
+    <div class="step-dot done"></div>
+    <div class="step-dot done"></div>
+    <div class="step-dot" id="s3b"></div>
+  </div>
+
+  <div class="section-title">Konfigurer Økt</div>
+  <div class="section-subtitle">Sett opp runder, pauser og se over øvelsene dine.</div>
+
+  <div class="config-grid">
+
+    <div class="config-card" style="grid-column: 1 / -1;">
+      <div class="config-label"><span class="icon">⏱️</span> Øvelsesmodus</div>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="mode-btn-reps" onclick="setExMode('reps')">
+          🔢 Repetisjoner<br><span style="font-weight:400;font-size:0.74rem;color:inherit">Trykk selv når du er ferdig</span>
+        </button>
+        <button class="mode-btn" id="mode-btn-time" onclick="setExMode('time')">
+          ⏳ Tid per øvelse<br><span style="font-weight:400;font-size:0.74rem;color:inherit">Nedtelling starter automatisk</span>
+        </button>
+      </div>
+      <div class="mode-sub" id="mode-sub-time">
+        <div class="stepper">
+          <button class="stepper-btn" onclick="adjustVal('exDuration', -5)">−</button>
+          <div>
+            <div class="stepper-val" id="val-exDuration">40</div>
+            <div class="stepper-unit">sekunder per øvelse</div>
+          </div>
+          <button class="stepper-btn" onclick="adjustVal('exDuration', 5)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="config-card">
+      <div class="config-label"><span class="icon">🔄</span> Antall runder</div>
+      <div class="stepper">
+        <button class="stepper-btn" onclick="adjustVal('rounds', -1)">−</button>
+        <div>
+          <div class="stepper-val" id="val-rounds">3</div>
+          <div class="stepper-unit">runder</div>
+        </div>
+        <button class="stepper-btn" onclick="adjustVal('rounds', 1)">+</button>
+      </div>
+    </div>
+
+    <div class="config-card">
+      <div class="config-label"><span class="icon">⚡</span> Pause mellom øvelser</div>
+      <div class="stepper">
+        <button class="stepper-btn" onclick="adjustVal('restEx', -5)">−</button>
+        <div>
+          <div class="stepper-val" id="val-restEx">30</div>
+          <div class="stepper-unit">sekunder</div>
+        </div>
+        <button class="stepper-btn" onclick="adjustVal('restEx', 5)">+</button>
+      </div>
+    </div>
+
+    <div class="config-card">
+      <div class="config-label"><span class="icon">☕</span> Pause mellom runder</div>
+      <div class="stepper">
+        <button class="stepper-btn" onclick="adjustVal('restRound', -10)">−</button>
+        <div>
+          <div class="stepper-val" id="val-restRound">90</div>
+          <div class="stepper-unit">sekunder</div>
+        </div>
+        <button class="stepper-btn" onclick="adjustVal('restRound', 10)">+</button>
+      </div>
+    </div>
+
+    <div class="config-card">
+      <div class="config-label"><span class="icon">📋</span> Økt-sammendrag</div>
+      <div id="summary-box"></div>
+    </div>
+
+    <div class="config-selected-list">
+      <div class="config-label"><span class="icon">🃏</span> Øvelsesrekkefølge</div>
+      <div class="mini-exercise-list" id="mini-exercise-list"></div>
+    </div>
+
+  </div>
+
+  <div class="bottom-cta" style="gap:12px">
+    <button class="btn-secondary" onclick="goBack()">← Tilbake</button>
+    <button class="btn-primary" onclick="startWorkout()">Start Økt 🔥</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 3: TRENINGSØKT
+══════════════════════════════════════════ -->
+<div class="screen" id="workout-screen">
+  <!-- Workout Header -->
+  <div class="workout-header">
+    <div class="workout-progress">
+      <div class="round-info" id="round-info">RUNDE <span id="cur-round">1</span> / <span id="tot-rounds">3</span></div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+    <button class="quit-btn" onclick="confirmQuit()">Avslutt</button>
+  </div>
+
+  <!-- Exercise Cards Row -->
+  <div class="ex-cards-container">
+    <div class="ex-cards-row" id="workout-cards-row"></div>
+  </div>
+
+  <!-- Current Exercise Big Display -->
+  <div class="current-ex-display">
+    <div class="workout-img-wrap" id="cur-ex-img-wrap" style="display:none"></div>
+    <span class="current-ex-big-icon" id="cur-ex-icon">🏋️</span>
+    <div class="current-ex-name" id="cur-ex-name">—</div>
+    <div class="current-ex-muscles" id="cur-ex-muscles">—</div>
+    <div class="current-ex-tips" id="cur-ex-tips">
+      <div class="tips-label">💡 Tips</div>
+      <div id="tips-text">—</div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="timer-section">
+    <!-- Exercise countdown ring (only shown in time-mode) -->
+    <div class="ex-ring-wrap" id="ex-ring-wrap" style="display:none">
+      <div class="ex-ring-container">
+        <svg class="ex-ring-svg" width="120" height="120" viewBox="0 0 120 120">
+          <circle class="ex-ring-bg" cx="60" cy="60" r="52"/>
+          <circle class="ex-ring-fill" id="ex-ring-fill" cx="60" cy="60" r="52"
+            stroke-dasharray="326.7" stroke-dashoffset="0"/>
+        </svg>
+        <div class="ex-ring-text-wrap">
+          <div class="ex-ring-num" id="ex-ring-num">40</div>
+          <div class="ex-ring-unit">sek</div>
+        </div>
+      </div>
+      <div class="ex-ring-label">Tid igjen</div>
+    </div>
+
+    <!-- Stopwatch (reps-mode only) -->
+    <div class="stopwatch-display" id="stopwatch-display" style="display:none">
+      PÅ ØVELSEN &nbsp;<span id="stopwatch-time">0:00</span>
+    </div>
+
+    <div class="exercise-timer" id="ex-timer-display"></div>
+    <div class="next-btn-wrap">
+      <button class="btn-next" id="btn-next-ex" onclick="nextExercise()">
+        <span id="btn-next-label">Neste øvelse →<span class="space-hint">[ mellomrom ]</span></span>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 4: FULLFØRT
+══════════════════════════════════════════ -->
+<div class="screen" id="screen-done">
+  <div class="completion-screen">
+    <div class="trophy">🏆</div>
+    <div class="completion-title">Fullført!</div>
+    <div class="completion-sub">Du er en maskin. Fantastisk innsats!</div>
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-val" id="done-rounds">—</div>
+        <div class="stat-key">Runder</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="done-exercises">—</div>
+        <div class="stat-key">Øvelser</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="done-time">—</div>
+        <div class="stat-key">Tid</div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="resetAll()">Ny økt 🔁</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     COUNTDOWN OVERLAY (body-level, always in DOM)
+══════════════════════════════════════════ -->
+<div class="countdown-overlay" id="countdown-overlay" style="display:none">
+  <div class="countdown-label" id="countdown-label">HVIL</div>
+  <div class="countdown-number" id="countdown-number">30</div>
+  <div class="countdown-sub" id="countdown-sub">Neste: <strong id="countdown-next-ex">—</strong></div>
+  <button class="skip-btn" onclick="skipCountdown()">Hopp over →</button>
+</div>
+
+<!-- Quit confirmation -->
+<div class="countdown-overlay" id="quit-confirm-overlay" style="display:none">
+  <div class="countdown-label">AVSLUTTE ØKTEN?</div>
+  <div style="color:var(--text-muted); font-size:0.95rem; margin: 16px 0 32px; text-align:center; max-width:280px; line-height:1.6;">
+    Fremgangen din vil ikke bli lagret.
+  </div>
+  <div style="display:flex; gap:14px;">
+    <button class="skip-btn" onclick="document.getElementById('quit-confirm-overlay').style.display='none'">
+      ← Fortsett
+    </button>
+    <button class="btn-primary" style="background:var(--red); color:#fff;" onclick="doQuit()">
+      Avslutt
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SETTINGS PANEL
+══════════════════════════════════════════ -->
+<div class="settings-overlay" id="settings-overlay" style="display:none" onclick="closeSettingsIfBg(event)">
+  <div class="settings-panel">
+    <div class="settings-title">
+      INNSTILLINGER
+      <button class="settings-close" onclick="closeSettings()">✕</button>
+    </div>
+
+    <div class="settings-field">
+      <label class="settings-label">📊 Google Sheets CSV-URL</label>
+      <input class="settings-input" id="sheet-url-input" type="url"
+        placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv"
+        oninput="onSheetUrlChange()">
+      <div class="settings-hint">
+        Publiser Sheetet ditt som CSV og lim inn lenken her.<br>
+        Se instruksjonene for hvordan du setter dette opp.
+      </div>
+      <div class="sheet-status loading" id="sheet-status" style="display:none"></div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn-primary" style="flex:1" onclick="loadFromSheet()">Last inn øvelser</button>
+      <button class="btn-secondary" onclick="resetToBuiltIn()">Bruk innebygde</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// ØVELSE-ARKIV
+// ════════════════════════════════════════
+const EXERCISES = [
+  {
+    id: 1, name: "Swing", cat: "Grunnleg.", muscles: "Bakside lår, rumpe, rygg",
+    icon: "🫳",
+    emoji: "⚡",
+    big: "🏋️",
+    tips: "Hold ryggen rett. Driv bevegelsen fra hoftene, ikke armene. Klem rumpen i toppen."
+  },
+  {
+    id: 2, name: "Turkish Get-Up", cat: "Styrke", muscles: "Hele kroppen, skulder",
+    icon: "🦾",
+    emoji: "🧗",
+    big: "🧗",
+    tips: "Øyet på kettlebell hele veien. Beveg deg sakte og kontrollert. God øvelse for mobilitet."
+  },
+  {
+    id: 3, name: "Clean & Press", cat: "Styrke", muscles: "Skulder, kjernemuskulatur",
+    icon: "💪",
+    emoji: "🏋️",
+    big: "💪",
+    tips: "Rull klokken tett inntil kroppen på vei opp. Strekk armen helt ut i toppen."
+  },
+  {
+    id: 4, name: "Goblet Squat", cat: "Grunnleg.", muscles: "Lår, rumpe, kjernemuskulatur",
+    icon: "🏅",
+    emoji: "🦵",
+    big: "🦵",
+    tips: "Hold klokken mot brystet. Knær ut, hæler i gulvet. Sitt dypt og kontrollert."
+  },
+  {
+    id: 5, name: "Farmer Carry", cat: "Kondis", muscles: "Grep, kjernemuskulatur, skuldre",
+    icon: "🚶",
+    emoji: "🧳",
+    big: "🧳",
+    tips: "Skuldrene tilbake og ned. Hold overkroppen oppreist. Korte, kontrollerte skritt."
+  },
+  {
+    id: 6, name: "Snatch", cat: "Kondis", muscles: "Hele bakside, skulder",
+    icon: "🌪️",
+    emoji: "🌪️",
+    big: "🌪️",
+    tips: "Punch opp med armen idet klokken passerer hodet. Ikke la den smelle ned i håndleddet."
+  },
+  {
+    id: 7, name: "Renegade Row", cat: "Styrke", muscles: "Rygg, biceps, core",
+    icon: "🛶",
+    emoji: "💪",
+    big: "🛶",
+    tips: "Hold hoftene stille. Ikke roter. Sterk plankestilling mellom trekkene."
+  },
+  {
+    id: 8, name: "Windmill", cat: "Core", muscles: "Oblique, skulder, hofter",
+    icon: "🌬️",
+    emoji: "🌀",
+    big: "🌬️",
+    tips: "Klokken peker rett opp. Skyv hoften sidelengs. Kontroller ned."
+  },
+  {
+    id: 9, name: "Halo", cat: "Core", muscles: "Skuldre, nakke, core",
+    icon: "😇",
+    emoji: "☀️",
+    big: "😇",
+    tips: "Hold klokken nær hodet. Trekk in magen. Sakt og kontrollert rundt."
+  },
+  {
+    id: 10, name: "Figure 8", cat: "Core", muscles: "Core, hofte, grep",
+    icon: "8️⃣",
+    emoji: "🔄",
+    big: "8️⃣",
+    tips: "Hold ryggen flat. Klokken mellom beina. Veksle hender ved hvert bytte."
+  },
+  {
+    id: 11, name: "Deadlift", cat: "Grunnleg.", muscles: "Bakside lår, korsrygg, rumpe",
+    icon: "🏗️",
+    emoji: "🔩",
+    big: "🏗️",
+    tips: "Klokken mellom beina. Hoftene tilbake. Rett rygg hele veien opp."
+  },
+  {
+    id: 12, name: "Kettlebell Row", cat: "Styrke", muscles: "Rygg, biceps",
+    icon: "🚣",
+    emoji: "💪",
+    big: "🚣",
+    tips: "Støtt med en hånd. Albuen nær kroppen. Klem skulder­bladet i toppen."
+  },
+  {
+    id: 13, name: "Thruster", cat: "Kondis", muscles: "Bein, skulder, core",
+    icon: "🚀",
+    emoji: "🚀",
+    big: "🚀",
+    tips: "Kombiner squat og press i en flytende bevegelse. Driv opp fra beina."
+  },
+  {
+    id: 14, name: "Around the Body", cat: "Core", muscles: "Core, skuldre, grep",
+    icon: "🔁",
+    emoji: "🔁",
+    big: "🔁",
+    tips: "Hold magen inn. Bytt retning halvveis. Ikke slapp av grepet."
+  },
+  {
+    id: 15, name: "Sumo Squat", cat: "Bilateral", muscles: "Indre lår, rumpe",
+    icon: "🤼",
+    emoji: "🤸",
+    big: "🤼",
+    tips: "Bredt steg, tær ut 45°. Klokken hengt mellom beina. Knær ut."
+  },
+  {
+    id: 16, name: "Alternating Swing", cat: "Kondis", muscles: "Bakside, grep",
+    icon: "🤝",
+    emoji: "🔀",
+    big: "🤝",
+    tips: "Bytt hånd i toppen av swing. La klokken flyte — ikke kast den."
+  },
+  {
+    id: 17, name: "Lunge Press", cat: "Styrke", muscles: "Bein, skulder, balanse",
+    icon: "🚶‍♂️",
+    emoji: "🦵",
+    big: "🚶‍♂️",
+    tips: "Kneet ned mot gulvet, press opp. Hold overkroppen rett."
+  },
+  {
+    id: 18, name: "Hip Hinge", cat: "Grunnleg.", muscles: "Bakside lår, korsrygg",
+    icon: "📐",
+    emoji: "📐",
+    big: "📐",
+    tips: "Skyv hoftene tilbake, ikke ned. Flat rygg. Strekk godt i bakside lår."
+  }
+];
+
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let selectedExercises = [];
+let config = { rounds: 3, restEx: 30, restRound: 90, exMode: 'reps', exDuration: 40 };
+let workoutState = {
+  curRound: 1,
+  curExIndex: 0,
+  done: false,
+  startTime: null,
+  countdownTimer: null
+};
+let currentCat = 'Alle';
+let searchTerm = '';
+
+// Exercise timer state
+let exTimerInterval = null;
+let exTimerRemaining = 0;
+
+// ════════════════════════════════════════
+// SCREEN NAVIGATION
+// ════════════════════════════════════════
+function showScreen(id) {
+  // Always kill any running timers when switching screens
+  stopExerciseTimer();
+  stopStopwatch();
+  if (cdInterval) { clearInterval(cdInterval); cdInterval = null; }
+  const overlay = document.getElementById('countdown-overlay');
+  if (overlay) overlay.style.display = 'none';
+
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(id);
+  if (target) target.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ════════════════════════════════════════
+// SCREEN 1: ØVELSER
+// ════════════════════════════════════════
+function renderExerciseGrid() {
+  const grid = document.getElementById('exercise-grid');
+  const filtered = EXERCISES.filter(ex => {
+    const matchCat = currentCat === 'Alle' || ex.cat === currentCat;
+    const matchSearch = ex.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        ex.muscles.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchCat && matchSearch;
+  });
+
+  grid.innerHTML = filtered.map(ex => {
+    const sel = selectedExercises.find(s => s.id === ex.id);
+    const order = sel ? selectedExercises.indexOf(sel) + 1 : '';
+    const mediaHtml = ex.img
+      ? `<div class="ex-img-wrap"><img src="${ex.img}" alt="${ex.name}" loading="lazy" onerror="this.parentNode.innerHTML='<span class=ex-img-fallback>${ex.big}</span>'"></div>`
+      : `<div class="ex-img-wrap"><span class="ex-img-fallback">${ex.big}</span></div>`;
+    return `
+    <div class="ex-card ${sel ? 'selected' : ''}" data-id="${ex.id}" data-order="${order}"
+         onclick="toggleExercise(${ex.id})">
+      ${mediaHtml}
+      <div class="ex-name">${ex.name}</div>
+      <div class="ex-muscles">${ex.muscles}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleExercise(id) {
+  const ex = EXERCISES.find(e => e.id === id);
+  const idx = selectedExercises.findIndex(e => e.id === id);
+  if (idx >= 0) {
+    selectedExercises.splice(idx, 1);
+  } else {
+    if (selectedExercises.length >= 10) {
+      alert('Maks 10 øvelser per økt.');
+      return;
+    }
+    selectedExercises.push(ex);
+  }
+  renderExerciseGrid();
+  renderSelectedStrip();
+  document.getElementById('btn-to-config').disabled = selectedExercises.length === 0;
+}
+
+function renderSelectedStrip() {
+  const tags = document.getElementById('strip-tags');
+  if (selectedExercises.length === 0) {
+    tags.innerHTML = '<span class="strip-empty">Ingen øvelser valgt ennå</span>';
+  } else {
+    tags.innerHTML = selectedExercises.map((ex, i) =>
+      `<span class="strip-tag" onclick="toggleExercise(${ex.id})">${i+1}. ${ex.name} ✕</span>`
+    ).join('');
+  }
+}
+
+function filterCat(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderExerciseGrid();
+}
+
+function filterExercises() {
+  searchTerm = document.getElementById('search-input').value;
+  renderExerciseGrid();
+}
+
+function goToConfig() {
+  buildConfigScreen();
+  showScreen('screen-config');
+  document.getElementById('header-badge').textContent = 'KONFIGURER';
+}
+
+// ════════════════════════════════════════
+// SCREEN 2: KONFIG
+// ════════════════════════════════════════
+const limits = {
+  rounds:      { min: 1, max: 20 },
+  restEx:      { min: 0, max: 300 },
+  restRound:   { min: 0, max: 600 },
+  exDuration:  { min: 5, max: 300 }
+};
+
+function setExMode(mode) {
+  config.exMode = mode;
+  document.getElementById('mode-btn-reps').classList.toggle('active', mode === 'reps');
+  document.getElementById('mode-btn-time').classList.toggle('active', mode === 'time');
+  const sub = document.getElementById('mode-sub-time');
+  sub.classList.toggle('visible', mode === 'time');
+  buildSummary();
+}
+
+function adjustVal(key, delta) {
+  config[key] = Math.max(limits[key].min, Math.min(limits[key].max, config[key] + delta));
+  document.getElementById('val-' + key).textContent = config[key];
+  buildSummary();
+}
+
+function buildConfigScreen() {
+  document.getElementById('val-rounds').textContent = config.rounds;
+  document.getElementById('val-restEx').textContent = config.restEx;
+  document.getElementById('val-restRound').textContent = config.restRound;
+  document.getElementById('val-exDuration').textContent = config.exDuration;
+
+  // Restore mode toggle state
+  setExMode(config.exMode);
+
+  renderSortableList();
+  buildSummary();
+}
+
+function renderSortableList() {
+  const list = document.getElementById('mini-exercise-list');
+  if (!list) return;
+  const n = selectedExercises.length;
+  list.innerHTML = selectedExercises.map((ex, i) => `
+    <div class="mini-ex" draggable="true" data-index="${i}"
+         ondragstart="dragStart(event,${i})"
+         ondragover="dragOver(event,${i})"
+         ondragleave="dragLeave(event)"
+         ondrop="dragDrop(event,${i})"
+         ondragend="dragEnd()">
+      <span class="drag-handle">⠿</span>
+      <span class="mini-ex-num">${i + 1}</span>
+      <span class="mini-ex-icon">${ex.big || '🏋️'}</span>
+      <span class="mini-ex-name">${ex.name}</span>
+      <div class="mini-ex-arrows">
+        <button class="arrow-btn" onclick="moveEx(${i},-1)" ${i === 0 ? 'disabled' : ''}>▲</button>
+        <button class="arrow-btn" onclick="moveEx(${i}, 1)" ${i === n-1 ? 'disabled' : ''}>▼</button>
+      </div>
+    </div>
+  `).join('');
+  if (n > 1) list.insertAdjacentHTML('beforeend', '<div class="drag-hint">Dra ⠿ for å endre rekkefølge</div>');
+}
+
+function buildSummary() {
+  const perEx = config.exMode === 'time' ? config.exDuration : 30; // estimate 30s for reps
+  const totalRests = (selectedExercises.length - 1) * config.restEx + (config.rounds - 1) * config.restRound;
+  const estMinutes = Math.round((totalRests + selectedExercises.length * config.rounds * perEx) / 60);
+  const modeText = config.exMode === 'time' ? `${config.exDuration}s per øvelse` : 'Egentempo (reps)';
+
+  document.getElementById('summary-box').innerHTML = `
+    <div class="summary-row">
+      <span class="summary-key">Øvelsesmodus</span>
+      <span class="summary-val">${modeText}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">Øvelser per runde</span>
+      <span class="summary-val">${selectedExercises.length}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">Runder</span>
+      <span class="summary-val">${config.rounds}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">Pause / øvelse</span>
+      <span class="summary-val">${config.restEx}s</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">Pause / runde</span>
+      <span class="summary-val">${config.restRound}s</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">Estimert tid</span>
+      <span class="summary-val">~${estMinutes} min</span>
+    </div>
+  `;
+}
+
+// ── REORDER EXERCISES ──
+function moveEx(index, direction) {
+  const newIndex = index + direction;
+  if (newIndex < 0 || newIndex >= selectedExercises.length) return;
+  const tmp = selectedExercises[index];
+  selectedExercises[index] = selectedExercises[newIndex];
+  selectedExercises[newIndex] = tmp;
+  renderSortableList();
+  renderSelectedStrip();
+}
+
+let dragSrcIndex = null;
+
+function dragStart(e, index) {
+  dragSrcIndex = index;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => {
+    const el = document.querySelector(`.mini-ex[data-index="${index}"]`);
+    if (el) el.classList.add('dragging');
+  }, 0);
+}
+
+function dragOver(e, index) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.mini-ex').forEach(el => el.classList.remove('drag-over'));
+  if (index !== dragSrcIndex) {
+    const el = document.querySelector(`.mini-ex[data-index="${index}"]`);
+    if (el) el.classList.add('drag-over');
+  }
+}
+
+function dragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function dragDrop(e, dropIndex) {
+  e.preventDefault();
+  if (dragSrcIndex === null || dragSrcIndex === dropIndex) return;
+  const moved = selectedExercises.splice(dragSrcIndex, 1)[0];
+  selectedExercises.splice(dropIndex, 0, moved);
+  dragSrcIndex = null;
+  renderSortableList();
+  renderSelectedStrip();
+}
+
+function dragEnd() {
+  dragSrcIndex = null;
+  document.querySelectorAll('.mini-ex').forEach(el => {
+    el.classList.remove('dragging');
+    el.classList.remove('drag-over');
+  });
+}
+
+function goBack() {
+  showScreen('screen-select');
+  document.getElementById('header-badge').textContent = 'VELG ØVELSER';
+}
+
+// ════════════════════════════════════════
+// SCREEN 3: WORKOUT
+// ════════════════════════════════════════
+function startWorkout() {
+  workoutState.curRound = 1;
+  workoutState.curExIndex = 0;
+  workoutState.done = false;
+  workoutState.startTime = Date.now();
+
+  showScreen('workout-screen');
+  document.getElementById('header-badge').textContent = 'AKTIV ØKT';
+  document.getElementById('tot-rounds').textContent = config.rounds;
+
+  renderWorkout();
+}
+
+function renderWorkout() {
+  const ex = selectedExercises[workoutState.curExIndex];
+  const n = selectedExercises.length;
+  const totalDone = (workoutState.curRound - 1) * n + workoutState.curExIndex;
+  const totalExercises = config.rounds * n;
+
+  // Progress
+  document.getElementById('cur-round').textContent = workoutState.curRound;
+  document.getElementById('progress-fill').style.width = (totalDone / totalExercises * 100) + '%';
+
+  // Cards row
+  const row = document.getElementById('workout-cards-row');
+  row.innerHTML = selectedExercises.map((e, i) => {
+    let cls = '';
+    if (i === workoutState.curExIndex) cls = 'active';
+    else if (i < workoutState.curExIndex) cls = 'done-card';
+    return `
+    <div class="workout-ex-card ${cls}">
+      <div class="wex-num">${i + 1} / ${n}</div>
+      <span class="wex-icon">${e.big}</span>
+      <div class="wex-name">${e.name}</div>
+    </div>`;
+  }).join('');
+
+  // Scroll active card into view
+  setTimeout(() => {
+    const activeCard = row.querySelector('.active');
+    if (activeCard) activeCard.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, 100);
+
+  // Big display — image or emoji
+  const iconEl = document.getElementById('cur-ex-icon');
+  const imgWrap = document.getElementById('cur-ex-img-wrap');
+  if (ex.img) {
+    imgWrap.style.display = 'flex';
+    imgWrap.innerHTML = `<img src="${ex.img}" alt="${ex.name}" onerror="this.parentNode.style.display='none'; document.getElementById('cur-ex-icon').style.display='block'">`;
+    iconEl.style.display = 'none';
+  } else {
+    imgWrap.style.display = 'none';
+    iconEl.style.display = 'block';
+    iconEl.textContent = ex.big;
+    iconEl.style.animation = 'none';
+    void iconEl.offsetWidth;
+    iconEl.style.animation = '';
+  }
+  document.getElementById('cur-ex-name').textContent = ex.name;
+  document.getElementById('cur-ex-muscles').textContent = ex.muscles;
+  document.getElementById('tips-text').textContent = ex.tips;
+
+  // Next button label
+  const isLastEx = workoutState.curExIndex === n - 1;
+  const isLastRound = workoutState.curRound === config.rounds;
+  const btn = document.getElementById('btn-next-ex');
+  const btnLabel = document.getElementById('btn-next-label');
+  const labelText = isLastEx && isLastRound ? 'Fullfør økt 🏆' : isLastEx ? 'Avslutt runde →' : 'Neste øvelse →';
+  btnLabel.innerHTML = labelText + '<span class="space-hint">[ mellomrom ]</span>';
+  document.getElementById('ex-timer-display').textContent = '';
+
+  // Time mode: show ring and auto-countdown per exercise
+  const ringWrap = document.getElementById('ex-ring-wrap');
+  const stopwatch = document.getElementById('stopwatch-display');
+  if (config.exMode === 'time') {
+    ringWrap.style.display = 'flex';
+    stopwatch.style.display = 'none';
+    btn.style.opacity = '0.45';
+    startExerciseTimer(config.exDuration, () => nextExercise());
+  } else {
+    ringWrap.style.display = 'none';
+    stopwatch.style.display = 'block';
+    btn.style.opacity = '1';
+    stopExerciseTimer();
+    startStopwatch();
+  }
+}
+
+// ─── Exercise timer (ring countdown during exercise in time-mode) ───
+function startExerciseTimer(seconds, onDone) {
+  stopExerciseTimer();
+  exTimerRemaining = seconds;
+  const circumference = 326.7;
+  const ringFill = document.getElementById('ex-ring-fill');
+  const ringNum  = document.getElementById('ex-ring-num');
+  const btn      = document.getElementById('btn-next-ex');
+
+  const update = () => {
+    if (!ringFill || !ringNum) return;
+    ringNum.textContent = exTimerRemaining;
+    const offset = circumference * (1 - exTimerRemaining / seconds);
+    ringFill.style.strokeDashoffset = offset;
+    // Flash ring red in last 5 seconds
+    ringFill.style.stroke = exTimerRemaining <= 5 ? 'var(--red)' : 'var(--accent)';
+    if (ringNum) ringNum.style.color = exTimerRemaining <= 5 ? 'var(--red)' : 'var(--accent)';
+  };
+
+  update();
+  exTimerInterval = setInterval(() => {
+    if (!document.getElementById('ex-ring-fill')) { clearInterval(exTimerInterval); return; }
+    exTimerRemaining--;
+    update();
+    if (exTimerRemaining <= 0) {
+      stopExerciseTimer();
+      if (btn) { btn.style.opacity = '1'; }
+      onDone();
+    }
+  }, 1000);
+}
+
+function stopExerciseTimer() {
+  if (exTimerInterval) { clearInterval(exTimerInterval); exTimerInterval = null; }
+}
+
+// ─── Stopwatch (counts up during reps-mode exercise) ───
+let stopwatchInterval = null;
+let stopwatchStart = null;
+
+function startStopwatch() {
+  stopStopwatch();
+  stopwatchStart = Date.now();
+  const el = document.getElementById('stopwatch-time');
+  stopwatchInterval = setInterval(() => {
+    if (!el) { clearInterval(stopwatchInterval); return; }
+    const s = Math.floor((Date.now() - stopwatchStart) / 1000);
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    el.textContent = m + ':' + String(sec).padStart(2, '0');
+  }, 500);
+}
+
+function stopStopwatch() {
+  if (stopwatchInterval) { clearInterval(stopwatchInterval); stopwatchInterval = null; }
+}
+
+// ─── Space / Enter key → next exercise ───
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' || e.code === 'Enter') {
+    const workoutActive = document.getElementById('workout-screen')?.classList.contains('active');
+    const countdownVisible = document.getElementById('countdown-overlay')?.style.display !== 'none';
+    if (!workoutActive) return;
+    e.preventDefault();
+    if (countdownVisible) {
+      skipCountdown();
+    } else {
+      const btn = document.getElementById('btn-next-ex');
+      if (btn && btn.style.opacity !== '0.45') {
+        btn.classList.add('active');
+        setTimeout(() => btn.classList.remove('active'), 150);
+        nextExercise();
+      }
+    }
+  }
+});
+
+function nextExercise() {
+  stopExerciseTimer(); // always stop exercise timer first
+  stopStopwatch();
+  const btn = document.getElementById('btn-next-ex');
+  if (btn) btn.style.opacity = '1';
+
+  const n = selectedExercises.length;
+  const isLastEx = workoutState.curExIndex === n - 1;
+  const isLastRound = workoutState.curRound === config.rounds;
+
+  if (isLastEx && isLastRound) {
+    finishWorkout();
+    return;
+  }
+
+  if (isLastEx) {
+    // Between rounds
+    const nextEx = selectedExercises[0];
+    if (config.restRound > 0) {
+      startCountdown(config.restRound, 'RUNDEPAUSE', nextEx.name, () => {
+        workoutState.curRound++;
+        workoutState.curExIndex = 0;
+        renderWorkout();
+      });
+    } else {
+      workoutState.curRound++;
+      workoutState.curExIndex = 0;
+      renderWorkout();
+    }
+  } else {
+    // Between exercises
+    const nextEx = selectedExercises[workoutState.curExIndex + 1];
+    if (config.restEx > 0) {
+      startCountdown(config.restEx, 'HVIL', nextEx.name, () => {
+        workoutState.curExIndex++;
+        renderWorkout();
+      });
+    } else {
+      workoutState.curExIndex++;
+      renderWorkout();
+    }
+  }
+}
+
+// ════════════════════════════════════════
+// COUNTDOWN
+// ════════════════════════════════════════
+let cdCallback = null;
+let cdRemaining = 0;
+let cdInterval = null;
+
+function startCountdown(seconds, label, nextName, callback) {
+  const overlay = document.getElementById('countdown-overlay');
+  const numEl = document.getElementById('countdown-number');
+  const labelEl = document.getElementById('countdown-label');
+  const subEl = document.getElementById('countdown-sub');
+
+  // Safety: if any element is missing, skip countdown and run callback directly
+  if (!overlay || !numEl || !labelEl || !subEl) {
+    if (callback) callback();
+    return;
+  }
+
+  cdCallback = callback;
+  cdRemaining = seconds;
+  if (cdInterval) { clearInterval(cdInterval); cdInterval = null; }
+
+  labelEl.textContent = label;
+  numEl.textContent = cdRemaining;
+
+  // Set innerHTML FIRST so the inner <strong> exists before we try to touch it
+  if (label === 'RUNDEPAUSE') {
+    subEl.innerHTML = 'Gjør deg klar til neste runde…';
+  } else {
+    subEl.innerHTML = 'Neste: <strong id="countdown-next-ex">' + nextName + '</strong>';
+  }
+  subEl.style.display = 'block';
+
+  overlay.style.display = 'flex';
+
+  cdInterval = setInterval(() => {
+    // Guard: if elements vanished (shouldn't happen now, but safety net)
+    const n2 = document.getElementById('countdown-number');
+    if (!n2) { clearInterval(cdInterval); cdInterval = null; return; }
+    cdRemaining--;
+    n2.textContent = cdRemaining;
+    n2.classList.add('pulse');
+    setTimeout(() => { if (n2) n2.classList.remove('pulse'); }, 100);
+    if (cdRemaining <= 0) {
+      clearInterval(cdInterval);
+      cdInterval = null;
+      const ov = document.getElementById('countdown-overlay');
+      if (ov) ov.style.display = 'none';
+      if (cdCallback) cdCallback();
+    }
+  }, 1000);
+}
+
+function skipCountdown() {
+  if (cdInterval) { clearInterval(cdInterval); cdInterval = null; }
+  const ov = document.getElementById('countdown-overlay');
+  if (ov) ov.style.display = 'none';
+  const cb = cdCallback;
+  cdCallback = null;
+  if (cb) cb();
+}
+
+// ════════════════════════════════════════
+// FINISH
+// ════════════════════════════════════════
+function finishWorkout() {
+  const elapsed = Math.round((Date.now() - workoutState.startTime) / 1000);
+  const min = Math.floor(elapsed / 60);
+  const sec = elapsed % 60;
+
+  document.getElementById('done-rounds').textContent = config.rounds;
+  document.getElementById('done-exercises').textContent = selectedExercises.length * config.rounds;
+  document.getElementById('done-time').textContent = `${min}:${String(sec).padStart(2, '0')}`;
+
+  showScreen('screen-done');
+  document.getElementById('header-badge').textContent = 'FULLFØRT';
+}
+
+function confirmQuit() {
+  document.getElementById('quit-confirm-overlay').style.display = 'flex';
+}
+
+function doQuit() {
+  document.getElementById('quit-confirm-overlay').style.display = 'none';
+  showScreen('screen-select');
+  document.getElementById('header-badge').textContent = 'VELG ØVELSER';
+}
+
+function resetAll() {
+  selectedExercises = [];
+  config = { rounds: 3, restEx: 30, restRound: 90, exMode: 'reps', exDuration: 40 };
+  stopExerciseTimer();
+  renderExerciseGrid();
+  renderSelectedStrip();
+  document.getElementById('btn-to-config').disabled = true;
+  document.getElementById('search-input').value = '';
+  searchTerm = '';
+  currentCat = 'Alle';
+  document.querySelectorAll('.cat-btn').forEach((b, i) => { b.classList.toggle('active', i === 0); });
+  showScreen('screen-select');
+  document.getElementById('header-badge').textContent = 'VELG ØVELSER';
+}
+
+// ════════════════════════════════════════
+// SETTINGS & GOOGLE SHEETS
+// ════════════════════════════════════════
+const SHEET_URL_KEY = 'ironbell_sheet_url';
+let sheetUrl = localStorage.getItem(SHEET_URL_KEY) || '';
+
+function openSettings() {
+  document.getElementById('sheet-url-input').value = sheetUrl;
+  const status = document.getElementById('sheet-status');
+  status.style.display = 'none';
+  document.getElementById('settings-overlay').style.display = 'flex';
+}
+function closeSettings() {
+  document.getElementById('settings-overlay').style.display = 'none';
+}
+function closeSettingsIfBg(e) {
+  if (e.target === document.getElementById('settings-overlay')) closeSettings();
+}
+function onSheetUrlChange() {
+  document.getElementById('sheet-status').style.display = 'none';
+}
+
+function setSheetStatus(type, msg) {
+  const el = document.getElementById('sheet-status');
+  el.className = 'sheet-status ' + type;
+  el.textContent = msg;
+  el.style.display = 'flex';
+}
+
+async function loadFromSheet() {
+  const url = document.getElementById('sheet-url-input').value.trim();
+  if (!url) { setSheetStatus('err', '⚠️ Lim inn en CSV-URL først'); return; }
+
+  setSheetStatus('loading', '⏳ Laster fra Google Sheets…');
+
+  try {
+    const CORS_PROXY = 'https://corsproxy.io/?url=';
+    const res = await fetch(CORS_PROXY + encodeURIComponent(url));
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const csv = await res.text();
+    const { exercises, workouts } = parseSheetCSV(csv);
+    if (exercises.length === 0) throw new Error('Ingen øvelser funnet. Sjekk kolonnenavn.');
+
+    EXERCISES.length = 0;
+    exercises.forEach((ex, i) => EXERCISES.push({ ...ex, id: i + 1 }));
+    SAVED_WORKOUTS = workouts;
+    sheetUrl = url;
+    localStorage.setItem(SHEET_URL_KEY, url);
+
+    const wktMsg = workouts.length > 0 ? ` + ${workouts.length} økter` : '';
+    setSheetStatus('ok', `✅ ${exercises.length} øvelser${wktMsg} lastet inn!`);
+    rebuildCatFilter();
+    renderExerciseGrid();
+    renderSavedWorkouts();
+    renderSelectedStrip();
+    selectedExercises = [];
+    document.getElementById('btn-to-config').disabled = true;
+
+    setTimeout(() => { closeSettings(); }, 1200);
+  } catch (err) {
+    setSheetStatus('err', '❌ Kunne ikke laste: ' + err.message);
+  }
+}
+
+// Global saved workouts from sheet
+let SAVED_WORKOUTS = [];
+
+function parseSheetCSV(csv) {
+  const lines = csv.trim().split('\n');
+  if (lines.length < 2) return { exercises: [], workouts: [] };
+
+  // Robust cell splitter (handles quoted commas)
+  const splitRow = line => {
+    const cells = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; continue; }
+      if (c === ',' && !inQ) { cells.push(cur.trim()); cur = ''; continue; }
+      cur += c;
+    }
+    cells.push(cur.trim());
+    return cells;
+  };
+
+  // Normalise: lowercase, strip underscores and spaces
+  const norm = s => (s || '').toLowerCase().replace(/[_\s]/g, '');
+  const headers = splitRow(lines[0]).map(norm);
+
+  const findCol = (...names) => {
+    for (const n of names) {
+      const idx = headers.indexOf(norm(n));
+      if (idx >= 0) return idx;
+    }
+    return -1;
+  };
+
+  // ── Exercise columns (A–F)
+  const iNr      = findCol('øvelsenr', 'nr', 'number', 'id');
+  const iName    = findCol('navn', 'name', 'øvelse', 'exercise');
+  const iCat     = findCol('kategori', 'category', 'cat');
+  const iMuscles = findCol('muskler', 'muscles', 'muskelgruppe');
+  const iTips    = findCol('tips', 'beskrivelse', 'description');
+  const iImg     = findCol('bildeurl', 'bildeurl', 'imageurl', 'bilde', 'img', 'image');
+  const iEmoji   = findCol('emoji', 'ikon', 'icon');
+
+  // ── Workout columns (H+) — find 'økt' header
+  const iWktName = findCol('økt', 'workout', 'øktnavn', 'workoutname');
+  // Second 'kategori' occurrence (after the exercise one) = workout category
+  let iWktCat = -1;
+  if (iWktName >= 0) {
+    for (let i = iWktName + 1; i < headers.length; i++) {
+      if (headers[i] === 'kategori' || headers[i] === 'category') { iWktCat = i; break; }
+    }
+  }
+  // All columns matching 'øvelse1'..'øvelse10' or 'exercise1'..'exercise10'
+  const exerciseCols = headers
+    .map((h, i) => (/^(øvelse|exercise|ex)\d+$/.test(h) ? i : -1))
+    .filter(i => i >= 0);
+
+  // ── Parse rows
+  const exerciseMap = {}; // nr → exercise object
+  const exercises = [];
+
+  lines.slice(1).forEach(line => {
+    const row = splitRow(line);
+    const name = iName >= 0 ? (row[iName] || '').trim() : '';
+    if (!name) return;
+    const nr = iNr >= 0 ? parseInt(row[iNr]) : exercises.length + 1;
+    const ex = {
+      nr: isNaN(nr) ? exercises.length + 1 : nr,
+      name,
+      cat:     (iCat     >= 0 ? row[iCat]     : '') || 'Annet',
+      muscles: (iMuscles >= 0 ? row[iMuscles] : '') || '',
+      tips:    (iTips    >= 0 ? row[iTips]    : '') || '',
+      img:     (iImg     >= 0 ? row[iImg]     : '') || '',
+      big:     (iEmoji   >= 0 ? row[iEmoji]   : '') || '🏋️',
+    };
+    exercises.push(ex);
+    exerciseMap[ex.nr] = ex;
+  });
+
+  // ── Parse workouts
+  const workouts = [];
+  if (iWktName >= 0) {
+    lines.slice(1).forEach(line => {
+      const row = splitRow(line);
+      const wktName = (row[iWktName] || '').trim();
+      if (!wktName) return;
+      const wktCat = iWktCat >= 0 ? (row[iWktCat] || '').trim() : '';
+      const exNrs = exerciseCols
+        .map(ci => parseInt(row[ci] || ''))
+        .filter(n => !isNaN(n) && n > 0);
+      const resolved = exNrs.map(n => exerciseMap[n]).filter(Boolean);
+      if (resolved.length > 0) {
+        workouts.push({ name: wktName, cat: wktCat, exercises: resolved });
+      }
+    });
+  }
+
+  return { exercises, workouts };
+}
+
+function renderSavedWorkouts() {
+  const section = document.getElementById('saved-workouts-section');
+  const grid = document.getElementById('saved-workouts-grid');
+  if (!section || !grid) return;
+
+  if (SAVED_WORKOUTS.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+  grid.innerHTML = SAVED_WORKOUTS.map((wkt, i) => {
+    const chips = wkt.exercises.map(ex =>
+      `<span class="swc-ex-chip">${ex.big} ${ex.name}</span>`
+    ).join('');
+    const catLabel = wkt.cat ? `<span style="color:var(--accent);font-weight:600">${wkt.cat}</span> · ` : '';
+    return `
+    <div class="saved-workout-card" onclick="loadSavedWorkout(${i})">
+      <div class="swc-icon">⚡</div>
+      <div class="swc-body">
+        <div class="swc-name">${wkt.name}</div>
+        <div class="swc-meta">${catLabel}${wkt.exercises.length} øvelser</div>
+        <div class="swc-exercises">${chips}</div>
+      </div>
+      <div class="swc-arrow">→</div>
+    </div>`;
+  }).join('');
+}
+
+function loadSavedWorkout(index) {
+  const wkt = SAVED_WORKOUTS[index];
+  if (!wkt) return;
+  selectedExercises = [...wkt.exercises];
+  renderSelectedStrip();
+  renderExerciseGrid();
+  document.getElementById('btn-to-config').disabled = false;
+  // Scroll down to show selection strip
+  document.getElementById('selected-strip').scrollIntoView({ behavior: 'smooth' });
+}
+
+function resetToBuiltIn() {
+  EXERCISES.length = 0;
+  BUILT_IN_EXERCISES.forEach(ex => EXERCISES.push(ex));
+  sheetUrl = '';
+  localStorage.removeItem(SHEET_URL_KEY);
+  setSheetStatus('ok', '✅ Tilbake til innebygde øvelser');
+  rebuildCatFilter();
+  renderExerciseGrid();
+  selectedExercises = [];
+  renderSelectedStrip();
+  document.getElementById('btn-to-config').disabled = true;
+  setTimeout(closeSettings, 1000);
+}
+
+function rebuildCatFilter() {
+  const cats = ['Alle', ...new Set(EXERCISES.map(e => e.cat))];
+  const bar = document.getElementById('cat-filter');
+  bar.innerHTML = cats.map((c, i) =>
+    `<button class="cat-btn ${i === 0 ? 'active' : ''}" onclick="filterCat('${c}', this)">${c}</button>`
+  ).join('');
+  currentCat = 'Alle';
+}
+
+// ════════════════════════════════════════
+// INIT — load sheet if saved, else use built-ins
+// ════════════════════════════════════════
+async function init() {
+  showScreen('screen-loading');
+
+  // Keep a permanent reference to built-in exercises
+  window.BUILT_IN_EXERCISES = EXERCISES.map(e => ({ ...e }));
+
+  const saved = localStorage.getItem(SHEET_URL_KEY);
+  if (saved) {
+    document.getElementById('loading-text').textContent = 'Laster øvelser fra Google Sheets…';
+    try {
+      const res = await fetch(saved);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const csv = await res.text();
+      const parsed = parseSheetCSV(csv);
+      if (parsed.exercises.length > 0) {
+        EXERCISES.length = 0;
+        parsed.exercises.forEach((ex, i) => EXERCISES.push({ ...ex, id: i + 1 }));
+        SAVED_WORKOUTS = parsed.workouts;
+        sheetUrl = saved;
+      }
+    } catch (e) {
+      // Silently fall back to built-ins
+      console.warn('Sheet load failed, using built-ins:', e);
+    }
+  }
+
+  rebuildCatFilter();
+  renderExerciseGrid();
+  renderSelectedStrip();
+  showScreen('screen-select');
+}
+
+init();
+</script>
+</body>
+</html>
