@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IRON BELL — Kettlebell Trening</title>
+<title>KETTL — Kettlebell Trening</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -12,9 +12,9 @@
     --surface: #1a1c1f;
     --surface2: #222529;
     --border: #2e3135;
-    --accent: #f07700;
-    --accent-dim: #f0770022;
-    --accent2: #ffb347;
+    --accent: #4CBB17;
+    --accent-dim: #4CBB1722;
+    --accent2: #7dde47;
     --text: #e8eaed;
     --text-muted: #8b8f97;
     --text-dim: #555a63;
@@ -122,7 +122,7 @@
   }
   .ex-card.selected {
     border-color: var(--accent);
-    background: linear-gradient(135deg, #1a1c1f, #221500);
+    background: linear-gradient(135deg, #1a1c1f, #051a02);
   }
   .ex-card.selected::after {
     content: attr(data-order);
@@ -211,7 +211,7 @@
   .strip-tag {
     background: var(--accent-dim);
     color: var(--accent2);
-    border: 1px solid #f0770044;
+    border: 1px solid #4CBB1744;
     padding: 4px 10px;
     border-radius: 6px;
     font-size: 0.75rem;
@@ -219,7 +219,7 @@
     cursor: pointer;
     transition: all 0.15s;
   }
-  .strip-tag:hover { background: #f0770040; }
+  .strip-tag:hover { background: #4CBB1740; }
   .strip-empty {
     color: var(--text-dim);
     font-size: 0.82rem;
@@ -348,7 +348,7 @@
     user-select: none;
   }
   .mini-ex.dragging { opacity: 0.4; box-shadow: 0 0 0 2px var(--accent); }
-  .mini-ex.drag-over { background: #221500; border-color: var(--accent); }
+  .mini-ex.drag-over { background: #051a02; border-color: var(--accent); }
   .mini-ex-num {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.2rem;
@@ -479,7 +479,7 @@
     font-size: 8rem;
     line-height: 1;
     color: var(--accent);
-    text-shadow: 0 0 60px #f0770060;
+    text-shadow: 0 0 60px #4CBB1760;
     transition: all 0.1s;
   }
   .countdown-number.pulse { transform: scale(1.05); }
@@ -527,9 +527,9 @@
   }
   .workout-ex-card.active {
     border-color: var(--accent);
-    background: linear-gradient(160deg, #1f1200, #1a1c1f);
+    background: linear-gradient(160deg, #051a02, #1a1c1f);
     transform: scale(1.04);
-    box-shadow: 0 0 30px #f0770030;
+    box-shadow: 0 0 30px #4CBB1730;
   }
   .workout-ex-card.done-card {
     opacity: 0.45;
@@ -643,14 +643,14 @@
     transition: all 0.15s;
     letter-spacing: 0.5px;
     line-height: 1.3;
-    box-shadow: 0 0 0 6px #f0770022, 0 8px 32px #f0770030;
+    box-shadow: 0 0 0 6px #4CBB1722, 0 8px 32px #4CBB1730;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     padding: 20px;
   }
-  .btn-next:hover { background: var(--accent2); transform: scale(1.05); box-shadow: 0 0 0 10px #f0770030, 0 12px 40px #f0770040; }
+  .btn-next:hover { background: var(--accent2); transform: scale(1.05); box-shadow: 0 0 0 10px #4CBB1730, 0 12px 40px #4CBB1740; }
   .btn-next:active { transform: scale(0.96); }
   .btn-next .space-hint {
     display: block;
@@ -769,7 +769,7 @@
   }
   .saved-workout-card:hover {
     border-color: var(--accent);
-    background: linear-gradient(135deg, #1f1200, #1a1c1f);
+    background: linear-gradient(135deg, #051a02, #1a1c1f);
   }
   .swc-icon {
     font-size: 1.8rem;
@@ -1117,7 +1117,7 @@
 <body>
 
 <header>
-  <div class="logo">IRON<span>BELL</span></div>
+  <div class="logo">KETT<span>L</span></div>
   <div style="display:flex;align-items:center;gap:10px">
     <div class="header-badge" id="header-badge">VELG ØVELSER</div>
     <button class="settings-btn" onclick="openSettings()" title="Innstillinger">⚙️</button>
@@ -1415,7 +1415,6 @@
 
     <div style="display:flex;gap:10px;margin-top:4px">
       <button class="btn-primary" style="flex:1" onclick="loadFromSheet()">Last inn øvelser</button>
-      <button class="btn-secondary" onclick="resetToBuiltIn()">Bruk innebygde</button>
     </div>
   </div>
 </div>
@@ -1424,134 +1423,7 @@
 // ════════════════════════════════════════
 // ØVELSE-ARKIV
 // ════════════════════════════════════════
-const EXERCISES = [
-  {
-    id: 1, name: "Swing", cat: "Grunnleg.", muscles: "Bakside lår, rumpe, rygg",
-    icon: "🫳",
-    emoji: "⚡",
-    big: "🏋️",
-    tips: "Hold ryggen rett. Driv bevegelsen fra hoftene, ikke armene. Klem rumpen i toppen."
-  },
-  {
-    id: 2, name: "Turkish Get-Up", cat: "Styrke", muscles: "Hele kroppen, skulder",
-    icon: "🦾",
-    emoji: "🧗",
-    big: "🧗",
-    tips: "Øyet på kettlebell hele veien. Beveg deg sakte og kontrollert. God øvelse for mobilitet."
-  },
-  {
-    id: 3, name: "Clean & Press", cat: "Styrke", muscles: "Skulder, kjernemuskulatur",
-    icon: "💪",
-    emoji: "🏋️",
-    big: "💪",
-    tips: "Rull klokken tett inntil kroppen på vei opp. Strekk armen helt ut i toppen."
-  },
-  {
-    id: 4, name: "Goblet Squat", cat: "Grunnleg.", muscles: "Lår, rumpe, kjernemuskulatur",
-    icon: "🏅",
-    emoji: "🦵",
-    big: "🦵",
-    tips: "Hold klokken mot brystet. Knær ut, hæler i gulvet. Sitt dypt og kontrollert."
-  },
-  {
-    id: 5, name: "Farmer Carry", cat: "Kondis", muscles: "Grep, kjernemuskulatur, skuldre",
-    icon: "🚶",
-    emoji: "🧳",
-    big: "🧳",
-    tips: "Skuldrene tilbake og ned. Hold overkroppen oppreist. Korte, kontrollerte skritt."
-  },
-  {
-    id: 6, name: "Snatch", cat: "Kondis", muscles: "Hele bakside, skulder",
-    icon: "🌪️",
-    emoji: "🌪️",
-    big: "🌪️",
-    tips: "Punch opp med armen idet klokken passerer hodet. Ikke la den smelle ned i håndleddet."
-  },
-  {
-    id: 7, name: "Renegade Row", cat: "Styrke", muscles: "Rygg, biceps, core",
-    icon: "🛶",
-    emoji: "💪",
-    big: "🛶",
-    tips: "Hold hoftene stille. Ikke roter. Sterk plankestilling mellom trekkene."
-  },
-  {
-    id: 8, name: "Windmill", cat: "Core", muscles: "Oblique, skulder, hofter",
-    icon: "🌬️",
-    emoji: "🌀",
-    big: "🌬️",
-    tips: "Klokken peker rett opp. Skyv hoften sidelengs. Kontroller ned."
-  },
-  {
-    id: 9, name: "Halo", cat: "Core", muscles: "Skuldre, nakke, core",
-    icon: "😇",
-    emoji: "☀️",
-    big: "😇",
-    tips: "Hold klokken nær hodet. Trekk in magen. Sakt og kontrollert rundt."
-  },
-  {
-    id: 10, name: "Figure 8", cat: "Core", muscles: "Core, hofte, grep",
-    icon: "8️⃣",
-    emoji: "🔄",
-    big: "8️⃣",
-    tips: "Hold ryggen flat. Klokken mellom beina. Veksle hender ved hvert bytte."
-  },
-  {
-    id: 11, name: "Deadlift", cat: "Grunnleg.", muscles: "Bakside lår, korsrygg, rumpe",
-    icon: "🏗️",
-    emoji: "🔩",
-    big: "🏗️",
-    tips: "Klokken mellom beina. Hoftene tilbake. Rett rygg hele veien opp."
-  },
-  {
-    id: 12, name: "Kettlebell Row", cat: "Styrke", muscles: "Rygg, biceps",
-    icon: "🚣",
-    emoji: "💪",
-    big: "🚣",
-    tips: "Støtt med en hånd. Albuen nær kroppen. Klem skulder­bladet i toppen."
-  },
-  {
-    id: 13, name: "Thruster", cat: "Kondis", muscles: "Bein, skulder, core",
-    icon: "🚀",
-    emoji: "🚀",
-    big: "🚀",
-    tips: "Kombiner squat og press i en flytende bevegelse. Driv opp fra beina."
-  },
-  {
-    id: 14, name: "Around the Body", cat: "Core", muscles: "Core, skuldre, grep",
-    icon: "🔁",
-    emoji: "🔁",
-    big: "🔁",
-    tips: "Hold magen inn. Bytt retning halvveis. Ikke slapp av grepet."
-  },
-  {
-    id: 15, name: "Sumo Squat", cat: "Bilateral", muscles: "Indre lår, rumpe",
-    icon: "🤼",
-    emoji: "🤸",
-    big: "🤼",
-    tips: "Bredt steg, tær ut 45°. Klokken hengt mellom beina. Knær ut."
-  },
-  {
-    id: 16, name: "Alternating Swing", cat: "Kondis", muscles: "Bakside, grep",
-    icon: "🤝",
-    emoji: "🔀",
-    big: "🤝",
-    tips: "Bytt hånd i toppen av swing. La klokken flyte — ikke kast den."
-  },
-  {
-    id: 17, name: "Lunge Press", cat: "Styrke", muscles: "Bein, skulder, balanse",
-    icon: "🚶‍♂️",
-    emoji: "🦵",
-    big: "🚶‍♂️",
-    tips: "Kneet ned mot gulvet, press opp. Hold overkroppen rett."
-  },
-  {
-    id: 18, name: "Hip Hinge", cat: "Grunnleg.", muscles: "Bakside lår, korsrygg",
-    icon: "📐",
-    emoji: "📐",
-    big: "📐",
-    tips: "Skyv hoftene tilbake, ikke ned. Flat rygg. Strekk godt i bakside lår."
-  }
-];
+const EXERCISES = [];
 
 // ════════════════════════════════════════
 // STATE
@@ -1605,8 +1477,8 @@ function renderExerciseGrid() {
     const sel = selectedExercises.find(s => s.id === ex.id);
     const order = sel ? selectedExercises.indexOf(sel) + 1 : '';
     const mediaHtml = ex.img
-      ? `<div class="ex-img-wrap"><img src="${ex.img}" alt="${ex.name}" loading="lazy" onerror="this.parentNode.innerHTML='<span class=ex-img-fallback>${ex.big}</span>'"></div>`
-      : `<div class="ex-img-wrap"><span class="ex-img-fallback">${ex.big}</span></div>`;
+      ? `<div class="ex-img-wrap"><img src="${ex.img}" alt="${ex.name}" loading="lazy" onerror="this.parentNode.innerHTML='<span class=ex-img-fallback>🏋️</span>'"></div>`
+      : `<div class="ex-img-wrap"><span class="ex-img-fallback">🏋️</span></div>`;
     return `
     <div class="ex-card ${sel ? 'selected' : ''}" data-id="${ex.id}" data-order="${order}"
          onclick="toggleExercise(${ex.id})">
@@ -1869,12 +1741,12 @@ function renderWorkout() {
   const imgWrap = document.getElementById('cur-ex-img-wrap');
   if (ex.img) {
     imgWrap.style.display = 'flex';
-    imgWrap.innerHTML = `<img src="${ex.img}" alt="${ex.name}" onerror="this.parentNode.style.display='none'; document.getElementById('cur-ex-icon').style.display='block'">`;
+    imgWrap.innerHTML = `<img src="${ex.img}" alt="${ex.name}" onerror="this.parentNode.style.display='none'; const ic=document.getElementById('cur-ex-icon'); ic.style.display='block'; ic.textContent='🏋️';">`;
     iconEl.style.display = 'none';
   } else {
     imgWrap.style.display = 'none';
     iconEl.style.display = 'block';
-    iconEl.textContent = ex.big;
+    iconEl.textContent = '🏋️';
     iconEl.style.animation = 'none';
     void iconEl.offsetWidth;
     iconEl.style.animation = '';
@@ -2366,14 +2238,12 @@ function rebuildCatFilter() {
 async function init() {
   showScreen('screen-loading');
 
-  // Keep a permanent reference to built-in exercises
-  window.BUILT_IN_EXERCISES = EXERCISES.map(e => ({ ...e }));
-
   const saved = localStorage.getItem(SHEET_URL_KEY);
   if (saved) {
     document.getElementById('loading-text').textContent = 'Laster øvelser fra Google Sheets…';
     try {
-      const res = await fetch(saved);
+      const CORS_PROXY = 'https://corsproxy.io/?url=';
+      const res = await fetch(CORS_PROXY + encodeURIComponent(saved));
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const csv = await res.text();
       const parsed = parseSheetCSV(csv);
@@ -2384,8 +2254,9 @@ async function init() {
         sheetUrl = saved;
       }
     } catch (e) {
-      // Silently fall back to built-ins
-      console.warn('Sheet load failed, using built-ins:', e);
+      console.warn('Sheet load failed:', e);
+      document.getElementById('loading-text').textContent = 'Kunne ikke laste Sheet. Åpner innstillinger…';
+      await new Promise(r => setTimeout(r, 1200));
     }
   }
 
@@ -2393,6 +2264,11 @@ async function init() {
   renderExerciseGrid();
   renderSelectedStrip();
   showScreen('screen-select');
+
+  if (EXERCISES.length === 0) {
+    // No exercises loaded — prompt user to connect sheet
+    setTimeout(() => openSettings(), 300);
+  }
 }
 
 init();
