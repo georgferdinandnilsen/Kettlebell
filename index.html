@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KETTL — Kettlebell Trening</title>
+<link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3703/3703398.png">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -1402,19 +1403,32 @@
     </div>
 
     <div class="settings-field">
-      <label class="settings-label">📊 Google Sheets CSV-URL</label>
+      <label class="settings-label">📊 Ditt Google Sheets CSV-URL</label>
       <input class="settings-input" id="sheet-url-input" type="url"
         placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv"
         oninput="onSheetUrlChange()">
-      <div class="settings-hint">
-        Publiser Sheetet ditt som CSV og lim inn lenken her.<br>
-        Se instruksjonene for hvordan du setter dette opp.
-      </div>
       <div class="sheet-status loading" id="sheet-status" style="display:none"></div>
     </div>
 
-    <div style="display:flex;gap:10px;margin-top:4px">
-      <button class="btn-primary" style="flex:1" onclick="loadFromSheet()">Last inn øvelser</button>
+    <div style="display:flex;gap:10px;margin-top:4px;margin-bottom:24px">
+      <button class="btn-primary" style="flex:1" onclick="loadFromSheet()">Last inn mine øvelser</button>
+      <button class="btn-secondary" onclick="resetToDefault()">Tilbakestill</button>
+    </div>
+
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;font-size:0.82rem;color:var(--text-muted);line-height:1.7">
+      <div style="font-weight:700;color:var(--text);margin-bottom:10px;font-size:0.85rem">📋 Slik lager du ditt eget øvelseark</div>
+      <div style="margin-bottom:8px">
+        <a href="KETTLEBELL%20%C3%98VELSER.xlsx" download style="color:var(--accent);font-weight:600;text-decoration:none">⬇ Last ned mal (.xlsx)</a>
+        <span style="color:var(--text-dim)"> — åpne i Google Sheets</span>
+      </div>
+      <ol style="padding-left:18px;display:flex;flex-direction:column;gap:5px">
+        <li>Åpne malen i Google Sheets (File → Import)</li>
+        <li>Fyll inn øvelsene dine. Kolonnene <strong style="color:var(--text)">Navn</strong> og <strong style="color:var(--text)">Kategori</strong> er påkrevd</li>
+        <li>Gå til <strong style="color:var(--text)">File → Share → Publish to web</strong></li>
+        <li>Velg arket og format: <strong style="color:var(--text)">Comma-separated values (.csv)</strong></li>
+        <li>Klikk <strong style="color:var(--text)">Publish</strong> og kopier lenken</li>
+        <li>Lim lenken inn i feltet over og trykk <strong style="color:var(--text)">Last inn</strong></li>
+      </ol>
     </div>
   </div>
 </div>
@@ -2010,7 +2024,8 @@ function resetAll() {
 // SETTINGS & GOOGLE SHEETS
 // ════════════════════════════════════════
 const SHEET_URL_KEY = 'ironbell_sheet_url';
-let sheetUrl = localStorage.getItem(SHEET_URL_KEY) || '';
+const DEFAULT_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQCKCTbNFmRKaz0e7iBRDGueFqovP40Eyn4lxYJ6uf8-UUkB8L1bgw72juAMjUn2cMpkx47T_HoFVZ7/pub?output=csv';
+let sheetUrl = localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL;
 
 function openSettings() {
   document.getElementById('sheet-url-input').value = sheetUrl;
@@ -2035,12 +2050,7 @@ function setSheetStatus(type, msg) {
   el.style.display = 'flex';
 }
 
-async function loadFromSheet() {
-  const url = document.getElementById('sheet-url-input').value.trim();
-  if (!url) { setSheetStatus('err', '⚠️ Lim inn en CSV-URL først'); return; }
-
-  setSheetStatus('loading', '⏳ Laster fra Google Sheets…');
-
+async function loadSheetFromUrl(url) {
   try {
     const CORS_PROXY = 'https://corsproxy.io/?url=';
     const res = await fetch(CORS_PROXY + encodeURIComponent(url));
@@ -2053,10 +2063,7 @@ async function loadFromSheet() {
     exercises.forEach((ex, i) => EXERCISES.push({ ...ex, id: i + 1 }));
     SAVED_WORKOUTS = workouts;
     sheetUrl = url;
-    localStorage.setItem(SHEET_URL_KEY, url);
 
-    const wktMsg = workouts.length > 0 ? ` + ${workouts.length} økter` : '';
-    setSheetStatus('ok', `✅ ${exercises.length} øvelser${wktMsg} lastet inn!`);
     rebuildCatFilter();
     renderExerciseGrid();
     renderSavedWorkouts();
@@ -2064,9 +2071,24 @@ async function loadFromSheet() {
     selectedExercises = [];
     document.getElementById('btn-to-config').disabled = true;
 
-    setTimeout(() => { closeSettings(); }, 1200);
+    const wktMsg = workouts.length > 0 ? ` + ${workouts.length} økter` : '';
+    setSheetStatus('ok', `✅ ${exercises.length} øvelser${wktMsg} lastet inn!`);
+    return true;
   } catch (err) {
     setSheetStatus('err', '❌ Kunne ikke laste: ' + err.message);
+    return false;
+  }
+}
+
+async function loadFromSheet() {
+  const url = document.getElementById('sheet-url-input').value.trim();
+  if (!url) { setSheetStatus('err', '⚠️ Lim inn en CSV-URL først'); return; }
+
+  setSheetStatus('loading', '⏳ Laster fra Google Sheets…');
+  const ok = await loadSheetFromUrl(url);
+  if (ok) {
+    localStorage.setItem(SHEET_URL_KEY, url);
+    setTimeout(() => { closeSettings(); }, 1200);
   }
 }
 
@@ -2209,18 +2231,14 @@ function loadSavedWorkout(index) {
   document.getElementById('selected-strip').scrollIntoView({ behavior: 'smooth' });
 }
 
-function resetToBuiltIn() {
-  EXERCISES.length = 0;
-  BUILT_IN_EXERCISES.forEach(ex => EXERCISES.push(ex));
-  sheetUrl = '';
+function resetToDefault() {
+  sheetUrl = DEFAULT_SHEET_URL;
   localStorage.removeItem(SHEET_URL_KEY);
-  setSheetStatus('ok', '✅ Tilbake til innebygde øvelser');
-  rebuildCatFilter();
-  renderExerciseGrid();
-  selectedExercises = [];
-  renderSelectedStrip();
-  document.getElementById('btn-to-config').disabled = true;
-  setTimeout(closeSettings, 1000);
+  document.getElementById('sheet-url-input').value = '';
+  setSheetStatus('loading', '⏳ Laster standardøvelser…');
+  loadSheetFromUrl(DEFAULT_SHEET_URL).then(() => {
+    setTimeout(closeSettings, 1000);
+  });
 }
 
 function rebuildCatFilter() {
@@ -2238,37 +2256,30 @@ function rebuildCatFilter() {
 async function init() {
   showScreen('screen-loading');
 
-  const saved = localStorage.getItem(SHEET_URL_KEY);
-  if (saved) {
-    document.getElementById('loading-text').textContent = 'Laster øvelser fra Google Sheets…';
-    try {
-      const CORS_PROXY = 'https://corsproxy.io/?url=';
-      const res = await fetch(CORS_PROXY + encodeURIComponent(saved));
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const csv = await res.text();
-      const parsed = parseSheetCSV(csv);
-      if (parsed.exercises.length > 0) {
-        EXERCISES.length = 0;
-        parsed.exercises.forEach((ex, i) => EXERCISES.push({ ...ex, id: i + 1 }));
-        SAVED_WORKOUTS = parsed.workouts;
-        sheetUrl = saved;
-      }
-    } catch (e) {
-      console.warn('Sheet load failed:', e);
-      document.getElementById('loading-text').textContent = 'Kunne ikke laste Sheet. Åpner innstillinger…';
-      await new Promise(r => setTimeout(r, 1200));
+  const urlToLoad = localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL;
+  document.getElementById('loading-text').textContent = 'Laster øvelser…';
+
+  try {
+    const CORS_PROXY = 'https://corsproxy.io/?url=';
+    const res = await fetch(CORS_PROXY + encodeURIComponent(urlToLoad));
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const csv = await res.text();
+    const parsed = parseSheetCSV(csv);
+    if (parsed.exercises.length > 0) {
+      EXERCISES.length = 0;
+      parsed.exercises.forEach((ex, i) => EXERCISES.push({ ...ex, id: i + 1 }));
+      SAVED_WORKOUTS = parsed.workouts;
+      sheetUrl = urlToLoad;
     }
+  } catch (e) {
+    console.warn('Sheet load failed:', e);
   }
 
   rebuildCatFilter();
   renderExerciseGrid();
+  renderSavedWorkouts();
   renderSelectedStrip();
   showScreen('screen-select');
-
-  if (EXERCISES.length === 0) {
-    // No exercises loaded — prompt user to connect sheet
-    setTimeout(() => openSettings(), 300);
-  }
 }
 
 init();
