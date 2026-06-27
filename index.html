@@ -2013,9 +2013,6 @@ const DEFAULT_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQCKC
 let sheetUrl = localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL;
 
 function openSettings() {
-  document.getElementById('sheet-url-input').value = sheetUrl;
-  const status = document.getElementById('sheet-status');
-  status.style.display = 'none';
   document.getElementById('settings-overlay').style.display = 'flex';
 }
 function closeSettings() {
