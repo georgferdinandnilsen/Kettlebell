@@ -1511,7 +1511,7 @@
       </a>
     </div>
 
-    <button onclick="forceRefreshSheet()" style="margin-top:16px;width:100%;background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:0.82rem;padding:10px 16px;border-radius:8px;cursor:pointer">
+    <button id="refresh-sheet-btn" onclick="forceRefreshSheet()" style="margin-top:16px;width:100%;background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:0.82rem;padding:10px 16px;border-radius:8px;cursor:pointer">
       🔄 Hent øvelser på nytt fra Sheet
     </button>
   </div>
@@ -2172,7 +2172,9 @@ function closeSettings() {
   document.getElementById('settings-overlay').style.display = 'none';
 }
 async function forceRefreshSheet() {
-  closeSettings();
+  const btn = document.getElementById('refresh-sheet-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Henter…';
   let urlToLoad = DEFAULT_SHEET_URL;
   try { urlToLoad = localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL; } catch(e) {}
   try {
@@ -2181,9 +2183,15 @@ async function forceRefreshSheet() {
       applyExerciseData(parsed.exercises, parsed.workouts);
       sheetUrl = urlToLoad;
       try { localStorage.setItem(SHEET_CACHE_KEY, JSON.stringify({ exercises: parsed.exercises, workouts: parsed.workouts })); } catch(e) {}
+      btn.textContent = `✓ ${parsed.exercises.length} øvelser hentet`;
+      setTimeout(() => { closeSettings(); btn.disabled = false; btn.textContent = '🔄 Hent øvelser på nytt fra Sheet'; }, 1500);
+    } else {
+      btn.textContent = '⚠️ Ingen øvelser funnet';
+      setTimeout(() => { btn.disabled = false; btn.textContent = '🔄 Hent øvelser på nytt fra Sheet'; }, 2500);
     }
   } catch(e) {
-    console.warn('Force refresh failed:', e.message);
+    btn.textContent = '✗ Feil – prøv igjen';
+    setTimeout(() => { btn.disabled = false; btn.textContent = '🔄 Hent øvelser på nytt fra Sheet'; }, 2500);
   }
 }
 
