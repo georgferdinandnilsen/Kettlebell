@@ -1304,6 +1304,17 @@
           ⏳ Tid per øvelse<br><span style="font-weight:400;font-size:0.74rem;color:inherit">Nedtelling starter automatisk</span>
         </button>
       </div>
+      <div class="mode-sub visible" id="mode-sub-reps">
+        <div class="stepper">
+          <button class="stepper-btn" onclick="adjustVal('plannedReps', -5)">−</button>
+          <div>
+            <div class="stepper-val" id="val-plannedReps">15</div>
+            <div class="stepper-unit">reps per øvelse</div>
+          </div>
+          <button class="stepper-btn" onclick="adjustVal('plannedReps', 5)">+</button>
+        </div>
+        <div style="font-size:0.72rem;color:var(--text-dim);margin-top:8px">Brukes kun for å beregne tidsestimat i sammendraget</div>
+      </div>
       <div class="mode-sub" id="mode-sub-time">
         <div class="stepper">
           <button class="stepper-btn" onclick="adjustVal('exDuration', -5)">−</button>
@@ -1539,7 +1550,7 @@ const EXERCISES = [
 // STATE
 // ════════════════════════════════════════
 let selectedExercises = [];
-let config = { rounds: 3, restEx: 30, restRound: 90, exMode: 'reps', exDuration: 40 };
+let config = { rounds: 3, restEx: 30, restRound: 90, exMode: 'reps', exDuration: 40, plannedReps: 15 };
 let workoutState = {
   curRound: 1,
   curExIndex: 0,
@@ -1689,15 +1700,16 @@ const limits = {
   rounds:      { min: 1, max: 20 },
   restEx:      { min: 0, max: 300 },
   restRound:   { min: 0, max: 600 },
-  exDuration:  { min: 5, max: 300 }
+  exDuration:  { min: 5, max: 300 },
+  plannedReps: { min: 5, max: 50 }
 };
 
 function setExMode(mode) {
   config.exMode = mode;
   document.getElementById('mode-btn-reps').classList.toggle('active', mode === 'reps');
   document.getElementById('mode-btn-time').classList.toggle('active', mode === 'time');
-  const sub = document.getElementById('mode-sub-time');
-  sub.classList.toggle('visible', mode === 'time');
+  document.getElementById('mode-sub-reps').classList.toggle('visible', mode === 'reps');
+  document.getElementById('mode-sub-time').classList.toggle('visible', mode === 'time');
   buildSummary();
 }
 
@@ -1712,6 +1724,7 @@ function buildConfigScreen() {
   document.getElementById('val-restEx').textContent = config.restEx;
   document.getElementById('val-restRound').textContent = config.restRound;
   document.getElementById('val-exDuration').textContent = config.exDuration;
+  document.getElementById('val-plannedReps').textContent = config.plannedReps;
 
   // Restore mode toggle state
   setExMode(config.exMode);
@@ -1745,7 +1758,7 @@ function renderSortableList() {
 }
 
 function buildSummary() {
-  const perEx = config.exMode === 'time' ? config.exDuration : 30; // estimate 30s for reps
+  const perEx = config.exMode === 'time' ? config.exDuration : config.plannedReps * 3;
   const totalRests = (selectedExercises.length - 1) * config.restEx + (config.rounds - 1) * config.restRound;
   const estMinutes = Math.round((totalRests + selectedExercises.length * config.rounds * perEx) / 60);
   const modeText = config.exMode === 'time' ? `${config.exDuration}s per øvelse` : 'Egentempo (reps)';
@@ -2140,7 +2153,7 @@ function doQuit() {
 
 function resetAll() {
   selectedExercises = [];
-  config = { rounds: 3, restEx: 30, restRound: 90, exMode: 'reps', exDuration: 40 };
+  config = { rounds: 3, restEx: 30, restRound: 90, exMode: 'reps', exDuration: 40, plannedReps: 15 };
   stopExerciseTimer();
   renderExerciseGrid();
   renderSelectedStrip();
