@@ -2158,8 +2158,10 @@ function resetAll() {
 // SETTINGS & GOOGLE SHEETS
 // ════════════════════════════════════════
 const SHEET_URL_KEY = 'ironbell_sheet_url';
+const SHEET_CACHE_KEY = 'ironbell_cache';
 const DEFAULT_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQCKCTbNFmRKaz0e7iBRDGueFqovP40Eyn4lxYJ6uf8-UUkB8L1bgw72juAMjUn2cMpkx47T_HoFVZ7/pub?output=csv';
-let sheetUrl = localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL;
+let sheetUrl = DEFAULT_SHEET_URL;
+try { sheetUrl = localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL; } catch(e) {}
 
 function openSettings() {
   document.getElementById('settings-overlay').style.display = 'flex';
@@ -2426,38 +2428,54 @@ function rebuildCatFilter() {
 // ════════════════════════════════════════
 // INIT — load sheet if saved, else use built-ins
 // ════════════════════════════════════════
-async function init() {
-  // Show fallback exercises immediately — no waiting
+function applyExerciseData(exercises, workouts) {
+  EXERCISES.length = 0;
+  exercises.forEach((ex, i) => EXERCISES.push({ ...ex, id: i + 1 }));
+  SAVED_WORKOUTS = workouts;
   rebuildCatFilter();
   renderExerciseGrid();
+  renderSavedWorkouts();
   renderSelectedStrip();
+}
+
+async function init() {
+  // 1. Load from cache instantly if available
+  try {
+    const cached = localStorage.getItem(SHEET_CACHE_KEY);
+    if (cached) {
+      const { exercises, workouts } = JSON.parse(cached);
+      if (exercises?.length > 0) applyExerciseData(exercises, workouts || []);
+    }
+  } catch(e) {}
+
+  // Show fallback if still no exercises
+  if (EXERCISES.length === 0) {
+    rebuildCatFilter();
+    renderExerciseGrid();
+    renderSelectedStrip();
+  }
   showScreen('screen-select');
 
-  // Load sheet in background and update if successful
+  // 2. Fetch fresh data from Sheet in background
   let urlToLoad = DEFAULT_SHEET_URL;
   try { urlToLoad = localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL; } catch(e) {}
 
   try {
     const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000);
+    const timeout = setTimeout(() => controller.abort(), 8000);
     const res = await fetch(CORS_PROXY + encodeURIComponent(urlToLoad), { signal: controller.signal });
     clearTimeout(timeout);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const csv = await res.text();
     const parsed = parseSheetCSV(csv);
     if (parsed.exercises.length > 0) {
-      EXERCISES.length = 0;
-      parsed.exercises.forEach((ex, i) => EXERCISES.push({ ...ex, id: i + 1 }));
-      SAVED_WORKOUTS = parsed.workouts;
+      applyExerciseData(parsed.exercises, parsed.workouts);
       sheetUrl = urlToLoad;
-      rebuildCatFilter();
-      renderExerciseGrid();
-      renderSavedWorkouts();
-      renderSelectedStrip();
+      try { localStorage.setItem(SHEET_CACHE_KEY, JSON.stringify({ exercises: parsed.exercises, workouts: parsed.workouts })); } catch(e) {}
     }
   } catch (e) {
-    console.warn('Sheet load failed, using fallback exercises:', e.message);
+    console.warn('Sheet load failed, using cache/fallback:', e.message);
   }
 }
 
