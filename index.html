@@ -38,7 +38,7 @@
 
   /* ── HEADER ── */
   header {
-    padding: 20px 28px;
+    padding: 24px 28px 28px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -63,16 +63,6 @@
     color: var(--text-muted);
     font-weight: 400;
     margin-top: 2px;
-  }
-  .header-badge {
-    background: var(--accent-dim);
-    color: var(--accent);
-    border: 1px solid var(--accent);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 1px;
   }
 
   /* ── SCREENS ── */
@@ -1207,7 +1197,6 @@
     <div class="logo-sub">Laget av Georg Ferdinand Nilsen</div>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
-    <div class="header-badge" id="header-badge">VELG ØVELSER</div>
     <button class="settings-btn" onclick="openSettings()" title="Innstillinger">⚙️</button>
   </div>
 </header>
@@ -1225,7 +1214,7 @@
 <!-- ══════════════════════════════════════════
      SCREEN 1: VELG ØVELSER
 ══════════════════════════════════════════ -->
-<div class="screen active" id="screen-select">
+<div class="screen" id="screen-select">
   <div class="step-bar">
     <div class="step-dot done" id="s1"></div>
     <div class="step-dot" id="s2"></div>
@@ -1682,7 +1671,6 @@ function filterExercises() {
 function goToConfig() {
   buildConfigScreen();
   showScreen('screen-config');
-  document.getElementById('header-badge').textContent = 'KONFIGURER';
 }
 
 // ════════════════════════════════════════
@@ -1844,7 +1832,6 @@ function dragEnd() {
 
 function goBack() {
   showScreen('screen-select');
-  document.getElementById('header-badge').textContent = 'VELG ØVELSER';
 }
 
 // ════════════════════════════════════════
@@ -1857,7 +1844,6 @@ function startWorkout() {
   workoutState.startTime = Date.now();
 
   showScreen('workout-screen');
-  document.getElementById('header-badge').textContent = 'AKTIV ØKT';
   document.getElementById('tot-rounds').textContent = config.rounds;
 
   renderWorkout();
@@ -2134,7 +2120,6 @@ function finishWorkout() {
   document.getElementById('done-time').textContent = `${min}:${String(sec).padStart(2, '0')}`;
 
   showScreen('screen-done');
-  document.getElementById('header-badge').textContent = 'FULLFØRT';
 }
 
 function confirmQuit() {
@@ -2144,7 +2129,6 @@ function confirmQuit() {
 function doQuit() {
   document.getElementById('quit-confirm-overlay').style.display = 'none';
   showScreen('screen-select');
-  document.getElementById('header-badge').textContent = 'VELG ØVELSER';
 }
 
 function resetAll() {
@@ -2160,7 +2144,6 @@ function resetAll() {
   selectedMuscles = new Set();
   document.querySelectorAll('#cat-filter .cat-btn, #muscle-filter .cat-btn').forEach(b => b.classList.remove('active'));
   showScreen('screen-select');
-  document.getElementById('header-badge').textContent = 'VELG ØVELSER';
 }
 
 // ════════════════════════════════════════
