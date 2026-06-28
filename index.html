@@ -1546,8 +1546,8 @@ let workoutState = {
   startTime: null,
   countdownTimer: null
 };
-let currentCat = 'Alle';
-let currentMuscle = 'Alle';
+let selectedCats = new Set();
+let selectedMuscles = new Set();
 let searchTerm = '';
 
 // Exercise timer state
@@ -1577,8 +1577,8 @@ function showScreen(id) {
 function renderExerciseGrid() {
   const grid = document.getElementById('exercise-grid');
   const filtered = EXERCISES.filter(ex => {
-    const matchCat    = currentCat === 'Alle' || ex.cat === currentCat;
-    const matchMuscle = currentMuscle === 'Alle' || (ex.muscles || '').toLowerCase().includes(currentMuscle.toLowerCase());
+    const matchCat    = selectedCats.size === 0 || selectedCats.has(ex.cat);
+    const matchMuscle = selectedMuscles.size === 0 || [...selectedMuscles].some(m => (ex.muscles || '').toLowerCase().includes(m.toLowerCase()));
     const matchSearch = ex.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         (ex.muscles || '').toLowerCase().includes(searchTerm.toLowerCase());
     return matchCat && matchMuscle && matchSearch;
@@ -1628,17 +1628,45 @@ function renderSelectedStrip() {
   }
 }
 
-function filterCat(cat, btn) {
-  currentCat = cat;
+function resetCatFilter() {
+  selectedCats = new Set();
   document.querySelectorAll('#cat-filter .cat-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  document.querySelector('#cat-filter .cat-btn').classList.add('active');
+  renderExerciseGrid();
+}
+
+function resetMuscleFilter() {
+  selectedMuscles = new Set();
+  document.querySelectorAll('#muscle-filter .cat-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('#muscle-filter .cat-btn').classList.add('active');
+  renderExerciseGrid();
+}
+
+function filterCat(cat, btn) {
+  if (selectedCats.has(cat)) {
+    selectedCats.delete(cat);
+    btn.classList.remove('active');
+  } else {
+    selectedCats.add(cat);
+    btn.classList.add('active');
+  }
+  // Deactivate "Alle" when specific filters are selected, reactivate when none
+  const alleBtn = document.querySelector('#cat-filter .cat-btn');
+  alleBtn.classList.toggle('active', selectedCats.size === 0);
   renderExerciseGrid();
 }
 
 function filterMuscle(muscle, btn) {
-  currentMuscle = muscle;
-  document.querySelectorAll('#muscle-filter .cat-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  if (selectedMuscles.has(muscle)) {
+    selectedMuscles.delete(muscle);
+    btn.classList.remove('active');
+  } else {
+    selectedMuscles.add(muscle);
+    btn.classList.add('active');
+  }
+  // Deactivate "Alle" when specific filters are selected, reactivate when none
+  const alleBtn = document.querySelector('#muscle-filter .cat-btn');
+  alleBtn.classList.toggle('active', selectedMuscles.size === 0);
   renderExerciseGrid();
 }
 
@@ -2118,9 +2146,9 @@ function resetAll() {
   document.getElementById('btn-to-config').disabled = true;
   document.getElementById('search-input').value = '';
   searchTerm = '';
-  currentCat = 'Alle';
-  currentMuscle = 'Alle';
-  document.querySelectorAll('#cat-filter .cat-btn, #muscle-filter .cat-btn').forEach((b, i) => { b.classList.toggle('active', b.textContent === 'Alle'); });
+  selectedCats = new Set();
+  selectedMuscles = new Set();
+  document.querySelectorAll('#cat-filter .cat-btn, #muscle-filter .cat-btn').forEach(b => b.classList.remove('active'));
   showScreen('screen-select');
   document.getElementById('header-badge').textContent = 'VELG ØVELSER';
 }
@@ -2380,17 +2408,18 @@ function resetToDefault() {
 }
 
 function rebuildCatFilter() {
-  const cats = ['Alle', ...new Set(EXERCISES.map(e => e.cat).filter(Boolean))];
-  document.getElementById('cat-filter').innerHTML = cats.map((c, i) =>
-    `<button class="cat-btn ${i === 0 ? 'active' : ''}" onclick="filterCat('${c}', this)">${c}</button>`
-  ).join('');
-  currentCat = 'Alle';
+  selectedCats = new Set();
+  selectedMuscles = new Set();
 
-  const muscles = ['Alle', ...new Set(EXERCISES.flatMap(e => (e.muscles || '').split(',').map(m => m.trim())).filter(Boolean))];
-  document.getElementById('muscle-filter').innerHTML = muscles.map((m, i) =>
-    `<button class="cat-btn ${i === 0 ? 'active' : ''}" onclick="filterMuscle('${m}', this)">${m}</button>`
-  ).join('');
-  currentMuscle = 'Alle';
+  const cats = [...new Set(EXERCISES.map(e => e.cat).filter(Boolean))];
+  document.getElementById('cat-filter').innerHTML =
+    `<button class="cat-btn active" onclick="resetCatFilter()">Alle</button>` +
+    cats.map(c => `<button class="cat-btn" onclick="filterCat('${c}', this)">${c}</button>`).join('');
+
+  const muscles = [...new Set(EXERCISES.flatMap(e => (e.muscles || '').split(',').map(m => m.trim())).filter(Boolean))];
+  document.getElementById('muscle-filter').innerHTML =
+    `<button class="cat-btn active" onclick="resetMuscleFilter()">Alle</button>` +
+    muscles.map(m => `<button class="cat-btn" onclick="filterMuscle('${m}', this)">${m}</button>`).join('');
 }
 
 // ════════════════════════════════════════
