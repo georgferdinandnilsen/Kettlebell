@@ -2163,11 +2163,19 @@ function closeSettings() {
   document.getElementById('settings-overlay').style.display = 'none';
 }
 async function forceRefreshSheet() {
-  try { localStorage.removeItem(SHEET_CACHE_KEY); } catch(e) {}
   closeSettings();
-  showScreen('screen-loading');
-  document.getElementById('loading-text').textContent = 'Henter fra Sheet…';
-  await init();
+  let urlToLoad = DEFAULT_SHEET_URL;
+  try { urlToLoad = localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL; } catch(e) {}
+  try {
+    const parsed = await fetchSheet(urlToLoad);
+    if (parsed.exercises.length > 0) {
+      applyExerciseData(parsed.exercises, parsed.workouts);
+      sheetUrl = urlToLoad;
+      try { localStorage.setItem(SHEET_CACHE_KEY, JSON.stringify({ exercises: parsed.exercises, workouts: parsed.workouts })); } catch(e) {}
+    }
+  } catch(e) {
+    console.warn('Force refresh failed:', e.message);
+  }
 }
 
 function closeSettingsIfBg(e) {
