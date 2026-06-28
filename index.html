@@ -1588,8 +1588,8 @@ function renderExerciseGrid() {
     const sel = selectedExercises.find(s => s.id === ex.id);
     const order = sel ? selectedExercises.indexOf(sel) + 1 : '';
     const mediaHtml = ex.img
-      ? `<div class="ex-img-wrap"><img src="${ex.img}" alt="${ex.name}" loading="lazy" onerror="this.parentNode.innerHTML='<span class=ex-img-fallback>🏋️</span>'"></div>`
-      : `<div class="ex-img-wrap"><span class="ex-img-fallback">🏋️</span></div>`;
+      ? `<div class="ex-img-wrap"><img src="${ex.img}" alt="${ex.name}" loading="lazy" onerror="this.src='favicon.png'"></div>`
+      : `<div class="ex-img-wrap"><img src="favicon.png" alt="${ex.name}"></div>`;
     return `
     <div class="ex-card ${sel ? 'selected' : ''}" data-id="${ex.id}" data-order="${order}"
          onclick="toggleExercise(${ex.id})">
@@ -1887,12 +1887,12 @@ function renderWorkout() {
   const imgWrap = document.getElementById('cur-ex-img-wrap');
   if (ex.img) {
     imgWrap.style.display = 'flex';
-    imgWrap.innerHTML = `<img src="${ex.img}" alt="${ex.name}" onerror="this.parentNode.style.display='none'; const ic=document.getElementById('cur-ex-icon'); ic.style.display='block'; ic.textContent='🏋️';">`;
+    imgWrap.innerHTML = `<img src="${ex.img}" alt="${ex.name}" onerror="this.src='favicon.png'">`;
     iconEl.style.display = 'none';
   } else {
-    imgWrap.style.display = 'none';
-    iconEl.style.display = 'block';
-    iconEl.textContent = '🏋️';
+    imgWrap.style.display = 'flex';
+    imgWrap.innerHTML = `<img src="favicon.png" alt="${ex.name}">`;
+    iconEl.style.display = 'none';
     iconEl.style.animation = 'none';
     void iconEl.offsetWidth;
     iconEl.style.animation = '';
