@@ -830,10 +830,18 @@
   .search-input:focus { border-color: var(--accent); }
 
   /* category filter */
+  .filter-row-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    padding: 0 28px 4px;
+  }
   .cat-filter {
     display: flex;
     gap: 8px;
-    padding: 0 28px 16px;
+    padding: 0 28px 10px;
     overflow-x: auto;
     scrollbar-width: none;
   }
@@ -1158,13 +1166,13 @@
     <input type="text" class="search-input" id="search-input" placeholder="🔍  Søk øvelse…" oninput="filterExercises()">
   </div>
 
+  <div class="filter-row-label">Body region</div>
   <div class="cat-filter" id="cat-filter">
     <button class="cat-btn active" onclick="filterCat('Alle', this)">Alle</button>
-    <button class="cat-btn" onclick="filterCat('Grunnleg.', this)">Grunnleg.</button>
-    <button class="cat-btn" onclick="filterCat('Kondis', this)">Kondis</button>
-    <button class="cat-btn" onclick="filterCat('Styrke', this)">Styrke</button>
-    <button class="cat-btn" onclick="filterCat('Core', this)">Core</button>
-    <button class="cat-btn" onclick="filterCat('Bilateral', this)">Bilateral</button>
+  </div>
+  <div class="filter-row-label">Muskelgruppe</div>
+  <div class="cat-filter" id="muscle-filter">
+    <button class="cat-btn active" onclick="filterMuscle('Alle', this)">Alle</button>
   </div>
 
   <div class="selected-strip" id="selected-strip">
@@ -1436,6 +1444,7 @@ let workoutState = {
   countdownTimer: null
 };
 let currentCat = 'Alle';
+let currentMuscle = 'Alle';
 let searchTerm = '';
 
 // Exercise timer state
@@ -1465,10 +1474,11 @@ function showScreen(id) {
 function renderExerciseGrid() {
   const grid = document.getElementById('exercise-grid');
   const filtered = EXERCISES.filter(ex => {
-    const matchCat = currentCat === 'Alle' || ex.cat === currentCat;
+    const matchCat    = currentCat === 'Alle' || ex.cat === currentCat;
+    const matchMuscle = currentMuscle === 'Alle' || (ex.muscles || '').toLowerCase().includes(currentMuscle.toLowerCase());
     const matchSearch = ex.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        ex.muscles.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchCat && matchSearch;
+                        (ex.muscles || '').toLowerCase().includes(searchTerm.toLowerCase());
+    return matchCat && matchMuscle && matchSearch;
   });
 
   grid.innerHTML = filtered.map(ex => {
@@ -1517,7 +1527,14 @@ function renderSelectedStrip() {
 
 function filterCat(cat, btn) {
   currentCat = cat;
-  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#cat-filter .cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderExerciseGrid();
+}
+
+function filterMuscle(muscle, btn) {
+  currentMuscle = muscle;
+  document.querySelectorAll('#muscle-filter .cat-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderExerciseGrid();
 }
@@ -1999,7 +2016,8 @@ function resetAll() {
   document.getElementById('search-input').value = '';
   searchTerm = '';
   currentCat = 'Alle';
-  document.querySelectorAll('.cat-btn').forEach((b, i) => { b.classList.toggle('active', i === 0); });
+  currentMuscle = 'Alle';
+  document.querySelectorAll('#cat-filter .cat-btn, #muscle-filter .cat-btn').forEach((b, i) => { b.classList.toggle('active', b.textContent === 'Alle'); });
   showScreen('screen-select');
   document.getElementById('header-badge').textContent = 'VELG ØVELSER';
 }
@@ -2223,12 +2241,17 @@ function resetToDefault() {
 }
 
 function rebuildCatFilter() {
-  const cats = ['Alle', ...new Set(EXERCISES.map(e => e.cat))];
-  const bar = document.getElementById('cat-filter');
-  bar.innerHTML = cats.map((c, i) =>
+  const cats = ['Alle', ...new Set(EXERCISES.map(e => e.cat).filter(Boolean))];
+  document.getElementById('cat-filter').innerHTML = cats.map((c, i) =>
     `<button class="cat-btn ${i === 0 ? 'active' : ''}" onclick="filterCat('${c}', this)">${c}</button>`
   ).join('');
   currentCat = 'Alle';
+
+  const muscles = ['Alle', ...new Set(EXERCISES.flatMap(e => (e.muscles || '').split(',').map(m => m.trim())).filter(Boolean))];
+  document.getElementById('muscle-filter').innerHTML = muscles.map((m, i) =>
+    `<button class="cat-btn ${i === 0 ? 'active' : ''}" onclick="filterMuscle('${m}', this)">${m}</button>`
+  ).join('');
+  currentMuscle = 'Alle';
 }
 
 // ════════════════════════════════════════
