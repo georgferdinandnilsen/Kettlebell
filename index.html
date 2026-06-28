@@ -1317,12 +1317,12 @@
       </div>
       <div class="mode-sub" id="mode-sub-time">
         <div class="stepper">
-          <button class="stepper-btn" onclick="adjustVal('exDuration', -5)">−</button>
+          <button class="stepper-btn" onclick="adjustVal('exDuration', -30)">−</button>
           <div>
-            <div class="stepper-val" id="val-exDuration">40</div>
-            <div class="stepper-unit">sekunder per øvelse</div>
+            <div class="stepper-val" id="val-exDuration">1 min</div>
+            <div class="stepper-unit">per øvelse</div>
           </div>
-          <button class="stepper-btn" onclick="adjustVal('exDuration', 5)">+</button>
+          <button class="stepper-btn" onclick="adjustVal('exDuration', 30)">+</button>
         </div>
       </div>
     </div>
@@ -1550,7 +1550,7 @@ const EXERCISES = [
 // STATE
 // ════════════════════════════════════════
 let selectedExercises = [];
-let config = { rounds: 3, restEx: 30, restRound: 90, exMode: 'reps', exDuration: 40, plannedReps: 15 };
+let config = { rounds: 3, restEx: 30, restRound: 90, exMode: 'reps', exDuration: 60, plannedReps: 15 };
 let workoutState = {
   curRound: 1,
   curExIndex: 0,
@@ -1700,7 +1700,7 @@ const limits = {
   rounds:      { min: 1, max: 20 },
   restEx:      { min: 0, max: 300 },
   restRound:   { min: 0, max: 600 },
-  exDuration:  { min: 5, max: 300 },
+  exDuration:  { min: 30, max: 600 },
   plannedReps: { min: 5, max: 50 }
 };
 
@@ -1713,9 +1713,14 @@ function setExMode(mode) {
   buildSummary();
 }
 
+function formatMinutes(secs) {
+  const mins = secs / 60;
+  return (mins % 1 === 0 ? mins : mins.toFixed(1).replace('.', ',')) + ' min';
+}
+
 function adjustVal(key, delta) {
   config[key] = Math.max(limits[key].min, Math.min(limits[key].max, config[key] + delta));
-  document.getElementById('val-' + key).textContent = config[key];
+  document.getElementById('val-' + key).textContent = key === 'exDuration' ? formatMinutes(config[key]) : config[key];
   buildSummary();
 }
 
@@ -1723,7 +1728,7 @@ function buildConfigScreen() {
   document.getElementById('val-rounds').textContent = config.rounds;
   document.getElementById('val-restEx').textContent = config.restEx;
   document.getElementById('val-restRound').textContent = config.restRound;
-  document.getElementById('val-exDuration').textContent = config.exDuration;
+  document.getElementById('val-exDuration').textContent = formatMinutes(config.exDuration);
   document.getElementById('val-plannedReps').textContent = config.plannedReps;
 
   // Restore mode toggle state
@@ -2153,7 +2158,7 @@ function doQuit() {
 
 function resetAll() {
   selectedExercises = [];
-  config = { rounds: 3, restEx: 30, restRound: 90, exMode: 'reps', exDuration: 40, plannedReps: 15 };
+  config = { rounds: 3, restEx: 30, restRound: 90, exMode: 'reps', exDuration: 60, plannedReps: 15 };
   stopExerciseTimer();
   renderExerciseGrid();
   renderSelectedStrip();
