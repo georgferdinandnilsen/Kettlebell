@@ -53,8 +53,17 @@
     font-size: 1.8rem;
     letter-spacing: 3px;
     color: var(--text);
+    line-height: 1;
   }
   .logo span { color: var(--accent); }
+  .logo-sub {
+    font-family: sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    font-weight: 400;
+    margin-top: 2px;
+  }
   .header-badge {
     background: var(--accent-dim);
     color: var(--accent);
@@ -593,26 +602,6 @@
     color: var(--text-muted);
     font-size: 0.82rem;
     margin-bottom: 10px;
-  }
-  .current-ex-tips {
-    max-width: 400px;
-    margin: 0 auto 10px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 10px 14px;
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    text-align: left;
-    line-height: 1.5;
-  }
-  .tips-label {
-    font-weight: 700;
-    color: var(--accent);
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 4px;
   }
 
   /* Timer & controls */
@@ -1213,7 +1202,10 @@
 <body>
 
 <header>
-  <div class="logo">KETT<span>L</span></div>
+  <div>
+    <div class="logo">KETT<span>L</span></div>
+    <div class="logo-sub">Laget av Georg Ferdinand Nilsen</div>
+  </div>
   <div style="display:flex;align-items:center;gap:10px">
     <div class="header-badge" id="header-badge">VELG ØVELSER</div>
     <button class="settings-btn" onclick="openSettings()" title="Innstillinger">⚙️</button>
@@ -1407,10 +1399,6 @@
     <span class="current-ex-big-icon" id="cur-ex-icon">🏋️</span>
     <div class="current-ex-name" id="cur-ex-name">—</div>
     <div class="current-ex-muscles" id="cur-ex-muscles">—</div>
-    <div class="current-ex-tips" id="cur-ex-tips">
-      <div class="tips-label">💡 Tips</div>
-      <div id="tips-text">—</div>
-    </div>
   </div>
 
   <!-- Controls -->
@@ -1545,9 +1533,9 @@
 // ØVELSE-ARKIV
 // ════════════════════════════════════════
 const EXERCISES = [
-  { id: 1, name: "Swing", cat: "Grunnleg.", muscles: "Bakside lår, rumpe, rygg", big: "🏋️", tips: "Driv bevegelsen fra hoftene, ikke armene. Hold ryggen rett.", img: "" },
-  { id: 2, name: "Goblet Squat", cat: "Grunnleg.", muscles: "Lår, rumpe, kjernemuskulatur", big: "🏋️", tips: "Hold klokken mot brystet. Knær ut, hæler i gulvet.", img: "" },
-  { id: 3, name: "Kettlebell Press", cat: "Styrke", muscles: "Skulder, kjernemuskulatur", big: "🏋️", tips: "Strekk armen helt ut i toppen. Hold core stram.", img: "" }
+  { id: 1, name: "Swing", cat: "Grunnleg.", muscles: "Bakside lår, rumpe, rygg", big: "🏋️", img: "" },
+  { id: 2, name: "Goblet Squat", cat: "Grunnleg.", muscles: "Lår, rumpe, kjernemuskulatur", big: "🏋️", img: "" },
+  { id: 3, name: "Kettlebell Press", cat: "Styrke", muscles: "Skulder, kjernemuskulatur", big: "🏋️", img: "" }
 ];
 
 // ════════════════════════════════════════
@@ -1922,7 +1910,6 @@ function renderWorkout() {
   }
   document.getElementById('cur-ex-name').textContent = ex.name;
   document.getElementById('cur-ex-muscles').textContent = ex.muscles;
-  document.getElementById('tips-text').textContent = ex.tips;
 
   // Next button label
   const isLastEx = workoutState.curExIndex === n - 1;
@@ -2293,7 +2280,6 @@ function parseSheetCSV(csv) {
   const iName    = findCol('navn', 'name', 'øvelse', 'exercise');
   const iCat     = findCol('kategori', 'category', 'cat', 'bodyregion', 'body region', 'region');
   const iMuscles = findCol('muskler', 'muscles', 'muskelgruppe', 'musclegroup', 'muscle group');
-  const iTips    = findCol('tips', 'beskrivelse', 'description');
   const iImg     = findCol('bildeurl', 'bildeurl', 'imageurl', 'bilde', 'img', 'image');
   const iEmoji   = findCol('emoji', 'ikon', 'icon');
 
@@ -2326,7 +2312,6 @@ function parseSheetCSV(csv) {
       name,
       cat:     (iCat     >= 0 ? row[iCat]     : '') || 'Annet',
       muscles: (iMuscles >= 0 ? row[iMuscles] : '') || '',
-      tips:    (iTips    >= 0 ? row[iTips]    : '') || '',
       img:     (iImg     >= 0 ? row[iImg]     : '') || '',
       big:     (iEmoji   >= 0 ? row[iEmoji]   : '') || '🏋️',
     };
@@ -2468,45 +2453,52 @@ function applyExerciseData(exercises, workouts) {
   renderSelectedStrip();
 }
 
+const OFFLINE_EXERCISES = [
+  { name: 'Øvelse 1', cat: 'Demo', muscles: '', img: '' },
+  { name: 'Øvelse 2', cat: 'Demo', muscles: '', img: '' },
+  { name: 'Øvelse 3', cat: 'Demo', muscles: '', img: '' },
+];
+
+async function fetchSheet(urlToLoad) {
+  const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  const bustUrl = urlToLoad + (urlToLoad.includes('?') ? '&' : '?') + '_v=' + Date.now();
+  const res = await fetch(CORS_PROXY + encodeURIComponent(bustUrl), { signal: controller.signal });
+  clearTimeout(timeout);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const csv = await res.text();
+  return parseSheetCSV(csv);
+}
+
 async function init() {
-  // 1. Load from cache instantly if available
+  let urlToLoad = DEFAULT_SHEET_URL;
+  try { urlToLoad = localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL; } catch(e) {}
+
+  // 1. Load cache instantly
+  let hasCache = false;
   try {
     const cached = localStorage.getItem(SHEET_CACHE_KEY);
     if (cached) {
       const { exercises, workouts } = JSON.parse(cached);
-      if (exercises?.length > 0) applyExerciseData(exercises, workouts || []);
+      if (exercises?.length > 0) { applyExerciseData(exercises, workouts || []); hasCache = true; }
     }
   } catch(e) {}
 
-  // Show fallback if still no exercises
-  if (EXERCISES.length === 0) {
-    rebuildCatFilter();
-    renderExerciseGrid();
-    renderSelectedStrip();
-  }
+  // 2. No cache → show generic placeholders immediately while we try to fetch
+  if (!hasCache) applyExerciseData(OFFLINE_EXERCISES, []);
   showScreen('screen-select');
 
-  // 2. Fetch fresh data from Sheet in background
-  let urlToLoad = DEFAULT_SHEET_URL;
-  try { urlToLoad = localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL; } catch(e) {}
-
+  // 3. Fetch fresh data — replace generics with real exercises if successful
   try {
-    const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-    const bustUrl = urlToLoad + (urlToLoad.includes('?') ? '&' : '?') + '_v=' + Date.now();
-    const res = await fetch(CORS_PROXY + encodeURIComponent(bustUrl), { signal: controller.signal });
-    clearTimeout(timeout);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const csv = await res.text();
-    const parsed = parseSheetCSV(csv);
+    const parsed = await fetchSheet(urlToLoad);
     if (parsed.exercises.length > 0) {
       applyExerciseData(parsed.exercises, parsed.workouts);
       sheetUrl = urlToLoad;
       try { localStorage.setItem(SHEET_CACHE_KEY, JSON.stringify({ exercises: parsed.exercises, workouts: parsed.workouts })); } catch(e) {}
     }
-  } catch (e) {
-    console.warn('Sheet load failed, using cache/fallback:', e.message);
+  } catch(e) {
+    console.warn('Sheet load failed, keeping placeholders/cache:', e.message);
   }
 }
 
