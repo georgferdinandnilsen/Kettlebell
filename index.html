@@ -762,49 +762,136 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 12px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
     cursor: pointer;
     transition: all 0.2s;
-    position: relative;
   }
   .saved-workout-card:hover {
     border-color: var(--accent);
     background: linear-gradient(135deg, #051a02, #1a1c1f);
   }
   .swc-icon { display: none; }
-  .swc-body { flex: 1; min-width: 0; }
+  .swc-body {}
   .swc-name {
     font-weight: 700;
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     color: var(--text);
-    margin-bottom: 2px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-bottom: 5px;
   }
-  .swc-meta {
-    font-size: 0.72rem;
-    color: var(--text-muted);
-    margin-bottom: 4px;
+  .swc-cat-badge {
+    display: inline-block;
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid #4CBB1744;
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 0.65rem;
+    font-weight: 600;
   }
-  .swc-exercises {
+  .swc-meta { display: none; }
+  .swc-exercises { display: none; }
+  .swc-ex-chip { display: none; }
+  .swc-arrow { display: none; }
+
+  /* ── WORKOUT DETAIL POPUP ── */
+  .wkt-popup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(17,18,20,0.88);
+    z-index: 400;
     display: flex;
-    gap: 4px;
-    flex-wrap: wrap;
+    align-items: flex-end;
+    animation: fadeIn 0.2s ease;
   }
-  .swc-ex-chip {
+  .wkt-popup {
+    width: 100%;
+    max-height: 80vh;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 24px 24px 32px;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+  }
+  .wkt-popup-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .wkt-popup-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .wkt-popup-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .wkt-popup-cat {
+    margin-bottom: 14px;
+  }
+  .wkt-popup-instructions {
     background: var(--surface2);
     border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 1px 6px;
-    font-size: 0.65rem;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 0.82rem;
     color: var(--text-muted);
-    white-space: nowrap;
+    line-height: 1.6;
+    margin-bottom: 16px;
   }
-  .swc-arrow {
-    display: none;
+  .wkt-popup-ex-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .wkt-popup-ex {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .wkt-popup-ex-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--border);
+  }
+  .wkt-popup-ex-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    color: var(--accent);
+    flex-shrink: 0;
+    width: 20px;
+    text-align: center;
+  }
+  .wkt-popup-ex-info { flex: 1; min-width: 0; }
+  .wkt-popup-ex-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+  .wkt-popup-ex-muscles {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 1px;
   }
   .saved-section-divider {
     border: none;
@@ -1396,6 +1483,22 @@
     <button class="btn-primary" style="background:var(--red); color:#fff;" onclick="doQuit()">
       Avslutt
     </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     WORKOUT DETAIL POPUP
+══════════════════════════════════════════ -->
+<div class="wkt-popup-overlay" id="wkt-popup-overlay" style="display:none" onclick="closeWorkoutPopupIfBg(event)">
+  <div class="wkt-popup">
+    <div class="wkt-popup-header">
+      <div class="wkt-popup-title" id="wkt-popup-title">—</div>
+      <button class="wkt-popup-close" onclick="closeWorkoutPopup()">✕</button>
+    </div>
+    <div class="wkt-popup-cat" id="wkt-popup-cat"></div>
+    <div class="wkt-popup-instructions" id="wkt-popup-instructions" style="display:none"></div>
+    <div class="wkt-popup-ex-list" id="wkt-popup-ex-list"></div>
+    <button class="btn-primary" style="width:100%" id="wkt-popup-start-btn">Start økt 🔥</button>
   </div>
 </div>
 
@@ -2135,6 +2238,7 @@ function parseSheetCSV(csv) {
 
   // ── Workout columns (H+) — find 'økt' header
   const iWktName = findCol('økt', 'workout', 'øktnavn', 'workoutname');
+  const iWktInstr = findCol('instruksjoner', 'instructions', 'beskrivelse', 'description');
   // Second 'kategori' occurrence (after the exercise one) = workout category
   let iWktCat = -1;
   if (iWktName >= 0) {
@@ -2182,7 +2286,8 @@ function parseSheetCSV(csv) {
         .filter(n => !isNaN(n) && n > 0);
       const resolved = exNrs.map(n => exerciseMap[n]).filter(Boolean);
       if (resolved.length > 0) {
-        workouts.push({ name: wktName, cat: wktCat, exercises: resolved });
+        const instructions = iWktInstr >= 0 ? (row[iWktInstr] || '').trim() : '';
+        workouts.push({ name: wktName, cat: wktCat, exercises: resolved, instructions });
       }
     });
   }
@@ -2195,28 +2300,62 @@ function renderSavedWorkouts() {
   const grid = document.getElementById('saved-workouts-grid');
   if (!section || !grid) return;
 
-  if (SAVED_WORKOUTS.length === 0) {
-    section.style.display = 'none';
-    return;
-  }
+  if (SAVED_WORKOUTS.length === 0) { section.style.display = 'none'; return; }
 
   section.style.display = 'block';
-  grid.innerHTML = SAVED_WORKOUTS.map((wkt, i) => {
-    const chips = wkt.exercises.map(ex =>
-      `<span class="swc-ex-chip">${ex.big} ${ex.name}</span>`
-    ).join('');
-    const catLabel = wkt.cat ? `<span style="color:var(--accent);font-weight:600">${wkt.cat}</span> · ` : '';
-    return `
-    <div class="saved-workout-card" onclick="loadSavedWorkout(${i})">
-      <div class="swc-icon">⚡</div>
+  grid.innerHTML = SAVED_WORKOUTS.map((wkt, i) => `
+    <div class="saved-workout-card" onclick="showWorkoutDetail(${i})">
       <div class="swc-body">
         <div class="swc-name">${wkt.name}</div>
-        <div class="swc-meta">${catLabel}${wkt.exercises.length} øvelser</div>
-        <div class="swc-exercises">${chips}</div>
+        ${wkt.cat ? `<span class="swc-cat-badge">${wkt.cat}</span>` : ''}
       </div>
-      <div class="swc-arrow">→</div>
-    </div>`;
-  }).join('');
+    </div>`
+  ).join('');
+}
+
+function showWorkoutDetail(index) {
+  const wkt = SAVED_WORKOUTS[index];
+  if (!wkt) return;
+
+  document.getElementById('wkt-popup-title').textContent = wkt.name;
+  const catEl = document.getElementById('wkt-popup-cat');
+  catEl.innerHTML = wkt.cat ? `<span class="swc-cat-badge">${wkt.cat}</span>` : '';
+
+  const instrEl = document.getElementById('wkt-popup-instructions');
+  if (wkt.instructions) {
+    instrEl.textContent = wkt.instructions;
+    instrEl.style.display = 'block';
+  } else {
+    instrEl.style.display = 'none';
+  }
+
+  const listEl = document.getElementById('wkt-popup-ex-list');
+  listEl.innerHTML = wkt.exercises.map((ex, i) => `
+    <div class="wkt-popup-ex">
+      <div class="wkt-popup-ex-num">${i + 1}</div>
+      ${ex.img ? `<img class="wkt-popup-ex-img" src="${ex.img}" alt="${ex.name}" onerror="this.style.display='none'">` : ''}
+      <div class="wkt-popup-ex-info">
+        <div class="wkt-popup-ex-name">${ex.name}</div>
+        ${ex.muscles ? `<div class="wkt-popup-ex-muscles">${ex.muscles}</div>` : ''}
+      </div>
+    </div>`
+  ).join('');
+
+  document.getElementById('wkt-popup-start-btn').onclick = () => {
+    closeWorkoutPopup();
+    loadSavedWorkout(index);
+    goToConfig();
+  };
+
+  document.getElementById('wkt-popup-overlay').style.display = 'flex';
+}
+
+function closeWorkoutPopup() {
+  document.getElementById('wkt-popup-overlay').style.display = 'none';
+}
+
+function closeWorkoutPopupIfBg(e) {
+  if (e.target === document.getElementById('wkt-popup-overlay')) closeWorkoutPopup();
 }
 
 function loadSavedWorkout(index) {
