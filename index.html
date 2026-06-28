@@ -1533,6 +1533,10 @@
         📊 Åpne Google Sheet
       </a>
     </div>
+
+    <button onclick="forceRefreshSheet()" style="margin-top:16px;width:100%;background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:0.82rem;padding:10px 16px;border-radius:8px;cursor:pointer">
+      🔄 Hent øvelser på nytt fra Sheet
+    </button>
   </div>
 </div>
 
@@ -2187,6 +2191,14 @@ function openSettings() {
 function closeSettings() {
   document.getElementById('settings-overlay').style.display = 'none';
 }
+async function forceRefreshSheet() {
+  try { localStorage.removeItem(SHEET_CACHE_KEY); } catch(e) {}
+  closeSettings();
+  showScreen('screen-loading');
+  document.getElementById('loading-text').textContent = 'Henter fra Sheet…';
+  await init();
+}
+
 function closeSettingsIfBg(e) {
   if (e.target === document.getElementById('settings-overlay')) closeSettings();
 }
@@ -2482,7 +2494,8 @@ async function init() {
     const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
-    const res = await fetch(CORS_PROXY + encodeURIComponent(urlToLoad), { signal: controller.signal });
+    const bustUrl = urlToLoad + (urlToLoad.includes('?') ? '&' : '?') + '_v=' + Date.now();
+    const res = await fetch(CORS_PROXY + encodeURIComponent(bustUrl), { signal: controller.signal });
     clearTimeout(timeout);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const csv = await res.text();
