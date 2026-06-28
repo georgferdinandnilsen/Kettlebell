@@ -2274,7 +2274,17 @@ function parseSheetCSV(csv) {
 
   // Normalise: lowercase, strip underscores and spaces
   const norm = s => (s || '').toLowerCase().replace(/[_\s]/g, '');
-  const headers = splitRow(lines[0]).map(norm);
+
+  // Find header row dynamically — scan until we find a row containing 'navn' or 'name'
+  let headerLineIdx = 0;
+  for (let i = 0; i < Math.min(lines.length, 20); i++) {
+    const cells = splitRow(lines[i]).map(norm);
+    if (cells.some(c => c === 'navn' || c === 'name' || c === 'øvelse' || c === 'exercise')) {
+      headerLineIdx = i;
+      break;
+    }
+  }
+  const headers = splitRow(lines[headerLineIdx]).map(norm);
 
   const findCol = (...names) => {
     for (const n of names) {
@@ -2311,7 +2321,7 @@ function parseSheetCSV(csv) {
   const exerciseMap = {}; // nr → exercise object
   const exercises = [];
 
-  lines.slice(1).forEach(line => {
+  lines.slice(headerLineIdx + 1).forEach(line => {
     const row = splitRow(line);
     const name = iName >= 0 ? (row[iName] || '').trim() : '';
     if (!name) return;
@@ -2331,7 +2341,7 @@ function parseSheetCSV(csv) {
   // ── Parse workouts
   const workouts = [];
   if (iWktName >= 0) {
-    lines.slice(1).forEach(line => {
+    lines.slice(headerLineIdx + 1).forEach(line => {
       const row = splitRow(line);
       const wktName = (row[iWktName] || '').trim();
       if (!wktName) return;
