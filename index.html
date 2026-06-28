@@ -2445,11 +2445,8 @@ function applyExerciseData(exercises, workouts) {
   renderSelectedStrip();
 }
 
-const OFFLINE_EXERCISES = [
-  { name: 'Øvelse 1', cat: 'Demo', muscles: '', img: '' },
-  { name: 'Øvelse 2', cat: 'Demo', muscles: '', img: '' },
-  { name: 'Øvelse 3', cat: 'Demo', muscles: '', img: '' },
-];
+const OFFLINE_EXERCISES = [{"nr":1,"name":"Single Arm Kettlebell Bent Over Row","cat":"Upper body","muscles":"Back","img":"https://i.makeagif.com/media/6-27-2026/h7RlHm.gif","big":"🏋️"},{"nr":2,"name":"curls","cat":"Upper body","muscles":"Arms","img":"https://gifrun.blob.core.windows.net/temp/5fd02c8eee5940418589d89bdd2bcbe1.gif","big":"🏋️"},{"nr":3,"name":"Haloes","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/94cef901de1c43429401aa9190e7442d.gif","big":"🏋️"},{"nr":4,"name":"Shrugs","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/a5917c4a1e614d84a95784c9bc4de3ec.gif","big":"🏋️"},{"nr":5,"name":"Single Arm Kettlebell Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/2aaf14749d8d460f9efb6ecc3117f584.gif","big":"🏋️"},{"nr":6,"name":"Double Kettlebell Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/50013e400fb34738935fd783d3cf2375.gif","big":"🏋️"},{"nr":7,"name":"Kettlebell Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/27961457ce154522a959e398c140b782.gif","big":"🏋️"},{"nr":8,"name":"Single Arm Kettlebell Thruster","cat":"Full body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/1e47abbc9bdb43babcce822d1cb4ea77.gif","big":"🏋️"}];
+const OFFLINE_WORKOUTS = [{"name":"Overkropp HIIT","cat":"Upper body","exercises":[{"nr":1,"name":"Single Arm Kettlebell Bent Over Row","cat":"Upper body","muscles":"Back","img":"https://i.makeagif.com/media/6-27-2026/h7RlHm.gif","big":"🏋️"},{"nr":2,"name":"curls","cat":"Upper body","muscles":"Arms","img":"https://gifrun.blob.core.windows.net/temp/5fd02c8eee5940418589d89bdd2bcbe1.gif","big":"🏋️"},{"nr":3,"name":"Haloes","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/94cef901de1c43429401aa9190e7442d.gif","big":"🏋️"}],"instructions":"letsgo"}];
 
 async function fetchSheet(urlToLoad) {
   const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
@@ -2478,7 +2475,7 @@ async function init() {
   } catch(e) {}
 
   // 2. No cache → show generic placeholders immediately while we try to fetch
-  if (!hasCache) applyExerciseData(OFFLINE_EXERCISES, []);
+  if (!hasCache) applyExerciseData(OFFLINE_EXERCISES, OFFLINE_WORKOUTS);
   showScreen('screen-select');
 
   // 3. Fetch fresh data — replace generics with real exercises if successful
