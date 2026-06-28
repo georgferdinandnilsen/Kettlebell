@@ -2034,7 +2034,7 @@ function setSheetStatus(type, msg) {
 
 async function loadSheetFromUrl(url) {
   try {
-    const CORS_PROXY = 'https://corsproxy.io/?url=';
+    const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
     const res = await fetch(CORS_PROXY + encodeURIComponent(url));
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const csv = await res.text();
@@ -2110,8 +2110,8 @@ function parseSheetCSV(csv) {
   // ── Exercise columns (A–F)
   const iNr      = findCol('øvelsenr', 'nr', 'number', 'id');
   const iName    = findCol('navn', 'name', 'øvelse', 'exercise');
-  const iCat     = findCol('kategori', 'category', 'cat');
-  const iMuscles = findCol('muskler', 'muscles', 'muskelgruppe');
+  const iCat     = findCol('kategori', 'category', 'cat', 'bodyregion', 'body region', 'region');
+  const iMuscles = findCol('muskler', 'muscles', 'muskelgruppe', 'musclegroup', 'muscle group');
   const iTips    = findCol('tips', 'beskrivelse', 'description');
   const iImg     = findCol('bildeurl', 'bildeurl', 'imageurl', 'bilde', 'img', 'image');
   const iEmoji   = findCol('emoji', 'ikon', 'icon');
@@ -2122,7 +2122,7 @@ function parseSheetCSV(csv) {
   let iWktCat = -1;
   if (iWktName >= 0) {
     for (let i = iWktName + 1; i < headers.length; i++) {
-      if (headers[i] === 'kategori' || headers[i] === 'category') { iWktCat = i; break; }
+      if (['kategori','category','bodyregion','region'].includes(headers[i])) { iWktCat = i; break; }
     }
   }
   // All columns matching 'øvelse1'..'øvelse10' or 'exercise1'..'exercise10'
@@ -2247,7 +2247,7 @@ async function init() {
   try { urlToLoad = localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL; } catch(e) {}
 
   try {
-    const CORS_PROXY = 'https://corsproxy.io/?url=';
+    const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 6000);
     const res = await fetch(CORS_PROXY + encodeURIComponent(urlToLoad), { signal: controller.signal });
