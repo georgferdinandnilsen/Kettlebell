@@ -752,60 +752,59 @@
     gap: 8px;
   }
   .saved-workouts-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
     margin-bottom: 8px;
   }
   .saved-workout-card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 14px 16px;
+    padding: 12px 14px;
     display: flex;
-    align-items: center;
-    gap: 14px;
+    flex-direction: column;
+    gap: 4px;
     cursor: pointer;
     transition: all 0.2s;
+    position: relative;
   }
   .saved-workout-card:hover {
     border-color: var(--accent);
     background: linear-gradient(135deg, #051a02, #1a1c1f);
   }
-  .swc-icon {
-    font-size: 1.8rem;
-    flex-shrink: 0;
-  }
+  .swc-icon { display: none; }
   .swc-body { flex: 1; min-width: 0; }
   .swc-name {
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 0.88rem;
     color: var(--text);
-    margin-bottom: 3px;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .swc-meta {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: var(--text-muted);
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
   .swc-exercises {
     display: flex;
-    gap: 5px;
+    gap: 4px;
     flex-wrap: wrap;
   }
   .swc-ex-chip {
     background: var(--surface2);
     border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 2px 7px;
-    font-size: 0.7rem;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.65rem;
     color: var(--text-muted);
     white-space: nowrap;
   }
   .swc-arrow {
-    color: var(--accent);
-    font-size: 1.2rem;
-    flex-shrink: 0;
+    display: none;
   }
   .saved-section-divider {
     border: none;
