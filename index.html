@@ -160,6 +160,16 @@
     gap: 14px;
     padding: 20px 28px 24px;
   }
+  .ex-group-label {
+    grid-column: 1 / -1;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 22px;
+  }
+  .ex-group-label:first-child { margin-top: 0; }
 
   .ex-card {
     background: var(--surface);
@@ -1814,7 +1824,7 @@ function renderExerciseGrid() {
     return matchCat && matchMuscle && matchSearch;
   });
 
-  grid.innerHTML = filtered.map(ex => {
+  const cardHtml = ex => {
     const sel = selectedExercises.find(s => s.id === ex.id);
     const order = sel ? selectedExercises.indexOf(sel) + 1 : '';
     const mediaHtml = ex.img
@@ -1828,7 +1838,25 @@ function renderExerciseGrid() {
       <div class="ex-name">${ex.name}</div>
       <div class="ex-muscles">${ex.muscles}</div>
     </div>`;
-  }).join('');
+  };
+
+  // Exercises without a variation come first, ungrouped. Exercises with a
+  // variation are grouped under a subtle label, in order of first appearance.
+  const ungrouped = filtered.filter(ex => !ex.variation);
+  const groupOrder = [];
+  const groups = {};
+  filtered.forEach(ex => {
+    if (!ex.variation) return;
+    if (!groups[ex.variation]) { groups[ex.variation] = []; groupOrder.push(ex.variation); }
+    groups[ex.variation].push(ex);
+  });
+
+  let html = ungrouped.map(cardHtml).join('');
+  groupOrder.forEach(label => {
+    html += `<div class="ex-group-label">${label}</div>` + groups[label].map(cardHtml).join('');
+  });
+
+  grid.innerHTML = html;
 }
 
 function updateExerciseCardStates() {
@@ -2652,6 +2680,7 @@ function parseSheetCSV(csv) {
   const iMuscles = findCol('muskler', 'muscles', 'muskelgruppe', 'musclegroup', 'muscle group');
   const iImg     = findCol('bildeurl', 'bildeurl', 'imageurl', 'bilde', 'img', 'image');
   const iEmoji   = findCol('emoji', 'ikon', 'icon');
+  const iVariation = findCol('variation', 'variasjon');
 
   // ── Workout columns (H+) — find 'økt' header
   const iWktName = findCol('økt', 'workout', 'øktnavn', 'workoutname');
@@ -2682,10 +2711,11 @@ function parseSheetCSV(csv) {
     const ex = {
       nr: isNaN(nr) ? exercises.length + 1 : nr,
       name,
-      cat:     (iCat     >= 0 ? row[iCat]     : '') || 'Annet',
-      muscles: (iMuscles >= 0 ? row[iMuscles] : '') || '',
-      img:     (iImg     >= 0 ? row[iImg]     : '') || '',
-      big:     (iEmoji   >= 0 ? row[iEmoji]   : '') || '🏋️',
+      cat:       (iCat       >= 0 ? row[iCat]       : '') || 'Annet',
+      muscles:   (iMuscles   >= 0 ? row[iMuscles]   : '') || '',
+      img:       (iImg       >= 0 ? row[iImg]       : '') || '',
+      big:       (iEmoji     >= 0 ? row[iEmoji]     : '') || '🏋️',
+      variation: (iVariation >= 0 ? row[iVariation] : '') || '',
     };
     exercises.push(ex);
     exerciseMap[ex.nr] = ex;
@@ -2854,8 +2884,8 @@ function applyExerciseData(exercises, workouts) {
   renderSelectedStrip();
 }
 
-const OFFLINE_EXERCISES = [{"nr":1,"name":"Single Arm Kettlebell Bent Over Row","cat":"Upper body","muscles":"Back","img":"https://i.makeagif.com/media/6-27-2026/h7RlHm.gif","big":"🏋️"},{"nr":2,"name":"curls","cat":"Upper body","muscles":"Arms","img":"https://gifrun.blob.core.windows.net/temp/5fd02c8eee5940418589d89bdd2bcbe1.gif","big":"🏋️"},{"nr":3,"name":"Haloes","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/94cef901de1c43429401aa9190e7442d.gif","big":"🏋️"},{"nr":4,"name":"Shrugs","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/a5917c4a1e614d84a95784c9bc4de3ec.gif","big":"🏋️"},{"nr":5,"name":"Single Arm Kettlebell Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/2aaf14749d8d460f9efb6ecc3117f584.gif","big":"🏋️"},{"nr":6,"name":"Double Kettlebell Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/50013e400fb34738935fd783d3cf2375.gif","big":"🏋️"},{"nr":7,"name":"Kettlebell Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/27961457ce154522a959e398c140b782.gif","big":"🏋️"},{"nr":8,"name":"Single Arm Kettlebell Thruster","cat":"Full body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/1e47abbc9bdb43babcce822d1cb4ea77.gif","big":"🏋️"}];
-const OFFLINE_WORKOUTS = [{"name":"Overkropp HIIT","cat":"Upper body","exercises":[{"nr":1,"name":"Single Arm Kettlebell Bent Over Row","cat":"Upper body","muscles":"Back","img":"https://i.makeagif.com/media/6-27-2026/h7RlHm.gif","big":"🏋️"},{"nr":2,"name":"curls","cat":"Upper body","muscles":"Arms","img":"https://gifrun.blob.core.windows.net/temp/5fd02c8eee5940418589d89bdd2bcbe1.gif","big":"🏋️"},{"nr":3,"name":"Haloes","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/94cef901de1c43429401aa9190e7442d.gif","big":"🏋️"}],"instructions":"letsgo"}];
+const OFFLINE_EXERCISES = [{"nr":1,"name":"Single Arm Bent Over Row","cat":"Upper body","muscles":"Back","img":"https://i.makeagif.com/media/6-27-2026/h7RlHm.gif","big":"🏋️","variation":""},{"nr":2,"name":"Curl","cat":"Upper body","muscles":"Arms","img":"https://gifrun.blob.core.windows.net/temp/5fd02c8eee5940418589d89bdd2bcbe1.gif","big":"🏋️","variation":""},{"nr":3,"name":"Alternating Halo","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/94cef901de1c43429401aa9190e7442d.gif","big":"🏋️","variation":"Halo"},{"nr":4,"name":"Shrugs","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/a5917c4a1e614d84a95784c9bc4de3ec.gif","big":"🏋️","variation":""},{"nr":5,"name":"Single Arm Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/2aaf14749d8d460f9efb6ecc3117f584.gif","big":"🏋️","variation":"Swing"},{"nr":6,"name":"Double Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/50013e400fb34738935fd783d3cf2375.gif","big":"🏋️","variation":"Swing"},{"nr":7,"name":"Kettlebell Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/27961457ce154522a959e398c140b782.gif","big":"🏋️","variation":"Swing"},{"nr":8,"name":"Single Arm Thruster","cat":"Full body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/1e47abbc9bdb43babcce822d1cb4ea77.gif","big":"🏋️","variation":"Thrust"},{"nr":9,"name":"Tall Kneeling Alternating Halo","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/0b50561970744f8ea65d9eb264a1caba.gif","big":"🏋️","variation":"Halo"},{"nr":10,"name":"Upright row","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/4810470719164fe9b264f48d9172e348.gif","big":"🏋️","variation":""},{"nr":11,"name":"Eight to palm","cat":"Full body","muscles":"Arms","img":"https://gifrun.blob.core.windows.net/temp/da77ec586e1245c584fe00775c2ece02.gif","big":"🏋️","variation":""},{"nr":12,"name":"Chest Swing","cat":"Upper body","muscles":"Back","img":"https://gifrun.blob.core.windows.net/temp/56649bb2efb44bc893dc13a985bf6ff8.gif","big":"🏋️","variation":""},{"nr":13,"name":"Goblet Squat","cat":"Full body","muscles":"Legs - Quadriceps","img":"https://gifrun.blob.core.windows.net/temp/5805b21d1955453ca20328454055df07.gif","big":"🏋️","variation":"Squat"},{"nr":14,"name":"Around the world","cat":"Core","muscles":"Abs/Core","img":"https://gifrun.blob.core.windows.net/temp/5ae22e2d0f50442aa800375dbc7cad85.gif","big":"🏋️","variation":""}];
+const OFFLINE_WORKOUTS = [{"name":"Overkropp HIIT","cat":"Upper body","exercises":[{"nr":10,"name":"Upright row","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/4810470719164fe9b264f48d9172e348.gif","big":"🏋️","variation":""},{"nr":7,"name":"Kettlebell Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/27961457ce154522a959e398c140b782.gif","big":"🏋️","variation":"Swing"},{"nr":8,"name":"Single Arm Thruster","cat":"Full body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/1e47abbc9bdb43babcce822d1cb4ea77.gif","big":"🏋️","variation":"Thrust"},{"nr":9,"name":"Tall Kneeling Alternating Halo","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/0b50561970744f8ea65d9eb264a1caba.gif","big":"🏋️","variation":"Halo"}],"instructions":"letsgo"}];
 
 async function fetchWithProxy(proxy, url) {
   const controller = new AbortController();
