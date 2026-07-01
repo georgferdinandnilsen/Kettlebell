@@ -2222,7 +2222,7 @@ function renderWorkout() {
   const repsEl = document.getElementById('cur-ex-reps');
   if (config.exMode === 'reps') {
     repsEl.textContent = ex.sides === 'LR'
-      ? `${config.plannedReps} reps på hver hånd`
+      ? `${config.plannedReps} reps på hver hånd/retning`
       : `${config.plannedReps} reps`;
     repsEl.style.display = 'block';
   } else {
