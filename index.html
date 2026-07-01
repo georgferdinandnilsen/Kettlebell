@@ -306,8 +306,38 @@
   .bottom-cta {
     padding: 20px 28px;
     display: flex;
+    align-items: center;
     justify-content: flex-end;
   }
+  .sheet-ref-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: auto;
+    min-width: 0;
+  }
+  .sheet-ref-hint {
+    font-size: 0.8rem;
+    color: var(--text);
+    opacity: 0.3;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sheet-ref-copy {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    opacity: 0.3;
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 4px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+  }
+  .sheet-ref-copy:hover { opacity: 0.8; }
   .btn-primary {
     background: var(--accent);
     color: #111;
@@ -1412,6 +1442,10 @@
   <div class="exercise-grid" id="exercise-grid"></div>
 
   <div class="bottom-cta">
+    <div class="sheet-ref-wrap" id="sheet-ref-wrap" style="display:none">
+      <span class="sheet-ref-hint" id="sheet-ref-hint"></span>
+      <button class="sheet-ref-copy" id="sheet-ref-copy" onclick="copySheetRef()" title="Kopier">📋</button>
+    </div>
     <button class="btn-primary" id="btn-to-config" onclick="goToConfig()" disabled>
       Neste: Konfigurer →
     </button>
@@ -1832,6 +1866,41 @@ function renderSelectedStrip() {
       `<span class="strip-tag" onclick="toggleExercise(${ex.id})">${i+1}. ${ex.name} ✕</span>`
     ).join('');
   }
+
+  const refHint = document.getElementById('sheet-ref-hint');
+  const refWrap = document.getElementById('sheet-ref-wrap');
+  if (refHint && refWrap) {
+    refHint.textContent = selectedExercises.map(ex => ex.nr).join('-');
+    refWrap.style.display = selectedExercises.length > 0 ? 'flex' : 'none';
+  }
+}
+
+function copySheetRef() {
+  const text = document.getElementById('sheet-ref-hint')?.textContent;
+  if (!text) return;
+  const btn = document.getElementById('sheet-ref-copy');
+  const showCopied = () => {
+    if (!btn) return;
+    btn.textContent = '✓';
+    setTimeout(() => { btn.textContent = '📋'; }, 1200);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(showCopied).catch(() => fallbackCopyText(text, showCopied));
+  } else {
+    fallbackCopyText(text, showCopied);
+  }
+}
+
+function fallbackCopyText(text, onDone) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(ta);
+  if (onDone) onDone();
 }
 
 function resetCatFilter() {
@@ -2594,7 +2663,9 @@ function parseSheetCSV(csv) {
       if (['kategori','category','bodyregion','region'].includes(headers[i])) { iWktCat = i; break; }
     }
   }
-  // All columns matching 'øvelse1'..'øvelse10' or 'exercise1'..'exercise10'
+  // New layout: single column with hyphen-separated exercise numbers, e.g. "10-7-8-9"
+  const iWktExercises = findCol('øvelser', 'exercises', 'øvelsesliste', 'exerciselist');
+  // Old layout: one column per slot — 'øvelse1'..'øvelse10' or 'exercise1'..'exercise10'
   const exerciseCols = headers
     .map((h, i) => (/^(øvelse|exercise|ex)\d+$/.test(h) ? i : -1))
     .filter(i => i >= 0);
@@ -2628,9 +2699,12 @@ function parseSheetCSV(csv) {
       const wktName = (row[iWktName] || '').trim();
       if (!wktName) return;
       const wktCat = iWktCat >= 0 ? (row[iWktCat] || '').trim() : '';
-      const exNrs = exerciseCols
-        .map(ci => parseInt(row[ci] || ''))
-        .filter(n => !isNaN(n) && n > 0);
+      let exNrs;
+      if (iWktExercises >= 0 && row[iWktExercises]) {
+        exNrs = row[iWktExercises].split('-').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n > 0);
+      } else {
+        exNrs = exerciseCols.map(ci => parseInt(row[ci] || '')).filter(n => !isNaN(n) && n > 0);
+      }
       const resolved = exNrs.map(n => exerciseMap[n]).filter(Boolean);
       if (resolved.length > 0) {
         const instructions = iWktInstr >= 0 ? (row[iWktInstr] || '').trim() : '';
