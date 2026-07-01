@@ -762,6 +762,12 @@
     font-size: 0.82rem;
     margin-bottom: 10px;
   }
+  .current-ex-reps {
+    color: var(--accent2);
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin: -4px 0 10px;
+  }
 
   /* Timer & controls */
   .timer-section {
@@ -1593,6 +1599,7 @@
     <span class="current-ex-big-icon" id="cur-ex-icon">🏋️</span>
     <div class="current-ex-name" id="cur-ex-name">—</div>
     <div class="current-ex-muscles" id="cur-ex-muscles">—</div>
+    <div class="current-ex-reps" id="cur-ex-reps" style="display:none"></div>
   </div>
 
   <!-- Controls -->
@@ -1776,7 +1783,8 @@ let workoutState = {
   curExIndex: 0,
   done: false,
   startTime: null,
-  countdownTimer: null
+  countdownTimer: null,
+  sideIndex: 0
 };
 let selectedCats = new Set();
 let selectedMuscles = new Set();
@@ -2210,6 +2218,17 @@ function renderWorkout() {
   document.getElementById('cur-ex-name').textContent = ex.name;
   document.getElementById('cur-ex-muscles').textContent = ex.muscles;
 
+  // Reps hint — only shown in reps mode; notes when a movement is done on each hand
+  const repsEl = document.getElementById('cur-ex-reps');
+  if (config.exMode === 'reps') {
+    repsEl.textContent = ex.sides === 'LR'
+      ? `${config.plannedReps} reps på hver hånd`
+      : `${config.plannedReps} reps`;
+    repsEl.style.display = 'block';
+  } else {
+    repsEl.style.display = 'none';
+  }
+
   // Next button label
   const isLastEx = workoutState.curExIndex === n - 1;
   const isLastRound = workoutState.curRound === config.rounds;
@@ -2226,7 +2245,8 @@ function renderWorkout() {
     ringWrap.style.display = 'flex';
     stopwatch.style.display = 'none';
     btn.style.opacity = '0.45';
-    startExerciseTimer(config.exDuration, () => nextExercise());
+    workoutState.sideIndex = 0;
+    startTimedExercisePhase(ex);
   } else {
     ringWrap.style.display = 'none';
     stopwatch.style.display = 'block';
@@ -2271,6 +2291,20 @@ function startExerciseTimer(seconds, onDone) {
 
 function stopExerciseTimer() {
   if (exTimerInterval) { clearInterval(exTimerInterval); exTimerInterval = null; }
+}
+
+// ─── Time-mode exercise phase — splits L+R exercises into two timed halves ───
+const SWITCH_SIDE_SECONDS = 5;
+
+function startTimedExercisePhase(ex) {
+  startExerciseTimer(config.exDuration, () => {
+    if (ex.sides === 'LR' && workoutState.sideIndex === 0) {
+      workoutState.sideIndex = 1;
+      startCountdown(SWITCH_SIDE_SECONDS, 'BYTT SIDE!', null, () => startTimedExercisePhase(ex));
+    } else {
+      nextExercise();
+    }
+  });
 }
 
 // ─── Stopwatch (counts up during reps-mode exercise) ───
@@ -2681,6 +2715,7 @@ function parseSheetCSV(csv) {
   const iImg     = findCol('bildeurl', 'bildeurl', 'imageurl', 'bilde', 'img', 'image');
   const iEmoji   = findCol('emoji', 'ikon', 'icon');
   const iVariation = findCol('variation', 'variasjon');
+  const iSides   = findCol('l + r rounds', 'l+r rounds', 'sides', 'side');
 
   // ── Workout columns (H+) — find 'økt' header
   const iWktName = findCol('økt', 'workout', 'øktnavn', 'workoutname');
@@ -2716,6 +2751,7 @@ function parseSheetCSV(csv) {
       img:       (iImg       >= 0 ? row[iImg]       : '') || '',
       big:       (iEmoji     >= 0 ? row[iEmoji]     : '') || '🏋️',
       variation: (iVariation >= 0 ? row[iVariation] : '') || '',
+      sides:     (iSides >= 0 && (row[iSides] || '').trim().toLowerCase().startsWith('l')) ? 'LR' : '1',
     };
     exercises.push(ex);
     exerciseMap[ex.nr] = ex;
@@ -2884,8 +2920,8 @@ function applyExerciseData(exercises, workouts) {
   renderSelectedStrip();
 }
 
-const OFFLINE_EXERCISES = [{"nr":1,"name":"Single Arm Bent Over Row","cat":"Upper body","muscles":"Back","img":"https://i.makeagif.com/media/6-27-2026/h7RlHm.gif","big":"🏋️","variation":""},{"nr":2,"name":"Curl","cat":"Upper body","muscles":"Arms","img":"https://gifrun.blob.core.windows.net/temp/5fd02c8eee5940418589d89bdd2bcbe1.gif","big":"🏋️","variation":""},{"nr":3,"name":"Alternating Halo","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/94cef901de1c43429401aa9190e7442d.gif","big":"🏋️","variation":"Halo"},{"nr":4,"name":"Shrugs","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/a5917c4a1e614d84a95784c9bc4de3ec.gif","big":"🏋️","variation":""},{"nr":5,"name":"Single Arm Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/2aaf14749d8d460f9efb6ecc3117f584.gif","big":"🏋️","variation":"Swing"},{"nr":6,"name":"Double Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/50013e400fb34738935fd783d3cf2375.gif","big":"🏋️","variation":"Swing"},{"nr":7,"name":"Kettlebell Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/27961457ce154522a959e398c140b782.gif","big":"🏋️","variation":"Swing"},{"nr":8,"name":"Single Arm Thruster","cat":"Full body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/1e47abbc9bdb43babcce822d1cb4ea77.gif","big":"🏋️","variation":"Thrust"},{"nr":9,"name":"Tall Kneeling Alternating Halo","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/0b50561970744f8ea65d9eb264a1caba.gif","big":"🏋️","variation":"Halo"},{"nr":10,"name":"Upright row","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/4810470719164fe9b264f48d9172e348.gif","big":"🏋️","variation":""},{"nr":11,"name":"Eight to palm","cat":"Full body","muscles":"Arms","img":"https://gifrun.blob.core.windows.net/temp/da77ec586e1245c584fe00775c2ece02.gif","big":"🏋️","variation":""},{"nr":12,"name":"Chest Swing","cat":"Upper body","muscles":"Back","img":"https://gifrun.blob.core.windows.net/temp/56649bb2efb44bc893dc13a985bf6ff8.gif","big":"🏋️","variation":""},{"nr":13,"name":"Goblet Squat","cat":"Full body","muscles":"Legs - Quadriceps","img":"https://gifrun.blob.core.windows.net/temp/5805b21d1955453ca20328454055df07.gif","big":"🏋️","variation":"Squat"},{"nr":14,"name":"Around the world","cat":"Core","muscles":"Abs/Core","img":"https://gifrun.blob.core.windows.net/temp/5ae22e2d0f50442aa800375dbc7cad85.gif","big":"🏋️","variation":""}];
-const OFFLINE_WORKOUTS = [{"name":"Overkropp HIIT","cat":"Upper body","exercises":[{"nr":10,"name":"Upright row","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/4810470719164fe9b264f48d9172e348.gif","big":"🏋️","variation":""},{"nr":7,"name":"Kettlebell Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/27961457ce154522a959e398c140b782.gif","big":"🏋️","variation":"Swing"},{"nr":8,"name":"Single Arm Thruster","cat":"Full body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/1e47abbc9bdb43babcce822d1cb4ea77.gif","big":"🏋️","variation":"Thrust"},{"nr":9,"name":"Tall Kneeling Alternating Halo","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/0b50561970744f8ea65d9eb264a1caba.gif","big":"🏋️","variation":"Halo"}],"instructions":"letsgo"}];
+const OFFLINE_EXERCISES = [{"nr":1,"name":"Single Arm Bent Over Row","cat":"Upper body","muscles":"Back","img":"https://i.makeagif.com/media/6-27-2026/h7RlHm.gif","big":"🏋️","variation":"Row","sides":"1"},{"nr":2,"name":"Double Curl","cat":"Upper body","muscles":"Arms","img":"https://gifrun.blob.core.windows.net/temp/5fd02c8eee5940418589d89bdd2bcbe1.gif","big":"🏋️","variation":"","sides":"LR"},{"nr":3,"name":"Alternating Halo","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/94cef901de1c43429401aa9190e7442d.gif","big":"🏋️","variation":"Halo","sides":"LR"},{"nr":4,"name":"Shrugs","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/a5917c4a1e614d84a95784c9bc4de3ec.gif","big":"🏋️","variation":"","sides":"LR"},{"nr":5,"name":"Single Arm Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/2aaf14749d8d460f9efb6ecc3117f584.gif","big":"🏋️","variation":"Swing","sides":"1"},{"nr":6,"name":"Double Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/50013e400fb34738935fd783d3cf2375.gif","big":"🏋️","variation":"Swing","sides":"LR"},{"nr":7,"name":"Kettlebell Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/27961457ce154522a959e398c140b782.gif","big":"🏋️","variation":"Swing","sides":"LR"},{"nr":8,"name":"Single Arm squat and Thrust","cat":"Full body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/1e47abbc9bdb43babcce822d1cb4ea77.gif","big":"🏋️","variation":"Squat","sides":"1"},{"nr":9,"name":"Kneeling Alternating Halo","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/0b50561970744f8ea65d9eb264a1caba.gif","big":"🏋️","variation":"Halo","sides":"LR"},{"nr":10,"name":"High pull","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/4810470719164fe9b264f48d9172e348.gif","big":"🏋️","variation":"","sides":"LR"},{"nr":11,"name":"Eight to palm","cat":"Full body","muscles":"Arms","img":"https://gifrun.blob.core.windows.net/temp/da77ec586e1245c584fe00775c2ece02.gif","big":"🏋️","variation":"","sides":"1"},{"nr":12,"name":"Chest Swing","cat":"Upper body","muscles":"Back","img":"https://gifrun.blob.core.windows.net/temp/56649bb2efb44bc893dc13a985bf6ff8.gif","big":"🏋️","variation":"","sides":"1"},{"nr":13,"name":"Goblet Squat","cat":"Full body","muscles":"Legs - Quadriceps","img":"https://gifrun.blob.core.windows.net/temp/5805b21d1955453ca20328454055df07.gif","big":"🏋️","variation":"Squat","sides":"1"},{"nr":14,"name":"Around the world","cat":"Core","muscles":"Abs/Core","img":"https://gifrun.blob.core.windows.net/temp/5ae22e2d0f50442aa800375dbc7cad85.gif","big":"🏋️","variation":"","sides":"LR"},{"nr":15,"name":"Cross Body Row","cat":"Upper body","muscles":"Back","img":"https://gifrun.blob.core.windows.net/temp/bb61c93b9a734bf689696ebf31f2eb81.gif","big":"🏋️","variation":"Row","sides":"LR"},{"nr":16,"name":"Swing Snatch","cat":"Full body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/d443c8ce8e67490ab0688b98aef524fd.gif","big":"🏋️","variation":"Swing","sides":"LR"}];
+const OFFLINE_WORKOUTS = [{"name":"Ferdinands HIIT","cat":"Full body","exercises":[{"nr":7,"name":"Kettlebell Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/27961457ce154522a959e398c140b782.gif","big":"🏋️","variation":"Swing","sides":"LR"},{"nr":14,"name":"Around the world","cat":"Core","muscles":"Abs/Core","img":"https://gifrun.blob.core.windows.net/temp/5ae22e2d0f50442aa800375dbc7cad85.gif","big":"🏋️","variation":"","sides":"LR"},{"nr":10,"name":"High pull","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/4810470719164fe9b264f48d9172e348.gif","big":"🏋️","variation":"","sides":"LR"},{"nr":9,"name":"Kneeling Alternating Halo","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/0b50561970744f8ea65d9eb264a1caba.gif","big":"🏋️","variation":"Halo","sides":"LR"},{"nr":8,"name":"Single Arm squat and Thrust","cat":"Full body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/1e47abbc9bdb43babcce822d1cb4ea77.gif","big":"🏋️","variation":"Squat","sides":"1"}],"instructions":"letsgo! kjapp økt med 5 gode øvelser som treffer hele kroppen"}];
 
 async function fetchWithProxy(proxy, url) {
   const controller = new AbortController();
