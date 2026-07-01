@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KETTL — Kettlebell Trening</title>
 <link rel="icon" type="image/png" href="favicon.png">
+<script>
+  // Apply saved theme before first paint to avoid a flash of the wrong theme
+  (function() {
+    try {
+      if (localStorage.getItem('ironbell_theme') === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    } catch(e) {}
+  })();
+</script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -24,6 +34,51 @@
     --blue: #60a5fa;
     --radius: 12px;
     --radius-lg: 18px;
+
+    --accent-dark: #051a02;
+    --scrim: rgba(17, 18, 20, 0.96);
+    --scrim-strong: rgba(17, 18, 20, 0.88);
+    --scrim-settings: rgba(17, 18, 20, 0.92);
+    --scrim-card: rgba(17, 18, 20, 0.5);
+    --accent-border: #4CBB1744;
+    --accent-glow-soft: #4CBB1730;
+    --accent-glow-strong: #4CBB1740;
+    --accent-text-glow: #4CBB1760;
+    --status-ok-bg: #0a2a1a;
+    --status-ok-border: #1a4a2a;
+    --status-err-bg: #2a0a0a;
+    --status-err-border: #4a1a1a;
+  }
+
+  /* ── LIGHT THEME (Scandinavian, minimalist) ── */
+  :root[data-theme="light"] {
+    --bg: #FAF9F6;
+    --surface: #FFFFFF;
+    --surface2: #F1EEE7;
+    --border: #E3DFD5;
+    --accent: #3E8E41;
+    --accent-dim: #3E8E4118;
+    --accent2: #2D6930;
+    --text: #23211D;
+    --text-muted: #75705F;
+    --text-dim: #A8A395;
+    --green: #2D8A3E;
+    --red: #C23B3B;
+    --blue: #2F6FA8;
+
+    --accent-dark: #E7F2E5;
+    --scrim: rgba(250, 249, 246, 0.96);
+    --scrim-strong: rgba(250, 249, 246, 0.9);
+    --scrim-settings: rgba(250, 249, 246, 0.94);
+    --scrim-card: rgba(255, 255, 255, 0.6);
+    --accent-border: #3E8E4144;
+    --accent-glow-soft: #3E8E4130;
+    --accent-glow-strong: #3E8E4140;
+    --accent-text-glow: #3E8E4130;
+    --status-ok-bg: #E7F4E8;
+    --status-ok-border: #B9DDBB;
+    --status-err-bg: #FBEAEA;
+    --status-err-border: #EFC0C0;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -122,7 +177,7 @@
   }
   .ex-card.selected {
     border-color: var(--accent);
-    background: linear-gradient(135deg, #1a1c1f, #051a02);
+    background: linear-gradient(135deg, var(--surface), var(--accent-dark));
   }
   .ex-card.selected::after {
     content: attr(data-order);
@@ -142,6 +197,27 @@
   }
   .ex-card.selected .check { display: flex; }
   .check { display: none; }
+
+  .ex-info-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+    transition: all 0.15s;
+  }
+  .ex-info-btn:hover { border-color: var(--accent); color: var(--accent2); }
+  .ex-card.selected .ex-info-btn { right: 34px; }
 
   .ex-icon {
     font-size: 2.6rem;
@@ -211,7 +287,7 @@
   .strip-tag {
     background: var(--accent-dim);
     color: var(--accent2);
-    border: 1px solid #4CBB1744;
+    border: 1px solid var(--accent-border);
     padding: 4px 10px;
     border-radius: 6px;
     font-size: 0.75rem;
@@ -219,7 +295,7 @@
     cursor: pointer;
     transition: all 0.15s;
   }
-  .strip-tag:hover { background: #4CBB1740; }
+  .strip-tag:hover { background: var(--accent-glow-strong); }
   .strip-empty {
     color: var(--text-dim);
     font-size: 0.82rem;
@@ -348,7 +424,7 @@
     user-select: none;
   }
   .mini-ex.dragging { opacity: 0.4; box-shadow: 0 0 0 2px var(--accent); }
-  .mini-ex.drag-over { background: #051a02; border-color: var(--accent); }
+  .mini-ex.drag-over { background: var(--accent-dark); border-color: var(--accent); }
   .mini-ex-num {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.2rem;
@@ -453,12 +529,28 @@
     transition: all 0.2s;
   }
   .quit-btn:hover { border-color: var(--red); color: var(--red); }
+  .pause-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    line-height: 1;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .pause-btn:hover { border-color: var(--accent); color: var(--accent2); }
 
   /* Countdown overlay */
   .countdown-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(17, 18, 20, 0.96);
+    background: var(--scrim);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -479,7 +571,7 @@
     font-size: 8rem;
     line-height: 1;
     color: var(--accent);
-    text-shadow: 0 0 60px #4CBB1760;
+    text-shadow: 0 0 60px var(--accent-text-glow);
     transition: all 0.1s;
   }
   .countdown-number.pulse { transform: scale(1.05); }
@@ -487,6 +579,43 @@
     margin-top: 20px;
     color: var(--text-muted);
     font-size: 0.9rem;
+  }
+  .countdown-next-wrap {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .countdown-next-caption {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+  .countdown-img-wrap {
+    width: 130px;
+    height: 130px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .countdown-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .countdown-next-name {
+    margin-top: 10px;
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 600;
+    max-width: 260px;
+    text-align: center;
   }
   .skip-btn {
     margin-top: 30px;
@@ -527,9 +656,9 @@
   }
   .workout-ex-card.active {
     border-color: var(--accent);
-    background: linear-gradient(160deg, #051a02, #1a1c1f);
+    background: linear-gradient(160deg, var(--accent-dark), var(--surface));
     transform: scale(1.04);
-    box-shadow: 0 0 30px #4CBB1730;
+    box-shadow: 0 0 30px var(--accent-glow-soft);
   }
   .workout-ex-card.done-card {
     opacity: 0.45;
@@ -544,7 +673,7 @@
     justify-content: center;
     font-size: 1.6rem;
     color: var(--green);
-    background: rgba(17,18,20,0.5);
+    background: var(--scrim-card);
     border-radius: calc(var(--radius) - 2px);
   }
   .wex-num {
@@ -623,14 +752,14 @@
     transition: all 0.15s;
     letter-spacing: 0.5px;
     line-height: 1.3;
-    box-shadow: 0 0 0 6px #4CBB1722, 0 8px 32px #4CBB1730;
+    box-shadow: 0 0 0 6px var(--accent-dim), 0 8px 32px var(--accent-glow-soft);
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     padding: 20px;
   }
-  .btn-next:hover { background: var(--accent2); transform: scale(1.05); box-shadow: 0 0 0 10px #4CBB1730, 0 12px 40px #4CBB1740; }
+  .btn-next:hover { background: var(--accent2); transform: scale(1.05); box-shadow: 0 0 0 10px var(--accent-glow-soft), 0 12px 40px var(--accent-glow-strong); }
   .btn-next:active { transform: scale(0.96); }
   .btn-next .space-hint {
     display: block;
@@ -746,7 +875,7 @@
   }
   .saved-workout-card:hover {
     border-color: var(--accent);
-    background: linear-gradient(135deg, #051a02, #1a1c1f);
+    background: linear-gradient(135deg, var(--accent-dark), var(--surface));
   }
   .swc-icon { display: none; }
   .swc-body {}
@@ -763,7 +892,7 @@
     display: inline-block;
     background: var(--accent-dim);
     color: var(--accent);
-    border: 1px solid #4CBB1744;
+    border: 1px solid var(--accent-border);
     border-radius: 20px;
     padding: 2px 8px;
     font-size: 0.65rem;
@@ -778,7 +907,7 @@
   .wkt-popup-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(17,18,20,0.88);
+    background: var(--scrim-strong);
     z-index: 400;
     display: flex;
     align-items: flex-end;
@@ -871,6 +1000,29 @@
     font-size: 0.72rem;
     color: var(--text-muted);
     margin-top: 1px;
+  }
+
+  /* ── EXERCISE INFO POPUP ── */
+  .ex-info-badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .ex-info-img-wrap {
+    width: 100%;
+    height: 280px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ex-info-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
   .saved-section-divider {
     border: none;
@@ -981,6 +1133,12 @@
   }
   .workout-img-fallback { font-size: 7rem; }
 
+  /* ── Bigger gifs on desktop ── */
+  @media (min-width: 768px) {
+    .workout-img-wrap { width: 300px; height: 300px; }
+    .countdown-img-wrap { width: 260px; height: 260px; }
+  }
+
   /* ── LOADING SCREEN ── */
   .loading-screen {
     display: flex;
@@ -1029,7 +1187,7 @@
   .settings-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(17,18,20,0.92);
+    background: var(--scrim-settings);
     z-index: 300;
     display: flex;
     align-items: flex-end;
@@ -1100,8 +1258,8 @@
     margin-top: 10px;
     font-weight: 500;
   }
-  .sheet-status.ok { background: #0a2a1a; color: var(--green); border: 1px solid #1a4a2a; }
-  .sheet-status.err { background: #2a0a0a; color: var(--red); border: 1px solid #4a1a1a; }
+  .sheet-status.ok { background: var(--status-ok-bg); color: var(--green); border: 1px solid var(--status-ok-border); }
+  .sheet-status.err { background: var(--status-err-bg); color: var(--red); border: 1px solid var(--status-err-border); }
   .sheet-status.loading { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
 
   /* ── MODE TOGGLE ── */
@@ -1323,12 +1481,12 @@
     <div class="config-card">
       <div class="config-label"><span class="icon">⚡</span> Pause mellom øvelser</div>
       <div class="stepper">
-        <button class="stepper-btn" onclick="adjustVal('restEx', -5)">−</button>
+        <button class="stepper-btn" onclick="adjustVal('restEx', -15)">−</button>
         <div>
-          <div class="stepper-val" id="val-restEx">30</div>
+          <div class="stepper-val" id="val-restEx">15</div>
           <div class="stepper-unit">sekunder</div>
         </div>
-        <button class="stepper-btn" onclick="adjustVal('restEx', 5)">+</button>
+        <button class="stepper-btn" onclick="adjustVal('restEx', 15)">+</button>
       </div>
     </div>
 
@@ -1337,7 +1495,7 @@
       <div class="stepper">
         <button class="stepper-btn" onclick="adjustVal('restRound', -10)">−</button>
         <div>
-          <div class="stepper-val" id="val-restRound">90</div>
+          <div class="stepper-val" id="val-restRound">60</div>
           <div class="stepper-unit">sekunder</div>
         </div>
         <button class="stepper-btn" onclick="adjustVal('restRound', 10)">+</button>
@@ -1374,7 +1532,10 @@
         <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
       </div>
     </div>
-    <button class="quit-btn" onclick="confirmQuit()">Avslutt</button>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="pause-btn" id="btn-pause" onclick="togglePause()">⏸️</button>
+      <button class="quit-btn" onclick="confirmQuit()">Avslutt</button>
+    </div>
   </div>
 
   <!-- Exercise Cards Row -->
@@ -1455,7 +1616,11 @@
 <div class="countdown-overlay" id="countdown-overlay" style="display:none">
   <div class="countdown-label" id="countdown-label">HVIL</div>
   <div class="countdown-number" id="countdown-number">30</div>
-  <div class="countdown-sub" id="countdown-sub">Neste: <strong id="countdown-next-ex">—</strong></div>
+  <div class="countdown-next-wrap" id="countdown-next-wrap" style="display:none">
+    <div class="countdown-next-caption">Neste øvelse</div>
+    <div class="countdown-img-wrap" id="countdown-img-wrap"></div>
+    <div class="countdown-next-name" id="countdown-next-name">—</div>
+  </div>
   <button class="skip-btn" onclick="skipCountdown()">Hopp over →</button>
 </div>
 
@@ -1475,6 +1640,13 @@
   </div>
 </div>
 
+<!-- Pause overlay -->
+<div class="countdown-overlay" id="pause-overlay" style="display:none">
+  <div class="countdown-label">PAUSET</div>
+  <div style="font-size:3.5rem;margin:16px 0;">⏸️</div>
+  <button class="skip-btn" onclick="togglePause()">▶️ Fortsett</button>
+</div>
+
 <!-- ══════════════════════════════════════════
      WORKOUT DETAIL POPUP
 ══════════════════════════════════════════ -->
@@ -1492,6 +1664,20 @@
 </div>
 
 <!-- ══════════════════════════════════════════
+     EXERCISE INFO POPUP
+══════════════════════════════════════════ -->
+<div class="wkt-popup-overlay" id="ex-info-overlay" style="display:none" onclick="closeExerciseInfoIfBg(event)">
+  <div class="wkt-popup">
+    <div class="wkt-popup-header">
+      <div class="wkt-popup-title" id="ex-info-title">—</div>
+      <button class="wkt-popup-close" onclick="closeExerciseInfo()">✕</button>
+    </div>
+    <div class="ex-info-badges" id="ex-info-badges"></div>
+    <div class="ex-info-img-wrap" id="ex-info-img-wrap"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
      SETTINGS PANEL
 ══════════════════════════════════════════ -->
 <div class="settings-overlay" id="settings-overlay" style="display:none" onclick="closeSettingsIfBg(event)">
@@ -1499,6 +1685,14 @@
     <div class="settings-title">
       INNSTILLINGER
       <button class="settings-close" onclick="closeSettings()">✕</button>
+    </div>
+
+    <div class="settings-field">
+      <label class="settings-label">Utseende</label>
+      <div class="mode-toggle">
+        <button class="mode-btn" id="theme-btn-dark" onclick="setTheme('dark')">🌙 Mørk</button>
+        <button class="mode-btn" id="theme-btn-light" onclick="setTheme('light')">☀️ Lys</button>
+      </div>
     </div>
 
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;font-size:0.82rem;color:var(--text-muted);line-height:1.7">
@@ -1532,7 +1726,7 @@ const EXERCISES = [
 // STATE
 // ════════════════════════════════════════
 let selectedExercises = [];
-let config = { rounds: 3, restEx: 30, restRound: 90, exMode: 'reps', exDuration: 60, plannedReps: 15 };
+let config = { rounds: 3, restEx: 15, restRound: 60, exMode: 'reps', exDuration: 60, plannedReps: 15 };
 let workoutState = {
   curRound: 1,
   curExIndex: 0,
@@ -1543,6 +1737,10 @@ let workoutState = {
 let selectedCats = new Set();
 let selectedMuscles = new Set();
 let searchTerm = '';
+
+// Pause state
+let isPaused = false;
+let pauseStartedAt = null;
 
 // Exercise timer state
 let exTimerInterval = null;
@@ -1558,6 +1756,10 @@ function showScreen(id) {
   if (cdInterval) { clearInterval(cdInterval); cdInterval = null; }
   const overlay = document.getElementById('countdown-overlay');
   if (overlay) overlay.style.display = 'none';
+  isPaused = false;
+  pauseStartedAt = null;
+  const pauseOverlay = document.getElementById('pause-overlay');
+  if (pauseOverlay) pauseOverlay.style.display = 'none';
 
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const target = document.getElementById(id);
@@ -1587,6 +1789,7 @@ function renderExerciseGrid() {
     return `
     <div class="ex-card ${sel ? 'selected' : ''}" data-id="${ex.id}" data-order="${order}"
          onclick="toggleExercise(${ex.id})">
+      <button class="ex-info-btn" onclick="event.stopPropagation(); showExerciseInfo(${ex.id})" title="Info">ⓘ</button>
       ${mediaHtml}
       <div class="ex-name">${ex.name}</div>
       <div class="ex-muscles">${ex.muscles}</div>
@@ -1851,12 +2054,15 @@ function startWorkout() {
   workoutState.curRound = 1;
   workoutState.curExIndex = 0;
   workoutState.done = false;
-  workoutState.startTime = Date.now();
 
   showScreen('workout-screen');
   document.getElementById('tot-rounds').textContent = config.rounds;
 
-  renderWorkout();
+  const firstEx = selectedExercises[0];
+  startCountdown(10, 'GJØR DEG KLAR', firstEx, () => {
+    workoutState.startTime = Date.now();
+    renderWorkout();
+  }, { sound: true });
 }
 
 function renderWorkout() {
@@ -1954,6 +2160,7 @@ function startExerciseTimer(seconds, onDone) {
 
   update();
   exTimerInterval = setInterval(() => {
+    if (isPaused) return;
     if (!document.getElementById('ex-ring-fill')) { clearInterval(exTimerInterval); return; }
     exTimerRemaining--;
     update();
@@ -1978,6 +2185,7 @@ function startStopwatch() {
   stopwatchStart = Date.now();
   const el = document.getElementById('stopwatch-time');
   stopwatchInterval = setInterval(() => {
+    if (isPaused) return;
     if (!el) { clearInterval(stopwatchInterval); return; }
     const s = Math.floor((Date.now() - stopwatchStart) / 1000);
     const m = Math.floor(s / 60);
@@ -1990,13 +2198,37 @@ function stopStopwatch() {
   if (stopwatchInterval) { clearInterval(stopwatchInterval); stopwatchInterval = null; }
 }
 
+// ─── Pause / resume workout ───
+function togglePause() {
+  const overlay = document.getElementById('pause-overlay');
+  const btn = document.getElementById('btn-pause');
+  if (!isPaused) {
+    isPaused = true;
+    pauseStartedAt = Date.now();
+    if (overlay) overlay.style.display = 'flex';
+    if (btn) btn.textContent = '▶️';
+  } else {
+    const pausedMs = Date.now() - pauseStartedAt;
+    if (stopwatchStart) stopwatchStart += pausedMs;
+    if (workoutState.startTime) workoutState.startTime += pausedMs;
+    isPaused = false;
+    pauseStartedAt = null;
+    if (overlay) overlay.style.display = 'none';
+    if (btn) btn.textContent = '⏸️';
+  }
+}
+
 // ─── Space / Enter key → next exercise ───
 document.addEventListener('keydown', (e) => {
   if (e.code === 'Space' || e.code === 'Enter') {
     const workoutActive = document.getElementById('workout-screen')?.classList.contains('active');
-    const countdownVisible = document.getElementById('countdown-overlay')?.style.display !== 'none';
     if (!workoutActive) return;
     e.preventDefault();
+    if (isPaused) {
+      togglePause();
+      return;
+    }
+    const countdownVisible = document.getElementById('countdown-overlay')?.style.display !== 'none';
     if (countdownVisible) {
       skipCountdown();
     } else {
@@ -2029,7 +2261,7 @@ function nextExercise() {
     // Between rounds
     const nextEx = selectedExercises[0];
     if (config.restRound > 0) {
-      startCountdown(config.restRound, 'RUNDEPAUSE', nextEx.name, () => {
+      startCountdown(config.restRound, 'RUNDEPAUSE', nextEx, () => {
         workoutState.curRound++;
         workoutState.curExIndex = 0;
         renderWorkout();
@@ -2043,7 +2275,7 @@ function nextExercise() {
     // Between exercises
     const nextEx = selectedExercises[workoutState.curExIndex + 1];
     if (config.restEx > 0) {
-      startCountdown(config.restEx, 'HVIL', nextEx.name, () => {
+      startCountdown(config.restEx, 'HVIL', nextEx, () => {
         workoutState.curExIndex++;
         renderWorkout();
       });
@@ -2055,20 +2287,43 @@ function nextExercise() {
 }
 
 // ════════════════════════════════════════
+// SOUND
+// ════════════════════════════════════════
+let audioCtx = null;
+function playBeep(freq, duration) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration / 1000);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration / 1000);
+  } catch(e) {}
+}
+
+// ════════════════════════════════════════
 // COUNTDOWN
 // ════════════════════════════════════════
 let cdCallback = null;
 let cdRemaining = 0;
 let cdInterval = null;
 
-function startCountdown(seconds, label, nextName, callback) {
+function startCountdown(seconds, label, nextEx, callback, opts) {
+  opts = opts || {};
   const overlay = document.getElementById('countdown-overlay');
   const numEl = document.getElementById('countdown-number');
   const labelEl = document.getElementById('countdown-label');
-  const subEl = document.getElementById('countdown-sub');
+  const nextWrap = document.getElementById('countdown-next-wrap');
+  const imgWrap = document.getElementById('countdown-img-wrap');
+  const nameEl = document.getElementById('countdown-next-name');
 
   // Safety: if any element is missing, skip countdown and run callback directly
-  if (!overlay || !numEl || !labelEl || !subEl) {
+  if (!overlay || !numEl || !labelEl) {
     if (callback) callback();
     return;
   }
@@ -2080,17 +2335,21 @@ function startCountdown(seconds, label, nextName, callback) {
   labelEl.textContent = label;
   numEl.textContent = cdRemaining;
 
-  // Set innerHTML FIRST so the inner <strong> exists before we try to touch it
-  if (label === 'RUNDEPAUSE') {
-    subEl.innerHTML = 'Gjør deg klar til neste runde…';
-  } else {
-    subEl.innerHTML = 'Neste: <strong id="countdown-next-ex">' + nextName + '</strong>';
+  if (nextEx && nextWrap && imgWrap && nameEl) {
+    imgWrap.innerHTML = nextEx.img
+      ? `<img src="${nextEx.img}" alt="${nextEx.name}" onerror="this.src='favicon.png'">`
+      : `<img src="favicon.png" alt="${nextEx.name}">`;
+    nameEl.textContent = nextEx.name;
+    nextWrap.style.display = 'flex';
+  } else if (nextWrap) {
+    nextWrap.style.display = 'none';
   }
-  subEl.style.display = 'block';
 
   overlay.style.display = 'flex';
+  if (opts.sound) playBeep(880, 140);
 
   cdInterval = setInterval(() => {
+    if (isPaused) return;
     // Guard: if elements vanished (shouldn't happen now, but safety net)
     const n2 = document.getElementById('countdown-number');
     if (!n2) { clearInterval(cdInterval); cdInterval = null; return; }
@@ -2098,6 +2357,7 @@ function startCountdown(seconds, label, nextName, callback) {
     n2.textContent = cdRemaining;
     n2.classList.add('pulse');
     setTimeout(() => { if (n2) n2.classList.remove('pulse'); }, 100);
+    if (opts.sound) playBeep(cdRemaining <= 0 ? 1046 : 660, cdRemaining <= 0 ? 260 : 110);
     if (cdRemaining <= 0) {
       clearInterval(cdInterval);
       cdInterval = null;
@@ -2143,7 +2403,7 @@ function doQuit() {
 
 function resetAll() {
   selectedExercises = [];
-  config = { rounds: 3, restEx: 30, restRound: 90, exMode: 'reps', exDuration: 60, plannedReps: 15 };
+  config = { rounds: 3, restEx: 15, restRound: 60, exMode: 'reps', exDuration: 60, plannedReps: 15 };
   stopExerciseTimer();
   renderExerciseGrid();
   renderSelectedStrip();
@@ -2164,6 +2424,28 @@ const SHEET_CACHE_KEY = 'ironbell_cache';
 const DEFAULT_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQCKCTbNFmRKaz0e7iBRDGueFqovP40Eyn4lxYJ6uf8-UUkB8L1bgw72juAMjUn2cMpkx47T_HoFVZ7/pub?output=csv';
 let sheetUrl = DEFAULT_SHEET_URL;
 try { sheetUrl = localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL; } catch(e) {}
+
+// ════════════════════════════════════════
+// THEME
+// ════════════════════════════════════════
+const THEME_KEY = 'ironbell_theme';
+
+function setTheme(theme) {
+  if (theme === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  try { localStorage.setItem(THEME_KEY, theme); } catch(e) {}
+  updateThemeButtons(theme);
+}
+
+function updateThemeButtons(theme) {
+  const darkBtn = document.getElementById('theme-btn-dark');
+  const lightBtn = document.getElementById('theme-btn-light');
+  if (darkBtn) darkBtn.classList.toggle('active', theme !== 'light');
+  if (lightBtn) lightBtn.classList.toggle('active', theme === 'light');
+}
 
 function openSettings() {
   document.getElementById('settings-overlay').style.display = 'flex';
@@ -2423,6 +2705,32 @@ function closeWorkoutPopupIfBg(e) {
   if (e.target === document.getElementById('wkt-popup-overlay')) closeWorkoutPopup();
 }
 
+function showExerciseInfo(id) {
+  const ex = EXERCISES.find(e => e.id === id);
+  if (!ex) return;
+
+  document.getElementById('ex-info-title').textContent = ex.name;
+
+  const badgesEl = document.getElementById('ex-info-badges');
+  badgesEl.innerHTML = [ex.cat, ex.muscles].filter(Boolean)
+    .map(b => `<span class="swc-cat-badge">${b}</span>`).join('');
+
+  const imgWrap = document.getElementById('ex-info-img-wrap');
+  imgWrap.innerHTML = ex.img
+    ? `<img src="${ex.img}" alt="${ex.name}" onerror="this.src='favicon.png'">`
+    : `<img src="favicon.png" alt="${ex.name}">`;
+
+  document.getElementById('ex-info-overlay').style.display = 'flex';
+}
+
+function closeExerciseInfo() {
+  document.getElementById('ex-info-overlay').style.display = 'none';
+}
+
+function closeExerciseInfoIfBg(e) {
+  if (e.target === document.getElementById('ex-info-overlay')) closeExerciseInfo();
+}
+
 function loadSavedWorkout(index) {
   const wkt = SAVED_WORKOUTS[index];
   if (!wkt) return;
@@ -2508,6 +2816,8 @@ async function fetchSheet(urlToLoad) {
 }
 
 async function init() {
+  updateThemeButtons(document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
+
   let urlToLoad = DEFAULT_SHEET_URL;
   try { urlToLoad = localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL; } catch(e) {}
 
