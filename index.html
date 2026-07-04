@@ -2667,6 +2667,15 @@ async function loadFromSheet() {
 // Global saved workouts from sheet
 let SAVED_WORKOUTS = [];
 
+// Google Drive "share" links (…/file/d/ID/view or ?id=ID) point to a preview
+// page, not the raw file. Rewrite them to a direct-embeddable image URL.
+function normalizeImageUrl(url) {
+  const trimmed = (url || '').trim();
+  if (!trimmed.includes('drive.google.com')) return trimmed;
+  const match = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  return match ? `https://lh3.googleusercontent.com/d/${match[1]}` : trimmed;
+}
+
 function parseSheetCSV(csv) {
   const lines = csv.trim().split('\n');
   if (lines.length < 2) return { exercises: [], workouts: [] };
@@ -2748,7 +2757,7 @@ function parseSheetCSV(csv) {
       name,
       cat:       (iCat       >= 0 ? row[iCat]       : '') || 'Annet',
       muscles:   (iMuscles   >= 0 ? row[iMuscles]   : '') || '',
-      img:       (iImg       >= 0 ? row[iImg]       : '') || '',
+      img:       normalizeImageUrl(iImg >= 0 ? row[iImg] : ''),
       big:       (iEmoji     >= 0 ? row[iEmoji]     : '') || '🏋️',
       variation: (iVariation >= 0 ? row[iVariation] : '') || '',
       sides:     (iSides >= 0 && (row[iSides] || '').trim().toLowerCase().startsWith('l')) ? 'LR' : '1',
@@ -2820,7 +2829,7 @@ function showWorkoutDetail(index) {
   listEl.innerHTML = wkt.exercises.map((ex, i) => `
     <div class="wkt-popup-ex">
       <div class="wkt-popup-ex-num">${i + 1}</div>
-      ${ex.img ? `<img class="wkt-popup-ex-img" src="${ex.img}" alt="${ex.name}" onerror="this.style.display='none'">` : ''}
+      <img class="wkt-popup-ex-img" src="${ex.img || 'favicon.png'}" alt="${ex.name}" onerror="this.src='favicon.png'">
       <div class="wkt-popup-ex-info">
         <div class="wkt-popup-ex-name">${ex.name}</div>
         ${ex.muscles ? `<div class="wkt-popup-ex-muscles">${ex.muscles}</div>` : ''}
