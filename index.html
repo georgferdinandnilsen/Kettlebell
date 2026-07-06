@@ -1214,6 +1214,115 @@
     line-height: 1.5;
   }
 
+  /* ── LOGIN SCREEN ── */
+  .login-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh;
+    padding: 20px 28px;
+  }
+  .login-card {
+    width: 100%;
+    max-width: 340px;
+  }
+  .login-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+  .login-sub {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .login-error {
+    color: var(--red);
+    font-size: 0.8rem;
+    text-align: center;
+    margin-top: -6px;
+    margin-bottom: 14px;
+    min-height: 1em;
+  }
+  .login-toggle {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    text-decoration: underline;
+    cursor: pointer;
+    display: block;
+    margin: 18px auto 0;
+  }
+  .login-toggle:hover { color: var(--text); }
+
+  /* ── CALENDAR SCREEN ── */
+  .calendar-nav-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+  }
+  .calendar-nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .calendar-month-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 2px;
+  }
+  .calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px 20px;
+  }
+  .calendar-weekdays, .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    padding: 0 28px;
+  }
+  .calendar-weekdays {
+    padding-bottom: 8px;
+    color: var(--text-dim);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    position: relative;
+  }
+  .calendar-day.in-month { color: var(--text); }
+  .calendar-day.has-workout {
+    background: var(--accent-dim);
+    border: 1px solid var(--accent);
+    color: var(--accent2);
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .calendar-day.has-workout:hover { background: var(--accent-glow-strong); }
+  .calendar-day.is-today { box-shadow: inset 0 0 0 2px var(--text-muted); }
+  .calendar-empty-hint {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    padding: 40px 28px;
+  }
+
   /* ── SETTINGS PANEL ── */
   .settings-btn {
     background: transparent;
@@ -1401,6 +1510,7 @@
     <div class="logo-sub">Laget av Georg Ferdinand Nilsen</div>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
+    <button class="settings-btn" id="calendar-nav-header-btn" onclick="openCalendar()" title="Treningskalender" style="display:none">📅</button>
     <button class="settings-btn" onclick="openSettings()" title="Innstillinger">⚙️</button>
   </div>
 </header>
@@ -1412,6 +1522,32 @@
   <div class="loading-screen">
     <div class="spinner"></div>
     <div class="loading-text" id="loading-text">Laster øvelser…</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: LOGG INN
+══════════════════════════════════════════ -->
+<div class="screen" id="screen-login">
+  <div class="login-screen">
+    <div class="login-card">
+      <div class="login-title" id="login-title">Logg inn</div>
+      <div class="login-sub" id="login-sub">Skriv inn brukernavn og 4-sifret kode</div>
+
+      <div class="settings-field">
+        <label class="settings-label">Brukernavn</label>
+        <input type="text" class="settings-input" id="login-username" autocomplete="username" placeholder="F.eks. Georg">
+      </div>
+      <div class="settings-field">
+        <label class="settings-label">Kode (4 sifre)</label>
+        <input type="tel" inputmode="numeric" maxlength="4" pattern="[0-9]*" class="settings-input" id="login-code" placeholder="••••">
+      </div>
+
+      <div class="login-error" id="login-error"></div>
+
+      <button class="btn-primary" id="login-submit-btn" style="width:100%" onclick="submitLogin()">Logg inn</button>
+      <button class="login-toggle" id="login-toggle-btn" onclick="toggleLoginMode()">Ny bruker? Opprett konto</button>
+    </div>
   </div>
 </div>
 
@@ -1662,6 +1798,36 @@
 </div>
 
 <!-- ══════════════════════════════════════════
+     SCREEN: TRENINGSKALENDER
+══════════════════════════════════════════ -->
+<div class="screen" id="screen-calendar">
+  <div class="bottom-cta" style="justify-content:flex-start">
+    <button class="btn-secondary" onclick="showScreen('screen-select')">← Tilbake</button>
+  </div>
+  <div class="calendar-header">
+    <button class="calendar-nav-btn" onclick="shiftCalendarMonth(-1)">←</button>
+    <div class="calendar-month-title" id="calendar-month-title">—</div>
+    <button class="calendar-nav-btn" onclick="shiftCalendarMonth(1)">→</button>
+  </div>
+  <div class="calendar-weekdays">
+    <div>Ma</div><div>Ti</div><div>On</div><div>To</div><div>Fr</div><div>Lø</div><div>Sø</div>
+  </div>
+  <div class="calendar-grid" id="calendar-grid"></div>
+  <div class="calendar-empty-hint" id="calendar-empty-hint" style="display:none">Ingen treningsøkter logget ennå.</div>
+</div>
+
+<!-- Calendar day detail popup -->
+<div class="wkt-popup-overlay" id="calendar-day-overlay" style="display:none" onclick="closeCalendarDayIfBg(event)">
+  <div class="wkt-popup">
+    <div class="wkt-popup-header">
+      <div class="wkt-popup-title" id="calendar-day-title">—</div>
+      <button class="wkt-popup-close" onclick="closeCalendarDay()">✕</button>
+    </div>
+    <div class="wkt-popup-ex-list" id="calendar-day-ex-list"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
      COUNTDOWN OVERLAY (body-level, always in DOM)
 ══════════════════════════════════════════ -->
 <div class="countdown-overlay" id="countdown-overlay" style="display:none">
@@ -1744,6 +1910,20 @@
         <button class="mode-btn" id="theme-btn-dark" onclick="setTheme('dark')">🌙 Mørk</button>
         <button class="mode-btn" id="theme-btn-light" onclick="setTheme('light')">☀️ Lys</button>
       </div>
+    </div>
+
+    <div class="settings-field">
+      <label class="settings-label">Konto</label>
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px">
+        <span id="settings-current-user" style="font-size:0.9rem;font-weight:600">—</span>
+        <button onclick="logoutUser()" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:0.78rem;padding:6px 12px;border-radius:8px;cursor:pointer">Logg ut</button>
+      </div>
+    </div>
+
+    <div class="settings-field">
+      <label class="settings-label">Treningslogg-server (Apps Script URL)</label>
+      <input type="text" class="settings-input" id="appscript-url-input" placeholder="https://script.google.com/macros/s/…/exec" onchange="saveAppsScriptUrl(this.value)">
+      <div class="settings-hint">Trengs for innlogging, kalender og treningslogg. Se apps-script-backend.gs for oppsett.</div>
     </div>
 
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;font-size:0.82rem;color:var(--text-muted);line-height:1.7">
@@ -2515,10 +2695,13 @@ function finishWorkout() {
   const elapsed = Math.round((Date.now() - workoutState.startTime) / 1000);
   const min = Math.floor(elapsed / 60);
   const sec = elapsed % 60;
+  const durationLabel = `${min}:${String(sec).padStart(2, '0')}`;
 
   document.getElementById('done-rounds').textContent = config.rounds;
   document.getElementById('done-exercises').textContent = selectedExercises.length * config.rounds;
-  document.getElementById('done-time').textContent = `${min}:${String(sec).padStart(2, '0')}`;
+  document.getElementById('done-time').textContent = durationLabel;
+
+  logWorkoutToSheet(selectedExercises.map(ex => ex.nr), config.rounds, durationLabel);
 
   showScreen('screen-done');
 }
@@ -2545,6 +2728,195 @@ function resetAll() {
   selectedMuscles = new Set();
   document.querySelectorAll('#cat-filter .cat-btn, #muscle-filter .cat-btn').forEach(b => b.classList.remove('active'));
   showScreen('screen-select');
+}
+
+// ════════════════════════════════════════
+// AUTH & TRENINGSLOGG
+// ════════════════════════════════════════
+const USER_KEY = 'ironbell_user';
+const APPS_SCRIPT_URL_KEY = 'ironbell_appscript_url';
+let currentUser = null;
+try { currentUser = localStorage.getItem(USER_KEY) || null; } catch(e) {}
+let appsScriptUrl = '';
+try { appsScriptUrl = localStorage.getItem(APPS_SCRIPT_URL_KEY) || ''; } catch(e) {}
+let loginMode = 'login'; // 'login' | 'register'
+let calendarViewDate = new Date();
+let workoutHistory = null; // null = not fetched yet
+let calendarByDate = {};
+
+function updateAuthUi() {
+  const calBtn = document.getElementById('calendar-nav-header-btn');
+  if (calBtn) calBtn.style.display = currentUser ? 'flex' : 'none';
+}
+
+function toggleLoginMode() {
+  loginMode = loginMode === 'login' ? 'register' : 'login';
+  document.getElementById('login-title').textContent = loginMode === 'login' ? 'Logg inn' : 'Opprett bruker';
+  document.getElementById('login-sub').textContent = loginMode === 'login'
+    ? 'Skriv inn brukernavn og 4-sifret kode'
+    : 'Velg et brukernavn og en 4-sifret kode';
+  document.getElementById('login-submit-btn').textContent = loginMode === 'login' ? 'Logg inn' : 'Opprett bruker';
+  document.getElementById('login-toggle-btn').textContent = loginMode === 'login' ? 'Ny bruker? Opprett konto' : '← Tilbake til innlogging';
+  document.getElementById('login-error').textContent = '';
+}
+
+async function submitLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const code = document.getElementById('login-code').value.trim();
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+
+  if (!username) { errEl.textContent = 'Skriv inn et brukernavn'; return; }
+  if (!/^\d{4}$/.test(code)) { errEl.textContent = 'Koden må være 4 siffer'; return; }
+  if (!appsScriptUrl) { errEl.textContent = 'Ingen server-URL satt opp ennå (se innstillinger)'; return; }
+
+  const btn = document.getElementById('login-submit-btn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Vent litt…';
+
+  try {
+    const action = loginMode === 'login' ? 'login' : 'register';
+    const url = `${appsScriptUrl}?action=${action}&username=${encodeURIComponent(username)}&code=${encodeURIComponent(code)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.success) {
+      currentUser = data.username || username;
+      try { localStorage.setItem(USER_KEY, currentUser); } catch(e) {}
+      updateAuthUi();
+      showScreen('screen-select');
+    } else {
+      errEl.textContent = data.error || 'Noe gikk galt';
+    }
+  } catch(e) {
+    errEl.textContent = 'Fikk ikke kontakt med serveren';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
+
+function logoutUser() {
+  currentUser = null;
+  try { localStorage.removeItem(USER_KEY); } catch(e) {}
+  workoutHistory = null;
+  updateAuthUi();
+  closeSettings();
+  showScreen('screen-login');
+}
+
+function saveAppsScriptUrl(url) {
+  appsScriptUrl = (url || '').trim();
+  try { localStorage.setItem(APPS_SCRIPT_URL_KEY, appsScriptUrl); } catch(e) {}
+}
+
+async function logWorkoutToSheet(exerciseNrs, rounds, durationLabel) {
+  if (!appsScriptUrl || !currentUser) return;
+  try {
+    const url = `${appsScriptUrl}?action=logWorkout&username=${encodeURIComponent(currentUser)}`
+      + `&exercises=${encodeURIComponent(exerciseNrs.join('-'))}&rounds=${encodeURIComponent(rounds)}&duration=${encodeURIComponent(durationLabel)}`;
+    await fetch(url);
+    workoutHistory = null; // invalidate so calendar refetches next time it opens
+  } catch(e) {
+    console.warn('Kunne ikke logge økt:', e.message);
+  }
+}
+
+// ─── Kalender ───
+const MONTH_NAMES = ['Januar','Februar','Mars','April','Mai','Juni','Juli','August','September','Oktober','November','Desember'];
+
+async function openCalendar() {
+  showScreen('screen-calendar');
+  calendarViewDate = new Date();
+  await ensureWorkoutHistory();
+  renderCalendarGrid();
+}
+
+async function ensureWorkoutHistory() {
+  if (workoutHistory !== null) return;
+  if (!appsScriptUrl || !currentUser) { workoutHistory = []; return; }
+  try {
+    const url = `${appsScriptUrl}?action=history&username=${encodeURIComponent(currentUser)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    workoutHistory = data.success ? data.history : [];
+  } catch(e) {
+    workoutHistory = [];
+  }
+}
+
+function shiftCalendarMonth(delta) {
+  calendarViewDate.setMonth(calendarViewDate.getMonth() + delta);
+  renderCalendarGrid();
+}
+
+function dateKey(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function renderCalendarGrid() {
+  const grid = document.getElementById('calendar-grid');
+  const title = document.getElementById('calendar-month-title');
+  const emptyHint = document.getElementById('calendar-empty-hint');
+  const year = calendarViewDate.getFullYear();
+  const month = calendarViewDate.getMonth();
+  title.textContent = `${MONTH_NAMES[month]} ${year}`;
+
+  emptyHint.style.display = (workoutHistory && workoutHistory.length > 0) ? 'none' : 'block';
+
+  calendarByDate = {};
+  (workoutHistory || []).forEach(h => {
+    const key = dateKey(new Date(h.date));
+    if (!calendarByDate[key]) calendarByDate[key] = [];
+    calendarByDate[key].push(h);
+  });
+
+  const firstOfMonth = new Date(year, month, 1);
+  const firstWeekday = (firstOfMonth.getDay() + 6) % 7; // Monday = 0
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayKey = dateKey(new Date());
+
+  let html = '';
+  for (let i = 0; i < firstWeekday; i++) html += `<div class="calendar-day"></div>`;
+  for (let day = 1; day <= daysInMonth; day++) {
+    const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const hasWorkout = !!calendarByDate[key];
+    const cls = ['calendar-day', 'in-month', hasWorkout ? 'has-workout' : '', key === todayKey ? 'is-today' : ''].filter(Boolean).join(' ');
+    html += `<div class="${cls}" ${hasWorkout ? `onclick="showCalendarDay('${key}')"` : ''}>${day}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function showCalendarDay(key) {
+  const entries = calendarByDate[key] || [];
+  if (entries.length === 0) return;
+
+  const [y, m, d] = key.split('-').map(Number);
+  document.getElementById('calendar-day-title').textContent = `${d}. ${MONTH_NAMES[m - 1]} ${y}`;
+
+  const listEl = document.getElementById('calendar-day-ex-list');
+  listEl.innerHTML = entries.map(entry => {
+    const nrs = String(entry.exercises || '').split('-').map(s => parseInt(s)).filter(n => !isNaN(n));
+    const exList = nrs.map(nr => EXERCISES.find(e => e.nr === nr) || { name: `#${nr}`, img: '', muscles: '' });
+    return exList.map((ex, i) => `
+      <div class="wkt-popup-ex">
+        <div class="wkt-popup-ex-num">${i + 1}</div>
+        <img class="wkt-popup-ex-img" src="${ex.img || 'favicon.png'}" alt="${ex.name}" onerror="this.src='favicon.png'">
+        <div class="wkt-popup-ex-info">
+          <div class="wkt-popup-ex-name">${ex.name}</div>
+          ${ex.muscles ? `<div class="wkt-popup-ex-muscles">${ex.muscles}</div>` : ''}
+        </div>
+      </div>`).join('');
+  }).join('<hr class="saved-section-divider" style="margin:14px 0">');
+
+  document.getElementById('calendar-day-overlay').style.display = 'flex';
+}
+
+function closeCalendarDay() {
+  document.getElementById('calendar-day-overlay').style.display = 'none';
+}
+function closeCalendarDayIfBg(e) {
+  if (e.target === document.getElementById('calendar-day-overlay')) closeCalendarDay();
 }
 
 // ════════════════════════════════════════
@@ -2579,6 +2951,8 @@ function updateThemeButtons(theme) {
 }
 
 function openSettings() {
+  document.getElementById('settings-current-user').textContent = currentUser || 'Ikke innlogget';
+  document.getElementById('appscript-url-input').value = appsScriptUrl;
   document.getElementById('settings-overlay').style.display = 'flex';
 }
 function closeSettings() {
@@ -2966,6 +3340,7 @@ async function fetchSheet(urlToLoad) {
 
 async function init() {
   updateThemeButtons(document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
+  updateAuthUi();
 
   let urlToLoad = DEFAULT_SHEET_URL;
   try { urlToLoad = localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL; } catch(e) {}
@@ -2982,7 +3357,7 @@ async function init() {
 
   // 2. No cache → show generic placeholders immediately while we try to fetch
   if (!hasCache) applyExerciseData(OFFLINE_EXERCISES, OFFLINE_WORKOUTS);
-  showScreen('screen-select');
+  showScreen(currentUser ? 'screen-select' : 'screen-login');
 
   // 3. Fetch fresh data — replace generics with real exercises if successful
   try {
