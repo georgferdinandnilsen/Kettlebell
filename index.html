@@ -1922,8 +1922,8 @@
 
     <div class="settings-field">
       <label class="settings-label">Treningslogg-server (Apps Script URL)</label>
-      <input type="text" class="settings-input" id="appscript-url-input" placeholder="https://script.google.com/macros/s/…/exec" onchange="saveAppsScriptUrl(this.value)">
-      <div class="settings-hint">Trengs for innlogging, kalender og treningslogg. Se apps-script-backend.gs for oppsett.</div>
+      <input type="text" class="settings-input" id="appscript-url-input" readonly style="opacity:0.75;cursor:default">
+      <div class="settings-hint">Satt i koden — kun til kontroll. Se apps-script-backend.gs for oppsett.</div>
     </div>
 
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;font-size:0.82rem;color:var(--text-muted);line-height:1.7">
@@ -2734,11 +2734,9 @@ function resetAll() {
 // AUTH & TRENINGSLOGG
 // ════════════════════════════════════════
 const USER_KEY = 'ironbell_user';
-const APPS_SCRIPT_URL_KEY = 'ironbell_appscript_url';
+const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbxF5qAOefKX3K8B_W51LriWWCifRf0xlvqiKpvZgNUWQk5S7gfb2aWRStqz43vJ4TVmNg/exec';
 let currentUser = null;
 try { currentUser = localStorage.getItem(USER_KEY) || null; } catch(e) {}
-let appsScriptUrl = '';
-try { appsScriptUrl = localStorage.getItem(APPS_SCRIPT_URL_KEY) || ''; } catch(e) {}
 let loginMode = 'login'; // 'login' | 'register'
 let calendarViewDate = new Date();
 let workoutHistory = null; // null = not fetched yet
@@ -2803,11 +2801,6 @@ function logoutUser() {
   updateAuthUi();
   closeSettings();
   showScreen('screen-login');
-}
-
-function saveAppsScriptUrl(url) {
-  appsScriptUrl = (url || '').trim();
-  try { localStorage.setItem(APPS_SCRIPT_URL_KEY, appsScriptUrl); } catch(e) {}
 }
 
 async function logWorkoutToSheet(exerciseNrs, rounds, durationLabel) {
