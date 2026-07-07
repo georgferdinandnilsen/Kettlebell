@@ -1824,7 +1824,7 @@
     <div class="logo-sub">Laget av Georg Ferdinand Nilsen</div>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
-    <button class="calendar-nav-btn-custom" id="calendar-nav-header-btn" onclick="openCalendar()" title="Treningskalender" style="display:none">Kalender</button>
+    <button class="calendar-nav-btn-custom" id="calendar-nav-header-btn" onclick="openCalendar()" title="Treningslogg" style="display:none">Treningslogg</button>
     <button class="settings-btn" onclick="openSettings()" title="Innstillinger">⚙️</button>
   </div>
 </header>
@@ -1897,13 +1897,17 @@
     <input type="text" class="search-input" id="search-input" placeholder="🔍  Søk øvelse…" oninput="filterExercises()">
   </div>
 
-  <div class="filter-row-label">Body region</div>
+  <div class="filter-row-label">Kroppsområde</div>
   <div class="cat-filter" id="cat-filter">
     <button class="cat-btn active" onclick="filterCat('Alle', this)">Alle</button>
   </div>
   <div class="filter-row-label">Muskelgruppe</div>
   <div class="cat-filter" id="muscle-filter">
     <button class="cat-btn active" onclick="filterMuscle('Alle', this)">Alle</button>
+  </div>
+  <div class="filter-row-label">Utstyr</div>
+  <div class="cat-filter" id="utstyr-filter">
+    <button class="cat-btn active" onclick="resetUtstyrFilter()">Alle</button>
   </div>
 
   <div class="selected-strip" id="selected-strip">
@@ -2196,7 +2200,7 @@
       <input type="text" class="settings-input" id="new-workout-name" placeholder="F.eks. Morgenøkt">
     </div>
     <div class="settings-field">
-      <label class="settings-label">Body region</label>
+      <label class="settings-label">Kroppsområde</label>
       <select class="settings-input" id="new-workout-region">
         <option value="Upper body">Upper body</option>
         <option value="Lower body">Lower body</option>
@@ -2212,10 +2216,12 @@
     <div class="settings-field">
       <label class="settings-label">Velg øvelser (<span id="new-workout-count">0</span> valgt)</label>
       <input type="text" class="search-input" id="new-workout-search" placeholder="🔍 Søk øvelse…" oninput="renderNewWorkoutGrid()" style="margin-bottom:12px">
-      <div class="filter-row-label">Body region</div>
+      <div class="filter-row-label">Kroppsområde</div>
       <div class="cat-filter" id="new-workout-cat-filter"></div>
       <div class="filter-row-label">Muskelgruppe</div>
       <div class="cat-filter" id="new-workout-muscle-filter"></div>
+      <div class="filter-row-label">Utstyr</div>
+      <div class="cat-filter" id="new-workout-utstyr-filter"></div>
       <div class="exercise-grid" id="new-workout-grid" style="max-height:320px;overflow-y:auto;padding:2px;grid-template-columns:repeat(auto-fill,minmax(110px,1fr))"></div>
     </div>
 
@@ -2403,6 +2409,7 @@ let workoutState = {
 };
 let selectedCats = new Set();
 let selectedMuscles = new Set();
+let selectedUtstyr = new Set();
 let searchTerm = '';
 
 // Pause state
@@ -2449,9 +2456,10 @@ function renderExerciseGrid() {
   const filtered = EXERCISES.filter(ex => {
     const matchCat    = selectedCats.size === 0 || selectedCats.has(ex.cat);
     const matchMuscle = selectedMuscles.size === 0 || [...selectedMuscles].some(m => (ex.muscles || '').toLowerCase().includes(m.toLowerCase()));
+    const matchUtstyr = selectedUtstyr.size === 0 || selectedUtstyr.has(ex.utstyr);
     const matchSearch = ex.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         (ex.muscles || '').toLowerCase().includes(searchTerm.toLowerCase());
-    return matchCat && matchMuscle && matchSearch;
+    return matchCat && matchMuscle && matchUtstyr && matchSearch;
   });
 
   const cardHtml = ex => {
@@ -2615,6 +2623,26 @@ function filterMuscle(muscle, btn) {
   // Deactivate "Alle" when specific filters are selected, reactivate when none
   const alleBtn = document.querySelector('#muscle-filter .cat-btn');
   alleBtn.classList.toggle('active', selectedMuscles.size === 0);
+  renderExerciseGrid();
+}
+
+function resetUtstyrFilter() {
+  selectedUtstyr = new Set();
+  document.querySelectorAll('#utstyr-filter .cat-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('#utstyr-filter .cat-btn').classList.add('active');
+  renderExerciseGrid();
+}
+
+function filterUtstyr(u, btn) {
+  if (selectedUtstyr.has(u)) {
+    selectedUtstyr.delete(u);
+    btn.classList.remove('active');
+  } else {
+    selectedUtstyr.add(u);
+    btn.classList.add('active');
+  }
+  const alleBtn = document.querySelector('#utstyr-filter .cat-btn');
+  alleBtn.classList.toggle('active', selectedUtstyr.size === 0);
   renderExerciseGrid();
 }
 
@@ -3027,11 +3055,13 @@ function startExerciseTimer(seconds, onDone) {
   };
 
   update();
+  countdownBeep(exTimerRemaining); // beep the starting number if the exercise is ≤5s
   exTimerInterval = setInterval(() => {
     if (isPaused) return;
     if (!document.getElementById('ex-ring-fill')) { clearInterval(exTimerInterval); return; }
     exTimerRemaining--;
     update();
+    countdownBeep(exTimerRemaining);
     if (exTimerRemaining <= 0) {
       stopExerciseTimer();
       if (btn) { btn.style.opacity = '1'; }
@@ -3184,6 +3214,7 @@ let audioCtx = null;
 function playBeep(freq, duration) {
   try {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.type = 'sine';
@@ -3195,6 +3226,13 @@ function playBeep(freq, duration) {
     osc.start();
     osc.stop(audioCtx.currentTime + duration / 1000);
   } catch(e) {}
+}
+
+// Beep the final seconds of any countdown: a tick on each of the last ≤5 seconds,
+// then a distinct higher "go" tone at 0. Short countdowns (3s) naturally beep 3-2-1-go.
+function countdownBeep(remaining) {
+  if (remaining <= 0) playBeep(1046, 260);
+  else if (remaining <= 5) playBeep(660, 110);
 }
 
 // ════════════════════════════════════════
@@ -3237,7 +3275,7 @@ function startCountdown(seconds, label, nextEx, callback, opts) {
   }
 
   overlay.style.display = 'flex';
-  if (opts.sound) playBeep(880, 140);
+  countdownBeep(cdRemaining); // beep the starting number too when it's within the final 5s
 
   cdInterval = setInterval(() => {
     if (isPaused) return;
@@ -3248,7 +3286,7 @@ function startCountdown(seconds, label, nextEx, callback, opts) {
     n2.textContent = cdRemaining;
     n2.classList.add('pulse');
     setTimeout(() => { if (n2) n2.classList.remove('pulse'); }, 100);
-    if (opts.sound) playBeep(cdRemaining <= 0 ? 1046 : 660, cdRemaining <= 0 ? 260 : 110);
+    countdownBeep(cdRemaining);
     if (cdRemaining <= 0) {
       clearInterval(cdInterval);
       cdInterval = null;
@@ -3307,7 +3345,9 @@ function resetAll() {
   searchTerm = '';
   selectedCats = new Set();
   selectedMuscles = new Set();
-  document.querySelectorAll('#cat-filter .cat-btn, #muscle-filter .cat-btn').forEach(b => b.classList.remove('active'));
+  selectedUtstyr = new Set();
+  document.querySelectorAll('#cat-filter .cat-btn, #muscle-filter .cat-btn, #utstyr-filter .cat-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#cat-filter .cat-btn:first-child, #muscle-filter .cat-btn:first-child, #utstyr-filter .cat-btn:first-child').forEach(b => b.classList.add('active'));
   showScreen('screen-select');
 }
 
@@ -3458,6 +3498,10 @@ async function performDeleteAccount() {
 }
 
 function openHowToAddOverlay() {
+  // Reassign src so the gif always restarts from the first frame instead of
+  // resuming wherever it was last time (uses the browser cache, no re-download).
+  const img = document.querySelector('#howto-overlay .lightbox-img');
+  if (img) { img.src = ''; img.src = 'howtoaddasapp.gif'; }
   document.getElementById('howto-overlay').style.display = 'flex';
 }
 function closeHowToAddOverlay() {
@@ -3500,12 +3544,14 @@ async function fetchPersonalWorkouts() {
 let newWorkoutSelectedExercises = [];
 let newWorkoutCats = new Set();
 let newWorkoutMuscles = new Set();
+let newWorkoutUtstyr = new Set();
 
 function openCreateWorkout() {
   if (!currentUser) return;
   newWorkoutSelectedExercises = [];
   newWorkoutCats = new Set();
   newWorkoutMuscles = new Set();
+  newWorkoutUtstyr = new Set();
   document.getElementById('new-workout-name').value = '';
   document.getElementById('new-workout-region').value = 'Full body';
   document.getElementById('new-workout-instructions').value = '';
@@ -3533,6 +3579,11 @@ function rebuildNewWorkoutFilters() {
   document.getElementById('new-workout-muscle-filter').innerHTML =
     `<button class="cat-btn active" onclick="resetNewWorkoutMuscleFilter()">Alle</button>` +
     muscles.map(m => `<button class="cat-btn" onclick="filterNewWorkoutMuscle('${m}', this)">${m}</button>`).join('');
+
+  const utstyr = [...new Set(EXERCISES.map(e => e.utstyr).filter(Boolean))];
+  document.getElementById('new-workout-utstyr-filter').innerHTML =
+    `<button class="cat-btn active" onclick="resetNewWorkoutUtstyrFilter()">Alle</button>` +
+    utstyr.map(u => `<button class="cat-btn" onclick="filterNewWorkoutUtstyr('${u.replace(/'/g, "\\'")}', this)">${u}</button>`).join('');
 }
 
 function resetNewWorkoutCatFilter() {
@@ -3559,6 +3610,18 @@ function filterNewWorkoutMuscle(muscle, btn) {
   document.querySelector('#new-workout-muscle-filter .cat-btn').classList.toggle('active', newWorkoutMuscles.size === 0);
   renderNewWorkoutGrid();
 }
+function resetNewWorkoutUtstyrFilter() {
+  newWorkoutUtstyr = new Set();
+  document.querySelectorAll('#new-workout-utstyr-filter .cat-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('#new-workout-utstyr-filter .cat-btn').classList.add('active');
+  renderNewWorkoutGrid();
+}
+function filterNewWorkoutUtstyr(u, btn) {
+  if (newWorkoutUtstyr.has(u)) { newWorkoutUtstyr.delete(u); btn.classList.remove('active'); }
+  else { newWorkoutUtstyr.add(u); btn.classList.add('active'); }
+  document.querySelector('#new-workout-utstyr-filter .cat-btn').classList.toggle('active', newWorkoutUtstyr.size === 0);
+  renderNewWorkoutGrid();
+}
 
 function toggleNewWorkoutExercise(id) {
   const idx = newWorkoutSelectedExercises.findIndex(e => e.id === id);
@@ -3577,8 +3640,9 @@ function renderNewWorkoutGrid() {
   const filtered = EXERCISES.filter(ex => {
     const matchCat = newWorkoutCats.size === 0 || newWorkoutCats.has(ex.cat);
     const matchMuscle = newWorkoutMuscles.size === 0 || [...newWorkoutMuscles].some(m => (ex.muscles || '').toLowerCase().includes(m.toLowerCase()));
+    const matchUtstyr = newWorkoutUtstyr.size === 0 || newWorkoutUtstyr.has(ex.utstyr);
     const matchSearch = ex.name.toLowerCase().includes(term) || (ex.muscles || '').toLowerCase().includes(term);
-    return matchCat && matchMuscle && matchSearch;
+    return matchCat && matchMuscle && matchUtstyr && matchSearch;
   });
   grid.innerHTML = filtered.map(ex => {
     const sel = newWorkoutSelectedExercises.some(s => s.id === ex.id);
@@ -4000,6 +4064,7 @@ function parseSheetCSV(csv) {
   const iEmoji   = findCol('emoji', 'ikon', 'icon');
   const iVariation = findCol('variation', 'variasjon');
   const iSides   = findCol('l + r rounds', 'l+r rounds', 'sides', 'side');
+  const iUtstyr  = findCol('utstyr', 'equipment', 'utstyr type');
 
   // ── Workout columns (H+) — find 'økt' header
   const iWktName = findCol('økt', 'workout', 'øktnavn', 'workoutname');
@@ -4036,6 +4101,7 @@ function parseSheetCSV(csv) {
       big:       (iEmoji     >= 0 ? row[iEmoji]     : '') || '🏋️',
       variation: (iVariation >= 0 ? row[iVariation] : '') || '',
       sides:     (iSides >= 0 && (row[iSides] || '').trim().toLowerCase().startsWith('l')) ? 'LR' : '1',
+      utstyr:    (iUtstyr >= 0 ? (row[iUtstyr] || '').trim() : ''),
     };
     exercises.push(ex);
     exerciseMap[ex.nr] = ex;
@@ -4230,6 +4296,7 @@ function resetToDefault() {
 function rebuildCatFilter() {
   selectedCats = new Set();
   selectedMuscles = new Set();
+  selectedUtstyr = new Set();
 
   const cats = [...new Set(EXERCISES.map(e => e.cat).filter(Boolean))];
   document.getElementById('cat-filter').innerHTML =
@@ -4240,6 +4307,11 @@ function rebuildCatFilter() {
   document.getElementById('muscle-filter').innerHTML =
     `<button class="cat-btn active" onclick="resetMuscleFilter()">Alle</button>` +
     muscles.map(m => `<button class="cat-btn" onclick="filterMuscle('${m}', this)">${m}</button>`).join('');
+
+  const utstyr = [...new Set(EXERCISES.map(e => e.utstyr).filter(Boolean))];
+  document.getElementById('utstyr-filter').innerHTML =
+    `<button class="cat-btn active" onclick="resetUtstyrFilter()">Alle</button>` +
+    utstyr.map(u => `<button class="cat-btn" onclick="filterUtstyr('${u.replace(/'/g, "\\'")}', this)">${u}</button>`).join('');
 }
 
 // ════════════════════════════════════════
