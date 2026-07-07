@@ -313,6 +313,31 @@
   }
 
   /* ── BOTTOM CTA ── */
+  .random-picker-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 28px 0;
+    flex-wrap: wrap;
+  }
+  .random-picker-label {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .random-slider {
+    flex: 1;
+    min-width: 90px;
+    accent-color: var(--accent);
+  }
+  .random-count-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    color: var(--accent);
+    min-width: 1.2em;
+    text-align: center;
+  }
   .bottom-cta {
     padding: 20px 28px;
     display: flex;
@@ -886,6 +911,17 @@
   }
 
   /* Compact stats row used in calendar day popup */
+  .cal-duo-badge {
+    display: inline-block;
+    background: var(--accent-dim);
+    color: var(--accent2);
+    border: 1px solid var(--accent-border);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
   .cal-entry-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -953,6 +989,24 @@
     transition: all 0.2s;
   }
   .saved-workout-card:hover {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, var(--accent-dark), var(--surface));
+  }
+  .duo-partner-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+  }
+  .duo-partner-option:hover {
     border-color: var(--accent);
     background: linear-gradient(135deg, var(--accent-dark), var(--surface));
   }
@@ -1390,6 +1444,21 @@
     object-fit: contain;
   }
   .calendar-day-num { font-size: 0.72rem; line-height: 1; }
+  .calendar-day-badge {
+    position: absolute;
+    font-size: 0.6rem;
+    line-height: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .calendar-day-badge-mode { top: -4px; right: -4px; }
+  .calendar-day-badge-duo { bottom: -4px; right: -4px; }
   .calendar-day.is-today { box-shadow: inset 0 0 0 2px var(--text-muted); }
   .calendar-empty-hint {
     text-align: center;
@@ -1524,6 +1593,37 @@
   .mode-btn:not(.active):hover { color: var(--text); }
   .mode-sub { display: none; margin-top: 12px; }
   .mode-sub.visible { display: block; }
+
+  .stepper-duo-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .stepper-duo-row .stepper { flex: 1; }
+  .duo-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .duo-toggle:has(input:checked) {
+    border-color: var(--accent);
+    color: var(--text);
+  }
+  .duo-toggle input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+  }
 
   /* ── EXERCISE COUNTDOWN RING ── */
   .ex-ring-wrap {
@@ -1669,6 +1769,13 @@
 
   <div class="exercise-grid" id="exercise-grid"></div>
 
+  <div class="random-picker-row">
+    <span class="random-picker-label">🎲 Tilfeldig økt</span>
+    <input type="range" min="2" max="10" value="5" id="random-count-slider" class="random-slider" oninput="document.getElementById('random-count-label').textContent=this.value">
+    <span class="random-count-label" id="random-count-label">5</span>
+    <button class="btn-secondary" onclick="pickRandomWorkout()">Random</button>
+  </div>
+
   <div class="bottom-cta">
     <div class="sheet-ref-wrap" id="sheet-ref-wrap" style="display:none">
       <span class="sheet-ref-hint" id="sheet-ref-hint"></span>
@@ -1706,24 +1813,36 @@
         </button>
       </div>
       <div class="mode-sub visible" id="mode-sub-reps">
-        <div class="stepper">
-          <button class="stepper-btn" onclick="adjustVal('plannedReps', -5)">−</button>
-          <div>
-            <div class="stepper-val" id="val-plannedReps">15</div>
-            <div class="stepper-unit">reps per øvelse</div>
+        <div class="stepper-duo-row">
+          <div class="stepper">
+            <button class="stepper-btn" onclick="adjustVal('plannedReps', -5)">−</button>
+            <div>
+              <div class="stepper-val" id="val-plannedReps">15</div>
+              <div class="stepper-unit">reps per øvelse</div>
+            </div>
+            <button class="stepper-btn" onclick="adjustVal('plannedReps', 5)">+</button>
           </div>
-          <button class="stepper-btn" onclick="adjustVal('plannedReps', 5)">+</button>
+          <label class="duo-toggle">
+            <input type="checkbox" id="duo-checkbox-reps" onchange="toggleDuoMode(this.checked)">
+            <span>🫱🏽‍🫲🏼Duo</span>
+          </label>
         </div>
         <div style="font-size:0.72rem;color:var(--text-dim);margin-top:8px">Brukes kun for å beregne tidsestimat i sammendraget</div>
       </div>
       <div class="mode-sub" id="mode-sub-time">
-        <div class="stepper">
-          <button class="stepper-btn" onclick="adjustVal('exDuration', -30)">−</button>
-          <div>
-            <div class="stepper-val" id="val-exDuration">1 min</div>
-            <div class="stepper-unit">per øvelse</div>
+        <div class="stepper-duo-row">
+          <div class="stepper">
+            <button class="stepper-btn" onclick="adjustVal('exDuration', -30)">−</button>
+            <div>
+              <div class="stepper-val" id="val-exDuration">1 min</div>
+              <div class="stepper-unit">per øvelse</div>
+            </div>
+            <button class="stepper-btn" onclick="adjustVal('exDuration', 30)">+</button>
           </div>
-          <button class="stepper-btn" onclick="adjustVal('exDuration', 30)">+</button>
+          <label class="duo-toggle">
+            <input type="checkbox" id="duo-checkbox-time" onchange="toggleDuoMode(this.checked)">
+            <span>🫱🏽‍🫲🏼Duo</span>
+          </label>
         </div>
       </div>
     </div>
@@ -1905,6 +2024,17 @@
   </div>
 </div>
 
+<!-- Duo partner picker -->
+<div class="wkt-popup-overlay" id="duo-partner-overlay" style="display:none" onclick="closeDuoPartnerPickerIfBg(event)">
+  <div class="wkt-popup">
+    <div class="wkt-popup-header">
+      <div class="wkt-popup-title">🫱🏽‍🫲🏼 Hvem trener du med?</div>
+      <button class="wkt-popup-close" onclick="cancelDuoPartnerPicker()">✕</button>
+    </div>
+    <div id="duo-partner-list"></div>
+  </div>
+</div>
+
 <!-- Create personal workout popup -->
 <div class="wkt-popup-overlay" id="create-workout-overlay" style="display:none" onclick="closeCreateWorkoutIfBg(event)">
   <div class="wkt-popup" style="max-height:92vh">
@@ -2079,7 +2209,8 @@ const EXERCISES = [
 // STATE
 // ════════════════════════════════════════
 let selectedExercises = [];
-let config = { rounds: 3, restEx: 15, restRound: 60, exMode: 'reps', exDuration: 60, plannedReps: 15 };
+let effectiveExercises = []; // selectedExercises, doubled when time-mode + duo (each ex done by both people)
+let config = { rounds: 3, restEx: 15, restRound: 60, exMode: 'reps', exDuration: 60, plannedReps: 15, duo: false, duoPartner: '' };
 let workoutState = {
   curRound: 1,
   curExIndex: 0,
@@ -2197,6 +2328,19 @@ function toggleExercise(id) {
     }
     selectedExercises.push(ex);
   }
+  updateExerciseCardStates();
+  renderSelectedStrip();
+  document.getElementById('btn-to-config').disabled = selectedExercises.length === 0;
+}
+
+function pickRandomWorkout() {
+  const count = parseInt(document.getElementById('random-count-slider').value);
+  const pool = [...EXERCISES];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  selectedExercises = pool.slice(0, Math.min(count, pool.length));
   updateExerciseCardStates();
   renderSelectedStrip();
   document.getElementById('btn-to-config').disabled = selectedExercises.length === 0;
@@ -2320,6 +2464,72 @@ function setExMode(mode) {
   buildSummary();
 }
 
+function syncDuoCheckboxes(checked) {
+  const a = document.getElementById('duo-checkbox-reps');
+  const b = document.getElementById('duo-checkbox-time');
+  if (a) a.checked = checked;
+  if (b) b.checked = checked;
+}
+
+function toggleDuoMode(checked) {
+  syncDuoCheckboxes(checked);
+  if (checked) {
+    openDuoPartnerPicker();
+  } else {
+    config.duo = false;
+    config.duoPartner = '';
+    buildSummary();
+  }
+}
+
+async function openDuoPartnerPicker() {
+  const listEl = document.getElementById('duo-partner-list');
+  listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px 0">Laster brukere…</div>';
+  document.getElementById('duo-partner-overlay').style.display = 'flex';
+
+  let users = [];
+  if (appsScriptUrl) {
+    try {
+      const url = `${appsScriptUrl}?action=listUsers&username=${encodeURIComponent(currentUser || '')}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      users = data.success ? data.users : [];
+    } catch(e) {
+      users = [];
+    }
+  }
+
+  const options = [...users, 'Gjest'];
+  listEl.innerHTML = options.map(name => `
+    <div class="duo-partner-option" onclick="selectDuoPartner('${name.replace(/'/g, "\\'")}')">
+      ${name === 'Gjest' ? '👤' : '🙋'} ${name}
+    </div>`
+  ).join('');
+}
+
+function selectDuoPartner(name) {
+  config.duo = true;
+  config.duoPartner = name;
+  closeDuoPartnerPickerOverlay();
+  buildSummary();
+}
+
+function cancelDuoPartnerPicker() {
+  config.duo = false;
+  config.duoPartner = '';
+  syncDuoCheckboxes(false);
+  closeDuoPartnerPickerOverlay();
+  buildSummary();
+}
+
+function closeDuoPartnerPickerOverlay() {
+  document.getElementById('duo-partner-overlay').style.display = 'none';
+}
+
+function closeDuoPartnerPickerIfBg(e) {
+  if (e.target === document.getElementById('duo-partner-overlay')) cancelDuoPartnerPicker();
+}
+
 function formatMinutes(secs) {
   const mins = secs / 60;
   return (mins % 1 === 0 ? mins : mins.toFixed(1).replace('.', ',')) + ' min';
@@ -2340,6 +2550,7 @@ function buildConfigScreen() {
 
   // Restore mode toggle state
   setExMode(config.exMode);
+  syncDuoCheckboxes(config.duo);
 
   renderSortableList();
   buildSummary();
@@ -2370,19 +2581,23 @@ function renderSortableList() {
 }
 
 function buildSummary() {
+  const doubled = config.exMode === 'time' && config.duo;
+  const exCount = doubled ? selectedExercises.length * 2 : selectedExercises.length;
   const perEx = config.exMode === 'time' ? config.exDuration : config.plannedReps * 3;
-  const totalRests = (selectedExercises.length - 1) * config.restEx + (config.rounds - 1) * config.restRound;
-  const estMinutes = Math.round((totalRests + selectedExercises.length * config.rounds * perEx) / 60);
+  const effRestEx = config.duo ? DUO_SWITCH_SECONDS : config.restEx;
+  const effRestRound = config.duo ? 0 : config.restRound;
+  const totalRests = (exCount - 1) * effRestEx + (config.rounds - 1) * effRestRound;
+  const estMinutes = Math.round((totalRests + exCount * config.rounds * perEx) / 60);
   const modeText = config.exMode === 'time' ? `${config.exDuration}s per øvelse` : 'Egentempo (reps)';
 
   document.getElementById('summary-box').innerHTML = `
     <div class="summary-row">
       <span class="summary-key">Øvelsesmodus</span>
-      <span class="summary-val">${modeText}</span>
+      <span class="summary-val">${modeText}${config.duo ? ' 🫱🏽‍🫲🏼' : ''}</span>
     </div>
     <div class="summary-row">
       <span class="summary-key">Øvelser per runde</span>
-      <span class="summary-val">${selectedExercises.length}</span>
+      <span class="summary-val">${exCount}</span>
     </div>
     <div class="summary-row">
       <span class="summary-key">Runder</span>
@@ -2390,11 +2605,11 @@ function buildSummary() {
     </div>
     <div class="summary-row">
       <span class="summary-key">Pause / øvelse</span>
-      <span class="summary-val">${config.restEx}s</span>
+      <span class="summary-val">${effRestEx}s</span>
     </div>
     <div class="summary-row">
       <span class="summary-key">Pause / runde</span>
-      <span class="summary-val">${config.restRound}s</span>
+      <span class="summary-val">${effRestRound}s</span>
     </div>
     <div class="summary-row">
       <span class="summary-key">Estimert tid</span>
@@ -2464,15 +2679,23 @@ function goBack() {
 // ════════════════════════════════════════
 // SCREEN 3: WORKOUT
 // ════════════════════════════════════════
+function computeEffectiveExercises() {
+  if (config.exMode === 'time' && config.duo) {
+    return selectedExercises.flatMap(ex => [ex, ex]);
+  }
+  return selectedExercises;
+}
+
 function startWorkout() {
   workoutState.curRound = 1;
   workoutState.curExIndex = 0;
   workoutState.done = false;
+  effectiveExercises = computeEffectiveExercises();
 
   showScreen('workout-screen');
   document.getElementById('tot-rounds').textContent = config.rounds;
 
-  const firstEx = selectedExercises[0];
+  const firstEx = effectiveExercises[0];
   startCountdown(10, 'GJØR DEG KLAR', firstEx, () => {
     workoutState.startTime = Date.now();
     renderWorkout();
@@ -2480,8 +2703,8 @@ function startWorkout() {
 }
 
 function renderWorkout() {
-  const ex = selectedExercises[workoutState.curExIndex];
-  const n = selectedExercises.length;
+  const ex = effectiveExercises[workoutState.curExIndex];
+  const n = effectiveExercises.length;
   const totalDone = (workoutState.curRound - 1) * n + workoutState.curExIndex;
   const totalExercises = config.rounds * n;
 
@@ -2491,7 +2714,7 @@ function renderWorkout() {
 
   // Cards row
   const row = document.getElementById('workout-cards-row');
-  row.innerHTML = selectedExercises.map((e, i) => {
+  row.innerHTML = effectiveExercises.map((e, i) => {
     let cls = '';
     if (i === workoutState.curExIndex) cls = 'active';
     else if (i < workoutState.curExIndex) cls = 'done-card';
@@ -2604,6 +2827,7 @@ function stopExerciseTimer() {
 
 // ─── Time-mode exercise phase — splits L+R exercises into two timed halves ───
 const SWITCH_SIDE_SECONDS = 5;
+const DUO_SWITCH_SECONDS = 3;
 
 function startTimedExercisePhase(ex) {
   startExerciseTimer(config.exDuration, () => {
@@ -2688,7 +2912,7 @@ function nextExercise() {
   const btn = document.getElementById('btn-next-ex');
   if (btn) btn.style.opacity = '1';
 
-  const n = selectedExercises.length;
+  const n = effectiveExercises.length;
   const isLastEx = workoutState.curExIndex === n - 1;
   const isLastRound = workoutState.curRound === config.rounds;
 
@@ -2699,8 +2923,8 @@ function nextExercise() {
 
   if (isLastEx) {
     // Between rounds
-    const nextEx = selectedExercises[0];
-    if (config.restRound > 0) {
+    const nextEx = effectiveExercises[0];
+    if (config.restRound > 0 && !config.duo) {
       startCountdown(config.restRound, 'RUNDEPAUSE', nextEx, () => {
         workoutState.curRound++;
         workoutState.curExIndex = 0;
@@ -2713,8 +2937,13 @@ function nextExercise() {
     }
   } else {
     // Between exercises
-    const nextEx = selectedExercises[workoutState.curExIndex + 1];
-    if (config.restEx > 0) {
+    const nextEx = effectiveExercises[workoutState.curExIndex + 1];
+    if (config.duo) {
+      startCountdown(DUO_SWITCH_SECONDS, 'BYTT!', nextEx, () => {
+        workoutState.curExIndex++;
+        renderWorkout();
+      });
+    } else if (config.restEx > 0) {
       startCountdown(config.restEx, 'HVIL', nextEx, () => {
         workoutState.curExIndex++;
         renderWorkout();
@@ -2830,7 +3059,7 @@ function finishWorkout() {
   document.getElementById('done-exercises').textContent = selectedExercises.length * config.rounds;
   document.getElementById('done-time').textContent = durationLabel;
 
-  logWorkoutToSheet(selectedExercises.map(ex => ex.nr), config.rounds, durationLabel, config.exMode);
+  logWorkoutToSheet(selectedExercises.map(ex => ex.nr), config.rounds, durationLabel, config.exMode, config.duo ? config.duoPartner : '');
 
   showScreen('screen-done');
 }
@@ -2846,7 +3075,7 @@ function doQuit() {
 
 function resetAll() {
   selectedExercises = [];
-  config = { rounds: 3, restEx: 15, restRound: 60, exMode: 'reps', exDuration: 60, plannedReps: 15 };
+  config = { rounds: 3, restEx: 15, restRound: 60, exMode: 'reps', exDuration: 60, plannedReps: 15, duo: false, duoPartner: '' };
   stopExerciseTimer();
   renderExerciseGrid();
   renderSelectedStrip();
@@ -2948,13 +3177,14 @@ function useAppWithoutLogin() {
   showScreen('screen-select');
 }
 
-async function logWorkoutToSheet(exerciseNrs, rounds, durationLabel, exMode) {
+async function logWorkoutToSheet(exerciseNrs, rounds, durationLabel, exMode, duoPartner) {
   if (!appsScriptUrl || !currentUser) return;
   try {
     const mode = exMode === 'time' ? 'Tid' : 'Repetisjoner';
     const url = `${appsScriptUrl}?action=logWorkout&username=${encodeURIComponent(currentUser)}`
       + `&exercises=${encodeURIComponent(exerciseNrs.join('-'))}&rounds=${encodeURIComponent(rounds)}`
-      + `&mode=${encodeURIComponent(mode)}&duration=${encodeURIComponent(durationLabel)}`;
+      + `&mode=${encodeURIComponent(mode)}&duration=${encodeURIComponent(durationLabel)}`
+      + `&duoPartner=${encodeURIComponent(duoPartner || '')}`;
     await fetch(url);
     workoutHistory = null; // invalidate so calendar refetches next time it opens
   } catch(e) {
@@ -3179,9 +3409,17 @@ function renderCalendarGrid() {
     const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const hasWorkout = !!calendarByDate[key];
     const cls = ['calendar-day', 'in-month', hasWorkout ? 'has-workout' : '', key === todayKey ? 'is-today' : ''].filter(Boolean).join(' ');
-    const inner = hasWorkout
-      ? `<img class="calendar-day-icon" src="favicon.png" alt=""><span class="calendar-day-num">${day}</span>`
-      : `${day}`;
+    let inner = `${day}`;
+    if (hasWorkout) {
+      const entries = calendarByDate[key];
+      const lastMode = entries[entries.length - 1].mode;
+      const modeIcon = lastMode === 'Tid' ? '⏱' : lastMode === 'Repetisjoner' ? '🔢' : '';
+      const isDuo = entries.some(e => e.duoWith);
+      inner = `<img class="calendar-day-icon" src="favicon.png" alt="">`
+        + `<span class="calendar-day-num">${day}</span>`
+        + (modeIcon ? `<span class="calendar-day-badge calendar-day-badge-mode">${modeIcon}</span>` : '')
+        + (isDuo ? `<span class="calendar-day-badge calendar-day-badge-duo">🫱🏽‍🫲🏼</span>` : '');
+    }
     html += `<div class="${cls}" ${hasWorkout ? `onclick="showCalendarDay('${key}')"` : ''}>${inner}</div>`;
   }
   grid.innerHTML = html;
@@ -3199,7 +3437,12 @@ function showCalendarDay(key) {
     const nrs = String(entry.exercises || '').split('-').map(s => parseInt(s)).filter(n => !isNaN(n));
     const exList = nrs.map(nr => EXERCISES.find(e => e.nr === nr) || { name: `#${nr}`, img: '', muscles: '' });
 
+    const duoBadge = entry.duoWith
+      ? `<div class="cal-duo-badge">🫱🏽‍🫲🏼 Duo økt med ${entry.duoWith}</div>`
+      : '';
+
     const statsHtml = `
+      ${duoBadge}
       <div class="cal-entry-stats">
         <div class="cal-stat"><div class="cal-stat-val">${entry.rounds || '—'}</div><div class="cal-stat-key">Runder</div></div>
         <div class="cal-stat"><div class="cal-stat-val">${entry.mode === 'Tid' ? '⏱' : entry.mode === 'Repetisjoner' ? '🔢' : '—'}</div><div class="cal-stat-key">${entry.mode || 'Modus'}</div></div>
