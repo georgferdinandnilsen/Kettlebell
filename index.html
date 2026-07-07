@@ -1104,6 +1104,39 @@
   }
 
   /* ── WORKOUT DETAIL POPUP ── */
+  .lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--scrim-strong);
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+  }
+  .lightbox-img {
+    max-width: 90vw;
+    max-height: 85vh;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 1.4rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .wkt-popup-overlay {
     position: fixed;
     inset: 0;
@@ -1807,8 +1840,15 @@
       <button class="btn-primary" id="login-submit-btn" style="width:100%" onclick="submitLogin()">Logg inn</button>
       <button class="btn-secondary" style="width:100%;margin-top:10px" onclick="useAppWithoutLogin()">Bruk app uten bruker</button>
       <button class="login-toggle" id="login-toggle-btn" onclick="toggleLoginMode()">Ny bruker? Opprett konto</button>
+      <button class="btn-secondary" style="width:100%;margin-top:36px" onclick="openHowToAddOverlay()">📲 Hvordan legg til på hjemskjerm</button>
     </div>
   </div>
+</div>
+
+<!-- How-to-add-as-app lightbox -->
+<div class="lightbox-overlay" id="howto-overlay" style="display:none" onclick="closeHowToAddOverlayIfBg(event)">
+  <button class="lightbox-close" onclick="closeHowToAddOverlay()">✕</button>
+  <img class="lightbox-img" src="howtoaddasapp.gif" alt="How to add as app">
 </div>
 
 <!-- ══════════════════════════════════════════
@@ -2252,10 +2292,19 @@
 
     <div class="settings-field">
       <label class="settings-label">Konto</label>
-      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;gap:8px">
         <span id="settings-current-user" style="font-size:0.9rem;font-weight:600">—</span>
-        <button id="settings-auth-btn" onclick="logoutUser()" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:0.78rem;padding:6px 12px;border-radius:8px;cursor:pointer">Logg ut</button>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button id="settings-auth-btn" onclick="logoutUser()" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:0.78rem;padding:6px 12px;border-radius:8px;cursor:pointer">Logg ut</button>
+          <button id="settings-delete-btn" onclick="openDeleteAccountConfirm()" style="display:none;background:transparent;border:1px solid var(--red);color:var(--red);font-size:0.78rem;padding:6px 12px;border-radius:8px;cursor:pointer">Slett bruker</button>
+        </div>
       </div>
+    </div>
+
+    <div class="settings-field">
+      <button onclick="openHowToAddOverlay()" style="width:100%;background:transparent;border:1px solid var(--border);color:var(--text-muted);font-size:0.82rem;padding:10px 16px;border-radius:8px;cursor:pointer">
+        📲 Hvordan legg til på hjemskjerm
+      </button>
     </div>
 
     <div class="settings-field">
@@ -2278,6 +2327,30 @@
       🔄 Hent øvelser på nytt fra Sheet
     </button>
   </div>
+</div>
+
+<!-- Delete account: confirm step -->
+<div class="wkt-popup-overlay" id="delete-account-confirm-overlay" style="display:none" onclick="closeDeleteAccountConfirmIfBg(event)">
+  <div class="wkt-popup">
+    <div class="wkt-popup-header">
+      <div class="wkt-popup-title">⚠️ Slette brukeren din?</div>
+      <button class="wkt-popup-close" onclick="cancelDeleteAccount()">✕</button>
+    </div>
+    <div style="color:var(--text-muted);font-size:0.9rem;line-height:1.6;margin-bottom:20px">
+      Dette sletter kontoen din, hele treningskalenderen din og alle favorittøktene dine permanent. Dette kan ikke angres.
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-secondary" style="flex:1" onclick="cancelDeleteAccount()">Avbryt</button>
+      <button class="btn-primary" style="flex:1;background:var(--red);border-color:var(--red)" onclick="startDeleteAccountCountdown()">Ja, slett bruker</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete account: 5s countdown before it actually happens -->
+<div class="countdown-overlay" id="delete-account-countdown-overlay" style="display:none">
+  <div class="countdown-label">SLETTER BRUKEREN OM</div>
+  <div class="countdown-number" id="delete-account-countdown-number">5</div>
+  <button class="skip-btn" onclick="cancelDeleteAccountCountdown()">Avbryt</button>
 </div>
 
 <script>
@@ -3305,6 +3378,73 @@ function useAppWithoutLogin() {
   showScreen('screen-select');
 }
 
+// ─── Slett bruker ───
+let deleteAcctInterval = null;
+let deleteAcctRemaining = 5;
+
+function openDeleteAccountConfirm() {
+  document.getElementById('delete-account-confirm-overlay').style.display = 'flex';
+}
+function cancelDeleteAccount() {
+  document.getElementById('delete-account-confirm-overlay').style.display = 'none';
+}
+function closeDeleteAccountConfirmIfBg(e) {
+  if (e.target === document.getElementById('delete-account-confirm-overlay')) cancelDeleteAccount();
+}
+
+function startDeleteAccountCountdown() {
+  document.getElementById('delete-account-confirm-overlay').style.display = 'none';
+  deleteAcctRemaining = 5;
+  const numEl = document.getElementById('delete-account-countdown-number');
+  numEl.textContent = deleteAcctRemaining;
+  document.getElementById('delete-account-countdown-overlay').style.display = 'flex';
+  if (deleteAcctInterval) clearInterval(deleteAcctInterval);
+  deleteAcctInterval = setInterval(() => {
+    deleteAcctRemaining--;
+    numEl.textContent = deleteAcctRemaining;
+    if (deleteAcctRemaining <= 0) {
+      clearInterval(deleteAcctInterval);
+      deleteAcctInterval = null;
+      document.getElementById('delete-account-countdown-overlay').style.display = 'none';
+      performDeleteAccount();
+    }
+  }, 1000);
+}
+
+function cancelDeleteAccountCountdown() {
+  if (deleteAcctInterval) { clearInterval(deleteAcctInterval); deleteAcctInterval = null; }
+  document.getElementById('delete-account-countdown-overlay').style.display = 'none';
+}
+
+async function performDeleteAccount() {
+  const username = currentUser;
+  if (!username) return;
+  try {
+    const url = `${appsScriptUrl}?action=deleteAccount&username=${encodeURIComponent(username)}`;
+    await fetch(url);
+  } catch(e) {
+    console.warn('Kunne ikke slette bruker på serveren:', e.message);
+  }
+  currentUser = null;
+  isGuest = false;
+  try { localStorage.removeItem(USER_KEY); localStorage.removeItem(GUEST_KEY); } catch(e) {}
+  workoutHistory = null;
+  personalWorkouts = [];
+  updateAuthUi();
+  closeSettings();
+  showScreen('screen-login');
+}
+
+function openHowToAddOverlay() {
+  document.getElementById('howto-overlay').style.display = 'flex';
+}
+function closeHowToAddOverlay() {
+  document.getElementById('howto-overlay').style.display = 'none';
+}
+function closeHowToAddOverlayIfBg(e) {
+  if (e.target === document.getElementById('howto-overlay')) closeHowToAddOverlay();
+}
+
 async function logWorkoutToSheet(exerciseNrs, rounds, durationLabel, exMode, duoPartner, workoutName) {
   if (!appsScriptUrl || !currentUser) return;
   try {
@@ -3688,6 +3828,7 @@ function updateThemeButtons(theme) {
 function openSettings() {
   document.getElementById('settings-current-user').textContent = currentUser || (isGuest ? 'Gjest' : 'Ikke innlogget');
   document.getElementById('settings-auth-btn').textContent = currentUser ? 'Logg ut' : 'Logg inn';
+  document.getElementById('settings-delete-btn').style.display = currentUser ? 'block' : 'none';
   document.getElementById('appscript-url-input').value = appsScriptUrl;
   document.getElementById('settings-overlay').style.display = 'flex';
 }
