@@ -1472,6 +1472,106 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
   }
+  /* ── Logged-out gate (Kalender + Scoreboard) ── */
+  .auth-required-box {
+    max-width: 420px;
+    margin: 60px auto;
+    padding: 32px 24px;
+    text-align: center;
+  }
+  .auth-required-icon { font-size: 2.4rem; margin-bottom: 12px; }
+  .auth-required-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .auth-required-sub {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin-bottom: 22px;
+  }
+
+  /* ── Weekly goal stepper (Kalender-siden) ── */
+  .weekly-goal-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .weekly-goal-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  /* ── Scoreboard ── */
+  .scoreboard-list {
+    max-width: 680px;
+    margin: 0 auto 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .scoreboard-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+  }
+  .scoreboard-row.is-me { border-color: var(--accent); background: var(--accent-dim); }
+  .scoreboard-name { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+  .scoreboard-icons { display: flex; gap: 4px; flex-wrap: wrap; }
+  .scoreboard-icon { width: 22px; height: 22px; object-fit: contain; opacity: 0.4; }
+  .scoreboard-icon.done { opacity: 1; }
+  .scoreboard-icon.gold { opacity: 1; filter: sepia(1) saturate(6) hue-rotate(-15deg) brightness(1.05); }
+
+  /* ── Chat (scoreboard-siden) ── */
+  .chat-section-title {
+    max-width: 680px;
+    margin: 0 auto 12px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+    color: var(--text);
+  }
+  .chat-box {
+    max-width: 680px;
+    margin: 0 auto 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+  }
+  .chat-input-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .chat-input-row .search-input { flex: 1; margin: 0; }
+  .chat-refresh-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 44px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  .chat-refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .chat-messages { display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow-y: auto; }
+  .chat-msg { background: var(--surface2); border-radius: 10px; padding: 10px 12px; }
+  .chat-msg-head { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+  .chat-msg-user { font-weight: 700; font-size: 0.82rem; color: var(--accent2); }
+  .chat-msg-time { font-size: 0.72rem; color: var(--text-dim); flex-shrink: 0; }
+  .chat-msg-text { font-size: 0.88rem; color: var(--text); line-height: 1.4; word-break: break-word; }
+  .chat-empty { text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 20px 0; }
+
   .calendar-nav-btn {
     background: transparent;
     border: 1px solid var(--border);
@@ -1601,43 +1701,57 @@
   .cal-chip-duo { color: var(--accent2); background: var(--accent-dim); border-color: var(--accent-border); }
   .cal-card-arrow { font-size: 1.4rem; color: var(--text-dim); flex-shrink: 0; }
 
-  /* ── SETTINGS PANEL ── */
-  .settings-btn {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-    width: 36px; height: 36px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1rem;
+  /* ── HEADER WEEKLY-PROGRESS ROW ── */
+  .header-progress-row {
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
+    gap: 6px;
   }
-  .settings-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .header-progress-icon {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+    opacity: 0.45;
+  }
+  .header-progress-icon.done { opacity: 1; }
+  .header-progress-icon.gold {
+    opacity: 1;
+    filter: sepia(1) saturate(6) hue-rotate(-15deg) brightness(1.05);
+  }
 
-  /* Calendar nav button — wider outline button, no emoji, matching the app's
-     existing outlined-button language (same idea as .settings-btn). */
-  .calendar-nav-btn-custom {
-    width: 130px;
-    height: 36px;
-    border: 1.5px solid var(--accent);
-    border-radius: 8px;
-    background: transparent;
-    color: var(--accent);
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 600;
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 64px;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    background: var(--surface);
+    border-top: 1px solid var(--border);
     display: flex;
+    z-index: 250;
+  }
+  .bottom-nav-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    gap: 3px;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.66rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.15s;
   }
-  .calendar-nav-btn-custom:hover {
-    background: var(--accent-dim);
-  }
+  .bottom-nav-btn.active { color: var(--accent); }
+  .bottom-nav-icon { width: 22px; height: 22px; object-fit: contain; }
+  .bottom-nav-emoji { font-size: 1.25rem; line-height: 1; }
+  body.has-bottom-nav { padding-bottom: 76px; }
+
+  /* ── SETTINGS PANEL ── */
 
   .settings-overlay {
     position: fixed;
@@ -1840,10 +1954,7 @@
     <div class="logo">KETT<span>L</span></div>
     <div class="logo-sub">Laget av Georg Ferdinand Nilsen</div>
   </div>
-  <div style="display:flex;align-items:center;gap:10px">
-    <button class="calendar-nav-btn-custom" id="calendar-nav-header-btn" onclick="openCalendar()" title="Treningslogg" style="display:none">Treningslogg</button>
-    <button class="settings-btn" onclick="openSettings()" title="Innstillinger">⚙️</button>
-  </div>
+  <div class="header-progress-row" id="header-progress-row" style="display:none"></div>
 </header>
 
 <!-- ══════════════════════════════════════════
@@ -2167,7 +2278,24 @@
   <div class="bottom-cta" style="justify-content:flex-start">
     <button class="btn-secondary" onclick="showScreen('screen-select')">← Tilbake</button>
   </div>
+
+  <div class="auth-required-box" id="calendar-auth-required" style="display:none">
+    <div class="auth-required-icon">🔒</div>
+    <div class="auth-required-title">Logg inn for å se treningsloggen</div>
+    <div class="auth-required-sub">Kalenderen og ukesmålet ditt er knyttet til en bruker.</div>
+    <button class="btn-primary" onclick="showScreen('screen-login')">Logg inn / opprett bruker</button>
+  </div>
+
+  <div id="calendar-content">
   <div class="calendar-frame">
+    <div class="weekly-goal-row">
+      <span class="weekly-goal-label">🎯 Ukesmål</span>
+      <div class="stepper">
+        <button class="stepper-btn" onclick="adjustWeeklyGoal(-1)">−</button>
+        <span class="stepper-val" id="weekly-goal-value">3</span>
+        <button class="stepper-btn" onclick="adjustWeeklyGoal(1)">+</button>
+      </div>
+    </div>
     <div class="calendar-header">
       <button class="calendar-nav-btn" onclick="shiftCalendarMonth(-1)">←</button>
       <div class="calendar-month-title" id="calendar-month-title">—</div>
@@ -2179,6 +2307,40 @@
     <div class="calendar-grid" id="calendar-grid"></div>
     <div class="calendar-empty-hint" id="calendar-empty-hint" style="display:none">Ingen treningsøkter logget ennå.</div>
     <div class="calendar-list" id="calendar-list"></div>
+  </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: SCOREBOARD
+══════════════════════════════════════════ -->
+<div class="screen" id="screen-scoreboard">
+  <div class="bottom-cta" style="justify-content:flex-start">
+    <button class="btn-secondary" onclick="showScreen('screen-select')">← Tilbake</button>
+  </div>
+
+  <div class="auth-required-box" id="scoreboard-auth-required" style="display:none">
+    <div class="auth-required-icon">🔒</div>
+    <div class="auth-required-title">Logg inn for å se scoreboardet</div>
+    <div class="auth-required-sub">Ukesmål og chat er knyttet til en bruker.</div>
+    <button class="btn-primary" onclick="showScreen('screen-login')">Logg inn / opprett bruker</button>
+  </div>
+
+  <div id="scoreboard-content">
+    <div class="section-title">🏆 Scoreboard</div>
+    <div class="section-subtitle">Ukens fremgang — nullstilles hver mandag.</div>
+
+    <div class="scoreboard-list" id="scoreboard-list"></div>
+
+    <div class="chat-section-title">💬 Chat</div>
+    <div class="chat-box">
+      <div class="chat-input-row">
+        <input type="text" class="search-input" id="chat-input" placeholder="Skriv en melding…" maxlength="200" onkeydown="if(event.key==='Enter')sendChatMessage()">
+        <button class="btn-primary" id="chat-send-btn" onclick="sendChatMessage()">Send</button>
+        <button class="chat-refresh-btn" onclick="refreshChatMessages()" title="Oppdater meldinger">🔄</button>
+      </div>
+      <div class="chat-messages" id="chat-messages"></div>
+    </div>
   </div>
 </div>
 
@@ -2398,6 +2560,28 @@
   <button class="skip-btn" onclick="cancelDeleteAccountCountdown()">Avbryt</button>
 </div>
 
+<!-- ══════════════════════════════════════════
+     BOTTOM NAV
+══════════════════════════════════════════ -->
+<nav class="bottom-nav" id="bottom-nav" style="display:none">
+  <button class="bottom-nav-btn" id="nav-btn-calendar" onclick="openCalendar()" title="Treningslogg">
+    <span class="bottom-nav-emoji">📅</span>
+    <span>Kalender</span>
+  </button>
+  <button class="bottom-nav-btn" id="nav-btn-home" onclick="goHome()" title="Hjem">
+    <img class="bottom-nav-icon" id="bottom-nav-home-icon" src="favicon.png" alt="">
+    <span>Trening</span>
+  </button>
+  <button class="bottom-nav-btn" id="nav-btn-scoreboard" onclick="openScoreboard()" title="Scoreboard">
+    <span class="bottom-nav-emoji">🏆</span>
+    <span>Scoreboard</span>
+  </button>
+  <button class="bottom-nav-btn" id="nav-btn-settings" onclick="openSettings()" title="Innstillinger">
+    <span class="bottom-nav-emoji">⚙️</span>
+    <span>Innstillinger</span>
+  </button>
+</nav>
+
 <script>
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 // ════════════════════════════════════════
@@ -2456,6 +2640,28 @@ function showScreen(id) {
   const target = document.getElementById(id);
   if (target) target.classList.add('active');
   window.scrollTo(0, 0);
+  updateBottomNav(id);
+}
+
+// Screens where the bottom nav would just be in the way — mid-workout focus,
+// and the login screen (which has no logged-in state for the nav to reflect yet).
+const HIDDEN_NAV_SCREENS = ['screen-login', 'workout-screen'];
+const NAV_ACTIVE_MAP = {
+  'screen-calendar': 'nav-btn-calendar',
+  'screen-select': 'nav-btn-home',
+  'screen-config': 'nav-btn-home',
+  'screen-done': 'nav-btn-home',
+  'screen-scoreboard': 'nav-btn-scoreboard'
+};
+
+function updateBottomNav(screenId) {
+  const nav = document.getElementById('bottom-nav');
+  if (!nav) return;
+  const show = !HIDDEN_NAV_SCREENS.includes(screenId);
+  nav.style.display = show ? 'flex' : 'none';
+  document.body.classList.toggle('has-bottom-nav', show);
+  const activeId = NAV_ACTIVE_MAP[screenId];
+  document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.toggle('active', b.id === activeId));
 }
 
 function goHome() {
@@ -3380,15 +3586,37 @@ let isGuest = false;
 try { isGuest = localStorage.getItem(GUEST_KEY) === 'true'; } catch(e) {}
 let loginMode = 'login'; // 'login' | 'register'
 let calendarViewDate = new Date();
-let workoutHistory = null; // null = not fetched yet
+let workoutHistory = null; // null = nothing to show yet (no cache, no fetch)
+let historyFetchedFresh = false; // true once a real network fetch has landed this session
 let calendarByDate = {};
 let personalWorkouts = [];
 
+// ─── Ukesmål / scoreboard / chat — cached in localStorage, revalidated on
+// calendar/scoreboard open and right after finishing a workout. ───
+const HISTORY_CACHE_KEY = 'ironbell_history_cache';
+const SCOREBOARD_CACHE_KEY = 'ironbell_scoreboard_cache';
+const CHAT_CACHE_KEY = 'ironbell_chat_cache';
+let scoreboardData = null; // [{username, goal, completed}], null = not loaded yet
+let scoreboardFetchedFresh = false;
+let chatMessages = null; // [{time, username, message}], null = not loaded yet
+try {
+  const cachedHistory = localStorage.getItem(HISTORY_CACHE_KEY);
+  if (cachedHistory) workoutHistory = JSON.parse(cachedHistory);
+} catch(e) {}
+try {
+  const cachedScoreboard = localStorage.getItem(SCOREBOARD_CACHE_KEY);
+  if (cachedScoreboard) scoreboardData = JSON.parse(cachedScoreboard);
+} catch(e) {}
+try {
+  const cachedChat = localStorage.getItem(CHAT_CACHE_KEY);
+  if (cachedChat) chatMessages = JSON.parse(cachedChat);
+} catch(e) {}
+
 function updateAuthUi() {
-  const calBtn = document.getElementById('calendar-nav-header-btn');
-  if (calBtn) calBtn.style.display = currentUser ? 'flex' : 'none';
   const titleEl = document.getElementById('select-screen-title');
   if (titleEl) titleEl.textContent = currentUser ? `Hei ${currentUser}! Velg øvelser` : 'Velg Øvelser';
+  renderHeaderProgress();
+  if (currentUser) ensureScoreboardData();
 }
 
 function toggleLoginMode() {
@@ -3439,12 +3667,27 @@ async function submitLogin() {
   }
 }
 
+// Clears everything tied to the departing account so the next user on this
+// device (guest or otherwise) doesn't briefly see stale cached data.
+function clearAccountCaches_() {
+  workoutHistory = null;
+  historyFetchedFresh = false;
+  scoreboardData = null;
+  scoreboardFetchedFresh = false;
+  chatMessages = null;
+  personalWorkouts = [];
+  try {
+    localStorage.removeItem(HISTORY_CACHE_KEY);
+    localStorage.removeItem(SCOREBOARD_CACHE_KEY);
+    localStorage.removeItem(CHAT_CACHE_KEY);
+  } catch(e) {}
+}
+
 function logoutUser() {
   currentUser = null;
   isGuest = false;
   try { localStorage.removeItem(USER_KEY); localStorage.removeItem(GUEST_KEY); } catch(e) {}
-  workoutHistory = null;
-  personalWorkouts = [];
+  clearAccountCaches_();
   updateAuthUi();
   closeSettings();
   showScreen('screen-login');
@@ -3507,8 +3750,7 @@ async function performDeleteAccount() {
   currentUser = null;
   isGuest = false;
   try { localStorage.removeItem(USER_KEY); localStorage.removeItem(GUEST_KEY); } catch(e) {}
-  workoutHistory = null;
-  personalWorkouts = [];
+  clearAccountCaches_();
   updateAuthUi();
   closeSettings();
   showScreen('screen-login');
@@ -3538,7 +3780,10 @@ async function logWorkoutToSheet(exerciseNrs, rounds, durationLabel, exMode, duo
       + `&duoPartner=${encodeURIComponent(duoPartner || '')}`
       + `&name=${encodeURIComponent(workoutName || '')}`;
     await fetch(url);
-    workoutHistory = null; // invalidate so calendar refetches next time it opens
+    // Refresh calendar + weekly-goal data now rather than waiting for the user
+    // to open those screens, so the header progress row updates right away.
+    ensureWorkoutHistory(true);
+    ensureScoreboardData(true);
   } catch(e) {
     console.warn('Kunne ikke logge økt:', e.message);
   }
@@ -3718,25 +3963,214 @@ const MONTH_NAMES = ['Januar','Februar','Mars','April','Mai','Juni','Juli','Augu
 
 async function openCalendar() {
   showScreen('screen-calendar');
+  const gate = document.getElementById('calendar-auth-required');
+  const content = document.getElementById('calendar-content');
+  if (!currentUser) {
+    gate.style.display = 'block';
+    content.style.display = 'none';
+    return;
+  }
+  gate.style.display = 'none';
+  content.style.display = 'block';
+
   calendarViewDate = new Date();
   renderCalendarGrid(); // render immediately with whatever's cached, don't block on network
-  if (workoutHistory === null) {
-    await ensureWorkoutHistory();
+  renderWeeklyGoalUi();
+  if (!historyFetchedFresh || !scoreboardFetchedFresh) {
+    await Promise.all([ensureWorkoutHistory(), ensureScoreboardData()]);
     renderCalendarGrid(); // re-render once fresh data lands
+    renderWeeklyGoalUi();
   }
 }
 
-async function ensureWorkoutHistory() {
-  if (workoutHistory !== null) return;
-  if (!appsScriptUrl || !currentUser) { workoutHistory = []; return; }
+// Pass force=true to bypass the "already fetched this session" guard — used
+// right after finishing a workout so the calendar/goal data doesn't go stale.
+async function ensureWorkoutHistory(force) {
+  if (historyFetchedFresh && !force) return;
+  if (!appsScriptUrl || !currentUser) { workoutHistory = workoutHistory || []; return; }
   try {
     const url = `${appsScriptUrl}?action=history&username=${encodeURIComponent(currentUser)}`;
     const res = await fetch(url);
     const data = await res.json();
-    workoutHistory = data.success ? data.history : [];
+    workoutHistory = data.success ? data.history : (workoutHistory || []);
+    historyFetchedFresh = true;
+    try { localStorage.setItem(HISTORY_CACHE_KEY, JSON.stringify(workoutHistory)); } catch(e) {}
   } catch(e) {
-    workoutHistory = [];
+    if (workoutHistory === null) workoutHistory = [];
   }
+}
+
+// ─── Ukesmål + scoreboard data (shared by header widget, calendar, scoreboard) ───
+async function ensureScoreboardData(force) {
+  if (scoreboardFetchedFresh && !force) return;
+  if (!appsScriptUrl || !currentUser) { scoreboardData = scoreboardData || []; return; }
+  try {
+    const url = `${appsScriptUrl}?action=scoreboard&username=${encodeURIComponent(currentUser)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    scoreboardData = data.success ? data.users : (scoreboardData || []);
+    scoreboardFetchedFresh = true;
+    try { localStorage.setItem(SCOREBOARD_CACHE_KEY, JSON.stringify(scoreboardData)); } catch(e) {}
+    renderHeaderProgress();
+  } catch(e) {
+    if (scoreboardData === null) scoreboardData = [];
+  }
+}
+
+function myScoreboardEntry() {
+  if (!currentUser || !scoreboardData) return null;
+  return scoreboardData.find(u => u.username.toLowerCase() === currentUser.toLowerCase()) || null;
+}
+
+function renderHeaderProgress() {
+  const wrap = document.getElementById('header-progress-row');
+  if (!wrap) return;
+  if (!currentUser) { wrap.style.display = 'none'; return; }
+  const me = myScoreboardEntry();
+  const goal = me ? me.goal : 3;
+  const completed = me ? me.completed : 0;
+  const allDone = completed >= goal;
+  wrap.innerHTML = Array.from({ length: goal }, (_, i) => {
+    const isDone = i < completed;
+    const cls = allDone ? 'header-progress-icon gold' : (isDone ? 'header-progress-icon done' : 'header-progress-icon');
+    const src = allDone ? 'kettlebell_gold.png' : (isDone ? 'favicon.png' : 'favicon_lightgray.png');
+    const fallback = allDone ? "this.onerror=null;this.src='favicon.png';" : '';
+    return `<img class="${cls}" src="${src}" alt="" onerror="${fallback}">`;
+  }).join('');
+  wrap.style.display = 'flex';
+}
+
+function renderWeeklyGoalUi() {
+  const el = document.getElementById('weekly-goal-value');
+  if (!el) return;
+  const me = myScoreboardEntry();
+  el.textContent = me ? me.goal : 3;
+}
+
+async function adjustWeeklyGoal(delta) {
+  if (!currentUser) return;
+  const me = myScoreboardEntry();
+  const current = me ? me.goal : 3;
+  const next = Math.max(2, Math.min(7, current + delta));
+  if (next === current) return;
+
+  document.getElementById('weekly-goal-value').textContent = next;
+  if (me) me.goal = next; // optimistic local update
+
+  try {
+    const url = `${appsScriptUrl}?action=setWeeklyGoal&username=${encodeURIComponent(currentUser)}&goal=${next}`;
+    await fetch(url);
+    try { localStorage.setItem(SCOREBOARD_CACHE_KEY, JSON.stringify(scoreboardData)); } catch(e) {}
+  } catch(e) {
+    console.warn('Kunne ikke lagre ukesmål:', e.message);
+  }
+  renderHeaderProgress();
+}
+
+// ─── Scoreboard ───
+async function openScoreboard() {
+  showScreen('screen-scoreboard');
+  const gate = document.getElementById('scoreboard-auth-required');
+  const content = document.getElementById('scoreboard-content');
+  if (!currentUser) {
+    gate.style.display = 'block';
+    content.style.display = 'none';
+    return;
+  }
+  gate.style.display = 'none';
+  content.style.display = 'block';
+
+  renderScoreboardList(); // instantly from cache
+  renderChatMessages();
+  await Promise.all([ensureScoreboardData(), ensureChatMessages()]);
+  renderScoreboardList();
+  renderChatMessages();
+}
+
+function renderScoreboardList() {
+  const wrap = document.getElementById('scoreboard-list');
+  if (!wrap) return;
+  if (!scoreboardData || scoreboardData.length === 0) {
+    wrap.innerHTML = '<div class="chat-empty">Ingen brukere ennå.</div>';
+    return;
+  }
+  wrap.innerHTML = scoreboardData.map(u => {
+    const allDone = u.completed >= u.goal;
+    const icons = Array.from({ length: u.goal }, (_, i) => {
+      const isDone = i < u.completed;
+      const cls = allDone ? 'scoreboard-icon gold' : (isDone ? 'scoreboard-icon done' : 'scoreboard-icon');
+      const src = allDone ? 'kettlebell_gold.png' : (isDone ? 'favicon.png' : 'favicon_lightgray.png');
+      const fallback = allDone ? "this.onerror=null;this.src='favicon.png';" : '';
+      return `<img class="${cls}" src="${src}" alt="" onerror="${fallback}">`;
+    }).join('');
+    const isMe = currentUser && u.username.toLowerCase() === currentUser.toLowerCase();
+    return `
+      <div class="scoreboard-row ${isMe ? 'is-me' : ''}">
+        <div class="scoreboard-name">${u.username}</div>
+        <div class="scoreboard-icons">${icons}</div>
+      </div>`;
+  }).join('');
+}
+
+// ─── Chat (scoreboard-siden) ───
+async function ensureChatMessages(force) {
+  if (chatMessages !== null && !force) return;
+  if (!appsScriptUrl) { chatMessages = chatMessages || []; return; }
+  try {
+    const url = `${appsScriptUrl}?action=getChatMessages`;
+    const res = await fetch(url);
+    const data = await res.json();
+    chatMessages = data.success ? data.messages : (chatMessages || []);
+    try { localStorage.setItem(CHAT_CACHE_KEY, JSON.stringify(chatMessages)); } catch(e) {}
+  } catch(e) {
+    if (chatMessages === null) chatMessages = [];
+  }
+}
+
+function renderChatMessages() {
+  const wrap = document.getElementById('chat-messages');
+  if (!wrap) return;
+  if (!chatMessages || chatMessages.length === 0) {
+    wrap.innerHTML = '<div class="chat-empty">Ingen meldinger ennå. Vær den første!</div>';
+    return;
+  }
+  wrap.innerHTML = chatMessages.map(m => {
+    const d = new Date(m.time);
+    const timeLabel = isNaN(d) ? '' : `${d.getDate()}.${d.getMonth() + 1} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    return `
+      <div class="chat-msg">
+        <div class="chat-msg-head"><span class="chat-msg-user">${m.username}</span><span class="chat-msg-time">${timeLabel}</span></div>
+        <div class="chat-msg-text">${m.message}</div>
+      </div>`;
+  }).join('');
+}
+
+async function sendChatMessage() {
+  if (!currentUser) return;
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  const btn = document.getElementById('chat-send-btn');
+  input.disabled = true;
+  btn.disabled = true;
+  try {
+    const url = `${appsScriptUrl}?action=postChatMessage&username=${encodeURIComponent(currentUser)}&message=${encodeURIComponent(msg)}`;
+    await fetch(url);
+    input.value = '';
+    await ensureChatMessages(true);
+    renderChatMessages();
+  } catch(e) {
+    console.warn('Kunne ikke sende melding:', e.message);
+  }
+  input.disabled = false;
+  btn.disabled = false;
+  input.focus();
+}
+
+async function refreshChatMessages() {
+  await ensureChatMessages(true);
+  renderChatMessages();
 }
 
 function shiftCalendarMonth(delta) {
@@ -3919,6 +4353,17 @@ function setTheme(theme) {
   }
   try { localStorage.setItem(THEME_KEY, theme); } catch(e) {}
   updateThemeButtons(theme);
+  updateBottomNavHomeIcon();
+}
+
+// Outline kettlebell for the bottom nav's home tab — different tint per theme.
+// Falls back to the regular colored logo if the outline asset isn't present yet.
+function updateBottomNavHomeIcon() {
+  const icon = document.getElementById('bottom-nav-home-icon');
+  if (!icon) return;
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  icon.onerror = function() { this.onerror = null; this.src = 'favicon.png'; };
+  icon.src = isLight ? 'favicon_outline_green.png' : 'favicon_outline_white.png';
 }
 
 function updateThemeButtons(theme) {
@@ -4387,6 +4832,7 @@ async function fetchSheet(urlToLoad) {
 
 async function init() {
   updateThemeButtons(document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
+  updateBottomNavHomeIcon();
   updateAuthUi();
 
   let urlToLoad = DEFAULT_SHEET_URL;
