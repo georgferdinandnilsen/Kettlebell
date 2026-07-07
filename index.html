@@ -182,9 +182,13 @@
     position: relative;
     user-select: none;
   }
-  .ex-card:hover {
-    border-color: var(--accent);
-    transform: translateY(-2px);
+  /* Hover only on real pointers — sticky tap-hover on mobile made a just-deselected
+     card keep its accent border (looked still selected). */
+  @media (hover: hover) {
+    .ex-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
   }
   .ex-card.selected {
     border-color: var(--accent);
@@ -1310,10 +1314,19 @@
     transition: all 0.15s;
     font-family: 'Inter', sans-serif;
   }
-  .cat-btn.active, .cat-btn:hover {
+  .cat-btn.active {
     background: var(--accent-dim);
     border-color: var(--accent);
     color: var(--accent);
+  }
+  /* Hover only on real pointers — on touch screens :hover "sticks" after a tap,
+     which made a just-deactivated filter look like it was still on. */
+  @media (hover: hover) {
+    .cat-btn:hover {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
   }
 
   .field-notice {
