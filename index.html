@@ -2813,11 +2813,15 @@ function renderWorkout() {
   document.getElementById('cur-round').textContent = workoutState.curRound;
   document.getElementById('progress-fill').style.width = (totalDone / totalExercises * 100) + '%';
 
-  // Duo turn indicator (which of the two people is up)
+  // Duo turn indicator (which of the two people is up) — named by who's actually training
   const turnPill = document.getElementById('cur-ex-turn');
   if (turnPill) {
     turnPill.style.display = isDoubled ? 'block' : 'none';
-    if (isDoubled) turnPill.textContent = pass === 0 ? '👤 1. person' : '👤 2. person';
+    if (isDoubled) {
+      const p1 = currentUser || 'Deg';
+      const p2 = config.duoPartner || '2. person';
+      turnPill.textContent = pass === 0 ? `👤 ${p1}` : `👤 ${p2}`;
+    }
   }
 
   // Cards row — 5 unique cards. In duo, each fills 50% green after person 1, then
