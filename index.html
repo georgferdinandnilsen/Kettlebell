@@ -1337,9 +1337,8 @@
   .ex-img-wrap img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
     border-radius: 8px;
-    padding: 4px;
   }
   .ex-img-fallback {
     font-size: 2.6rem;
@@ -1600,6 +1599,39 @@
   }
   .settings-btn:hover { border-color: var(--accent); color: var(--accent); }
 
+  /* Calendar nav button — styled to evoke a calendar icon (red top bar + page)
+     instead of using the 📅 emoji directly. */
+  .calendar-nav-btn-custom {
+    position: relative;
+    width: 130px;
+    height: 36px;
+    border: 1.5px solid #2c2c2c;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1a1a1a;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 5px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .calendar-nav-btn-custom::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 11px;
+    background: var(--red);
+  }
+  .calendar-nav-btn-custom:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+  }
+
   .settings-overlay {
     position: fixed;
     inset: 0;
@@ -1802,7 +1834,7 @@
     <div class="logo-sub">Laget av Georg Ferdinand Nilsen</div>
   </div>
   <div style="display:flex;align-items:center;gap:10px">
-    <button class="settings-btn" id="calendar-nav-header-btn" onclick="openCalendar()" title="Treningskalender" style="display:none">📅</button>
+    <button class="calendar-nav-btn-custom" id="calendar-nav-header-btn" onclick="openCalendar()" title="Treningskalender" style="display:none">Kalender</button>
     <button class="settings-btn" onclick="openSettings()" title="Innstillinger">⚙️</button>
   </div>
 </header>
