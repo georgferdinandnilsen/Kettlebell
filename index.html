@@ -885,6 +885,39 @@
     margin-top: 4px;
   }
 
+  /* Compact stats row used in calendar day popup */
+  .cal-entry-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .cal-stat {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 6px;
+    text-align: center;
+  }
+  .cal-stat-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+  }
+  .cal-stat-key {
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
+  .cal-entry-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 18px 0;
+  }
+
   /* Scrollable exercises */
   .exercises-wrapper {
     max-height: calc(100vh - 280px);
@@ -948,6 +981,26 @@
   .swc-exercises { display: none; }
   .swc-ex-chip { display: none; }
   .swc-arrow { display: none; }
+
+  .add-workout-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-style: dashed;
+    color: var(--text-muted);
+    min-height: 60px;
+  }
+  .add-workout-card:hover { color: var(--accent2); }
+  .swc-add-icon {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+  .swc-add-label {
+    font-size: 0.72rem;
+    margin-top: 2px;
+  }
 
   /* ── WORKOUT DETAIL POPUP ── */
   .wkt-popup-overlay {
@@ -1546,6 +1599,7 @@
       <div class="login-error" id="login-error"></div>
 
       <button class="btn-primary" id="login-submit-btn" style="width:100%" onclick="submitLogin()">Logg inn</button>
+      <button class="btn-secondary" style="width:100%;margin-top:10px" onclick="useAppWithoutLogin()">Bruk app uten bruker</button>
       <button class="login-toggle" id="login-toggle-btn" onclick="toggleLoginMode()">Ny bruker? Opprett konto</button>
     </div>
   </div>
@@ -1561,7 +1615,7 @@
     <div class="step-dot" id="s3"></div>
   </div>
 
-  <div class="section-title">Velg Øvelser</div>
+  <div class="section-title" id="select-screen-title">Velg Øvelser</div>
   <div class="section-subtitle">Velg 1–10 øvelser for din økt. Trykk for å legge til.</div>
 
   <!-- Saved workouts from Sheet -->
@@ -1824,6 +1878,43 @@
       <button class="wkt-popup-close" onclick="closeCalendarDay()">✕</button>
     </div>
     <div class="wkt-popup-ex-list" id="calendar-day-ex-list"></div>
+  </div>
+</div>
+
+<!-- Create personal workout popup -->
+<div class="wkt-popup-overlay" id="create-workout-overlay" style="display:none" onclick="closeCreateWorkoutIfBg(event)">
+  <div class="wkt-popup" style="max-height:92vh">
+    <div class="wkt-popup-header">
+      <div class="wkt-popup-title">Ny personlig økt</div>
+      <button class="wkt-popup-close" onclick="closeCreateWorkout()">✕</button>
+    </div>
+
+    <div class="settings-field">
+      <label class="settings-label">Navn på økt</label>
+      <input type="text" class="settings-input" id="new-workout-name" placeholder="F.eks. Morgenøkt">
+    </div>
+    <div class="settings-field">
+      <label class="settings-label">Body region</label>
+      <select class="settings-input" id="new-workout-region">
+        <option value="Upper body">Upper body</option>
+        <option value="Lower body">Lower body</option>
+        <option value="Full body">Full body</option>
+        <option value="Core">Core</option>
+      </select>
+    </div>
+    <div class="settings-field">
+      <label class="settings-label">Instruksjoner (valgfritt)</label>
+      <input type="text" class="settings-input" id="new-workout-instructions" placeholder="F.eks. letsgo!">
+    </div>
+
+    <div class="settings-field">
+      <label class="settings-label">Velg øvelser (<span id="new-workout-count">0</span> valgt)</label>
+      <input type="text" class="search-input" id="new-workout-search" placeholder="🔍 Søk øvelse…" oninput="renderNewWorkoutGrid()" style="margin-bottom:12px">
+      <div class="exercise-grid" id="new-workout-grid" style="max-height:320px;overflow-y:auto;padding:2px;grid-template-columns:repeat(auto-fill,minmax(110px,1fr))"></div>
+    </div>
+
+    <div class="login-error" id="new-workout-error"></div>
+    <button class="btn-primary" id="new-workout-save-btn" style="width:100%;margin-top:8px" onclick="saveNewWorkout()">Lagre økt</button>
   </div>
 </div>
 
@@ -2701,7 +2792,7 @@ function finishWorkout() {
   document.getElementById('done-exercises').textContent = selectedExercises.length * config.rounds;
   document.getElementById('done-time').textContent = durationLabel;
 
-  logWorkoutToSheet(selectedExercises.map(ex => ex.nr), config.rounds, durationLabel);
+  logWorkoutToSheet(selectedExercises.map(ex => ex.nr), config.rounds, durationLabel, config.exMode);
 
   showScreen('screen-done');
 }
@@ -2734,17 +2825,23 @@ function resetAll() {
 // AUTH & TRENINGSLOGG
 // ════════════════════════════════════════
 const USER_KEY = 'ironbell_user';
+const GUEST_KEY = 'ironbell_guest';
 const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbxF5qAOefKX3K8B_W51LriWWCifRf0xlvqiKpvZgNUWQk5S7gfb2aWRStqz43vJ4TVmNg/exec';
 let currentUser = null;
 try { currentUser = localStorage.getItem(USER_KEY) || null; } catch(e) {}
+let isGuest = false;
+try { isGuest = localStorage.getItem(GUEST_KEY) === 'true'; } catch(e) {}
 let loginMode = 'login'; // 'login' | 'register'
 let calendarViewDate = new Date();
 let workoutHistory = null; // null = not fetched yet
 let calendarByDate = {};
+let personalWorkouts = [];
 
 function updateAuthUi() {
   const calBtn = document.getElementById('calendar-nav-header-btn');
   if (calBtn) calBtn.style.display = currentUser ? 'flex' : 'none';
+  const titleEl = document.getElementById('select-screen-title');
+  if (titleEl) titleEl.textContent = currentUser ? `Hei ${currentUser}! Velg øvelser` : 'Velg Øvelser';
 }
 
 function toggleLoginMode() {
@@ -2783,6 +2880,7 @@ async function submitLogin() {
       try { localStorage.setItem(USER_KEY, currentUser); } catch(e) {}
       updateAuthUi();
       showScreen('screen-select');
+      fetchPersonalWorkouts();
     } else {
       errEl.textContent = data.error || 'Noe gikk galt';
     }
@@ -2796,22 +2894,137 @@ async function submitLogin() {
 
 function logoutUser() {
   currentUser = null;
-  try { localStorage.removeItem(USER_KEY); } catch(e) {}
+  isGuest = false;
+  try { localStorage.removeItem(USER_KEY); localStorage.removeItem(GUEST_KEY); } catch(e) {}
   workoutHistory = null;
+  personalWorkouts = [];
   updateAuthUi();
   closeSettings();
   showScreen('screen-login');
 }
 
-async function logWorkoutToSheet(exerciseNrs, rounds, durationLabel) {
+function useAppWithoutLogin() {
+  isGuest = true;
+  try { localStorage.setItem(GUEST_KEY, 'true'); } catch(e) {}
+  updateAuthUi();
+  showScreen('screen-select');
+}
+
+async function logWorkoutToSheet(exerciseNrs, rounds, durationLabel, exMode) {
   if (!appsScriptUrl || !currentUser) return;
   try {
+    const mode = exMode === 'time' ? 'Tid' : 'Repetisjoner';
     const url = `${appsScriptUrl}?action=logWorkout&username=${encodeURIComponent(currentUser)}`
-      + `&exercises=${encodeURIComponent(exerciseNrs.join('-'))}&rounds=${encodeURIComponent(rounds)}&duration=${encodeURIComponent(durationLabel)}`;
+      + `&exercises=${encodeURIComponent(exerciseNrs.join('-'))}&rounds=${encodeURIComponent(rounds)}`
+      + `&mode=${encodeURIComponent(mode)}&duration=${encodeURIComponent(durationLabel)}`;
     await fetch(url);
     workoutHistory = null; // invalidate so calendar refetches next time it opens
   } catch(e) {
     console.warn('Kunne ikke logge økt:', e.message);
+  }
+}
+
+// ─── Personlige økter ───
+async function fetchPersonalWorkouts() {
+  if (!appsScriptUrl || !currentUser) { personalWorkouts = []; return; }
+  try {
+    const url = `${appsScriptUrl}?action=personalWorkouts&username=${encodeURIComponent(currentUser)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    personalWorkouts = data.success ? data.workouts : [];
+  } catch(e) {
+    personalWorkouts = [];
+  }
+  renderSavedWorkouts();
+}
+
+let newWorkoutSelectedExercises = [];
+
+function openCreateWorkout() {
+  if (!currentUser) return;
+  newWorkoutSelectedExercises = [];
+  document.getElementById('new-workout-name').value = '';
+  document.getElementById('new-workout-region').value = 'Full body';
+  document.getElementById('new-workout-instructions').value = '';
+  document.getElementById('new-workout-search').value = '';
+  document.getElementById('new-workout-error').textContent = '';
+  renderNewWorkoutGrid();
+  document.getElementById('create-workout-overlay').style.display = 'flex';
+}
+
+function closeCreateWorkout() {
+  document.getElementById('create-workout-overlay').style.display = 'none';
+}
+function closeCreateWorkoutIfBg(e) {
+  if (e.target === document.getElementById('create-workout-overlay')) closeCreateWorkout();
+}
+
+function toggleNewWorkoutExercise(id) {
+  const idx = newWorkoutSelectedExercises.findIndex(e => e.id === id);
+  if (idx >= 0) {
+    newWorkoutSelectedExercises.splice(idx, 1);
+  } else {
+    const ex = EXERCISES.find(e => e.id === id);
+    if (ex) newWorkoutSelectedExercises.push(ex);
+  }
+  renderNewWorkoutGrid();
+}
+
+function renderNewWorkoutGrid() {
+  const term = (document.getElementById('new-workout-search').value || '').toLowerCase();
+  const grid = document.getElementById('new-workout-grid');
+  const filtered = EXERCISES.filter(ex =>
+    ex.name.toLowerCase().includes(term) || (ex.muscles || '').toLowerCase().includes(term)
+  );
+  grid.innerHTML = filtered.map(ex => {
+    const sel = newWorkoutSelectedExercises.some(s => s.id === ex.id);
+    const order = sel ? newWorkoutSelectedExercises.findIndex(s => s.id === ex.id) + 1 : '';
+    const mediaHtml = ex.img
+      ? `<div class="ex-img-wrap"><img src="${ex.img}" alt="${ex.name}" loading="lazy" onerror="this.src='favicon.png'"></div>`
+      : `<div class="ex-img-wrap"><img src="favicon.png" alt="${ex.name}"></div>`;
+    return `
+    <div class="ex-card ${sel ? 'selected' : ''}" data-order="${order}" onclick="toggleNewWorkoutExercise(${ex.id})">
+      ${mediaHtml}
+      <div class="ex-name">${ex.name}</div>
+      <div class="ex-muscles">${ex.muscles}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('new-workout-count').textContent = newWorkoutSelectedExercises.length;
+}
+
+async function saveNewWorkout() {
+  const name = document.getElementById('new-workout-name').value.trim();
+  const region = document.getElementById('new-workout-region').value;
+  const instructions = document.getElementById('new-workout-instructions').value.trim();
+  const errEl = document.getElementById('new-workout-error');
+  errEl.textContent = '';
+
+  if (!name) { errEl.textContent = 'Skriv inn et navn på økten'; return; }
+  if (newWorkoutSelectedExercises.length === 0) { errEl.textContent = 'Velg minst én øvelse'; return; }
+
+  const btn = document.getElementById('new-workout-save-btn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Lagrer…';
+
+  try {
+    const exercisesStr = newWorkoutSelectedExercises.map(ex => ex.nr).join('-');
+    const url = `${appsScriptUrl}?action=savePersonalWorkout&username=${encodeURIComponent(currentUser)}`
+      + `&name=${encodeURIComponent(name)}&region=${encodeURIComponent(region)}`
+      + `&instructions=${encodeURIComponent(instructions)}&exercises=${encodeURIComponent(exercisesStr)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.success) {
+      closeCreateWorkout();
+      await fetchPersonalWorkouts();
+    } else {
+      errEl.textContent = data.error || 'Noe gikk galt';
+    }
+  } catch(e) {
+    errEl.textContent = 'Fikk ikke kontakt med serveren';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
   }
 }
 
@@ -2891,7 +3104,15 @@ function showCalendarDay(key) {
   listEl.innerHTML = entries.map(entry => {
     const nrs = String(entry.exercises || '').split('-').map(s => parseInt(s)).filter(n => !isNaN(n));
     const exList = nrs.map(nr => EXERCISES.find(e => e.nr === nr) || { name: `#${nr}`, img: '', muscles: '' });
-    return exList.map((ex, i) => `
+
+    const statsHtml = `
+      <div class="cal-entry-stats">
+        <div class="cal-stat"><div class="cal-stat-val">${entry.rounds || '—'}</div><div class="cal-stat-key">Runder</div></div>
+        <div class="cal-stat"><div class="cal-stat-val">${entry.mode === 'Tid' ? '⏱' : entry.mode === 'Repetisjoner' ? '🔢' : '—'}</div><div class="cal-stat-key">${entry.mode || 'Modus'}</div></div>
+        <div class="cal-stat"><div class="cal-stat-val">${entry.duration || '—'}</div><div class="cal-stat-key">Tid brukt</div></div>
+      </div>`;
+
+    const exHtml = exList.map((ex, i) => `
       <div class="wkt-popup-ex">
         <div class="wkt-popup-ex-num">${i + 1}</div>
         <img class="wkt-popup-ex-img" src="${ex.img || 'favicon.png'}" alt="${ex.name}" onerror="this.src='favicon.png'">
@@ -2900,7 +3121,9 @@ function showCalendarDay(key) {
           ${ex.muscles ? `<div class="wkt-popup-ex-muscles">${ex.muscles}</div>` : ''}
         </div>
       </div>`).join('');
-  }).join('<hr class="saved-section-divider" style="margin:14px 0">');
+
+    return statsHtml + exHtml;
+  }).join('<hr class="cal-entry-divider">');
 
   document.getElementById('calendar-day-overlay').style.display = 'flex';
 }
@@ -3033,6 +3256,7 @@ async function loadFromSheet() {
 
 // Global saved workouts from sheet
 let SAVED_WORKOUTS = [];
+let renderedWorkoutList = []; // SAVED_WORKOUTS + personalWorkouts, normalized, for index lookups
 
 // Google Drive "share" links (…/file/d/ID/view or ?id=ID) point to a preview
 // page, not the raw file. Rewrite them to a direct-embeddable image URL.
@@ -3158,15 +3382,23 @@ function parseSheetCSV(csv) {
   return { exercises, workouts };
 }
 
+function personalWorkoutToSavedShape(pw) {
+  const nrs = String(pw.exercises || '').split('-').map(s => parseInt(s)).filter(n => !isNaN(n));
+  const exercises = nrs.map(nr => EXERCISES.find(e => e.nr === nr)).filter(Boolean);
+  return { name: pw.name, cat: pw.region, exercises, instructions: pw.instructions, isPersonal: true };
+}
+
 function renderSavedWorkouts() {
   const section = document.getElementById('saved-workouts-section');
   const grid = document.getElementById('saved-workouts-grid');
   if (!section || !grid) return;
 
-  if (SAVED_WORKOUTS.length === 0) { section.style.display = 'none'; return; }
+  renderedWorkoutList = [...SAVED_WORKOUTS, ...personalWorkouts.map(personalWorkoutToSavedShape)];
+
+  if (renderedWorkoutList.length === 0 && !currentUser) { section.style.display = 'none'; return; }
 
   section.style.display = 'block';
-  grid.innerHTML = SAVED_WORKOUTS.map((wkt, i) => `
+  let html = renderedWorkoutList.map((wkt, i) => `
     <div class="saved-workout-card" onclick="showWorkoutDetail(${i})">
       <div class="swc-body">
         <div class="swc-name">${wkt.name}</div>
@@ -3174,10 +3406,20 @@ function renderSavedWorkouts() {
       </div>
     </div>`
   ).join('');
+
+  if (currentUser) {
+    html += `
+    <div class="saved-workout-card add-workout-card" onclick="openCreateWorkout()">
+      <div class="swc-add-icon">+</div>
+      <div class="swc-add-label">Ny økt</div>
+    </div>`;
+  }
+
+  grid.innerHTML = html;
 }
 
 function showWorkoutDetail(index) {
-  const wkt = SAVED_WORKOUTS[index];
+  const wkt = renderedWorkoutList[index];
   if (!wkt) return;
 
   document.getElementById('wkt-popup-title').textContent = wkt.name;
@@ -3248,7 +3490,7 @@ function closeExerciseInfoIfBg(e) {
 }
 
 function loadSavedWorkout(index) {
-  const wkt = SAVED_WORKOUTS[index];
+  const wkt = renderedWorkoutList[index];
   if (!wkt) return;
   selectedExercises = [...wkt.exercises];
   renderSelectedStrip();
@@ -3350,7 +3592,8 @@ async function init() {
 
   // 2. No cache → show generic placeholders immediately while we try to fetch
   if (!hasCache) applyExerciseData(OFFLINE_EXERCISES, OFFLINE_WORKOUTS);
-  showScreen(currentUser ? 'screen-select' : 'screen-login');
+  showScreen((currentUser || isGuest) ? 'screen-select' : 'screen-login');
+  if (currentUser) fetchPersonalWorkouts();
 
   // 3. Fetch fresh data — replace generics with real exercises if successful
   try {
