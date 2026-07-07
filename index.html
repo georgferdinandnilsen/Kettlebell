@@ -718,12 +718,18 @@
     transition: all 0.3s;
     flex-shrink: 0;
     position: relative;
+    overflow: hidden;
   }
   .workout-ex-card.active {
     border-color: var(--accent);
     background: linear-gradient(160deg, var(--accent-dark), var(--surface));
     transform: scale(1.04);
     box-shadow: 0 0 30px var(--accent-glow-soft);
+  }
+  /* Duo cards get their progress from .wex-fill instead — a diagonal gradient behind it
+     would hide the horizontal fill boundary, so keep the base flat for these. */
+  .workout-ex-card.duo-card.active {
+    background: var(--surface);
   }
   .workout-ex-card.done-card {
     opacity: 0.45;
@@ -758,6 +764,41 @@
     line-height: 1.3;
   }
   .workout-ex-card.active .wex-name { color: var(--accent2); }
+
+  /* Duo "battery" fill — the card greens up in two steps (person 1 → person 2) */
+  .workout-ex-card > .wex-num,
+  .workout-ex-card > .wex-icon,
+  .workout-ex-card > .wex-name { position: relative; z-index: 1; }
+  .wex-fill {
+    position: absolute;
+    top: 0; bottom: 0; left: 0;
+    width: 0;
+    background: var(--accent);
+    opacity: 0.55;
+    border-right: 3px solid var(--accent2);
+    transition: width 0.45s ease;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .workout-ex-card.duo-card { opacity: 1; }
+  .workout-ex-card.duo-done { border-color: var(--accent-border); }
+  .workout-ex-card.duo-done::after {
+    content: '✓';
+    position: absolute;
+    top: 4px; right: 7px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent2);
+    z-index: 1;
+  }
+  .duo-turn-pill {
+    margin: -4px 28px 0;
+    text-align: center;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--accent2);
+  }
 
   /* Current exercise display */
   .current-ex-display {
@@ -911,6 +952,12 @@
   }
 
   /* Compact stats row used in calendar day popup */
+  .cal-entry-name {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
   .cal-duo-badge {
     display: inline-block;
     background: var(--accent-dim);
@@ -1444,21 +1491,6 @@
     object-fit: contain;
   }
   .calendar-day-num { font-size: 0.72rem; line-height: 1; }
-  .calendar-day-badge {
-    position: absolute;
-    font-size: 0.6rem;
-    line-height: 1;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    width: 15px;
-    height: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .calendar-day-badge-mode { top: -4px; right: -4px; }
-  .calendar-day-badge-duo { bottom: -4px; right: -4px; }
   .calendar-day.is-today { box-shadow: inset 0 0 0 2px var(--text-muted); }
   .calendar-empty-hint {
     text-align: center;
@@ -1466,6 +1498,58 @@
     font-size: 0.85rem;
     padding: 40px 28px;
   }
+
+  /* ── Calendar workout cards (rich info below the grid) ── */
+  .calendar-list { margin-top: 22px; display: flex; flex-direction: column; gap: 10px; }
+  .calendar-list-title {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin: 4px 2px 2px;
+  }
+  .cal-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+  .cal-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px var(--accent-glow-soft);
+  }
+  .cal-card-icon { width: 34px; height: 34px; object-fit: contain; flex-shrink: 0; }
+  .cal-card-body { flex: 1; min-width: 0; }
+  .cal-card-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .cal-card-name {
+    font-weight: 700;
+    font-size: 0.98rem;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cal-card-date { font-size: 0.78rem; color: var(--text-muted); flex-shrink: 0; white-space: nowrap; }
+  .cal-card-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .cal-chip {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 9px;
+    white-space: nowrap;
+  }
+  .cal-chip-duo { color: var(--accent2); background: var(--accent-dim); border-color: var(--accent-border); }
+  .cal-card-arrow { font-size: 1.4rem; color: var(--text-dim); flex-shrink: 0; }
 
   /* ── SETTINGS PANEL ── */
   .settings-btn {
@@ -1923,6 +2007,7 @@
   <div class="ex-cards-container">
     <div class="ex-cards-row" id="workout-cards-row"></div>
   </div>
+  <div class="duo-turn-pill" id="cur-ex-turn" style="display:none"></div>
 
   <!-- Current Exercise Big Display -->
   <div class="current-ex-display">
@@ -2010,6 +2095,7 @@
     </div>
     <div class="calendar-grid" id="calendar-grid"></div>
     <div class="calendar-empty-hint" id="calendar-empty-hint" style="display:none">Ingen treningsøkter logget ennå.</div>
+    <div class="calendar-list" id="calendar-list"></div>
   </div>
 </div>
 
@@ -2210,6 +2296,7 @@ const EXERCISES = [
 // ════════════════════════════════════════
 let selectedExercises = [];
 let effectiveExercises = []; // selectedExercises, doubled when time-mode + duo (each ex done by both people)
+let currentWorkoutName = ''; // name of a loaded favorite; '' = ad-hoc selection (logged as "Økt")
 let config = { rounds: 3, restEx: 15, restRound: 60, exMode: 'reps', exDuration: 60, plannedReps: 15, duo: false, duoPartner: '' };
 let workoutState = {
   curRound: 1,
@@ -2317,6 +2404,7 @@ function updateExerciseCardStates() {
 }
 
 function toggleExercise(id) {
+  currentWorkoutName = ''; // hand-editing the selection means it's no longer the saved favorite
   const ex = EXERCISES.find(e => e.id === id);
   const idx = selectedExercises.findIndex(e => e.id === id);
   if (idx >= 0) {
@@ -2334,6 +2422,7 @@ function toggleExercise(id) {
 }
 
 function pickRandomWorkout() {
+  currentWorkoutName = ''; // random selection has no saved name
   const count = parseInt(document.getElementById('random-count-slider').value);
   const pool = [...EXERCISES];
   for (let i = pool.length - 1; i > 0; i--) {
@@ -2440,6 +2529,9 @@ function filterExercises() {
 }
 
 function goToConfig() {
+  // Duo shouldn't carry over from a previous workout — always start unchecked.
+  config.duo = false;
+  config.duoPartner = '';
   buildConfigScreen();
   showScreen('screen-config');
 }
@@ -2582,12 +2674,13 @@ function renderSortableList() {
 
 function buildSummary() {
   const doubled = config.exMode === 'time' && config.duo;
-  const exCount = doubled ? selectedExercises.length * 2 : selectedExercises.length;
+  const uniqueCount = selectedExercises.length;
+  const runtimeCount = doubled ? uniqueCount * 2 : uniqueCount; // duo runs each ex twice
   const perEx = config.exMode === 'time' ? config.exDuration : config.plannedReps * 3;
   const effRestEx = config.duo ? DUO_SWITCH_SECONDS : config.restEx;
   const effRestRound = config.duo ? 0 : config.restRound;
-  const totalRests = (exCount - 1) * effRestEx + (config.rounds - 1) * effRestRound;
-  const estMinutes = Math.round((totalRests + exCount * config.rounds * perEx) / 60);
+  const totalRests = (runtimeCount - 1) * effRestEx + (config.rounds - 1) * effRestRound;
+  const estMinutes = Math.round((totalRests + runtimeCount * config.rounds * perEx) / 60);
   const modeText = config.exMode === 'time' ? `${config.exDuration}s per øvelse` : 'Egentempo (reps)';
 
   document.getElementById('summary-box').innerHTML = `
@@ -2597,7 +2690,7 @@ function buildSummary() {
     </div>
     <div class="summary-row">
       <span class="summary-key">Øvelser per runde</span>
-      <span class="summary-val">${exCount}</span>
+      <span class="summary-val">${uniqueCount}${doubled ? ' <span style="color:var(--text-dim);font-weight:400;font-size:0.85em">(hver ×2)</span>' : ''}</span>
     </div>
     <div class="summary-row">
       <span class="summary-key">Runder</span>
@@ -2708,19 +2801,46 @@ function renderWorkout() {
   const totalDone = (workoutState.curRound - 1) * n + workoutState.curExIndex;
   const totalExercises = config.rounds * n;
 
+  // In time-mode duo, each exercise runs twice (one turn per person). The cards row
+  // and counter still show the 5 unique exercises; the card just fills in two steps.
+  const isDoubled = config.exMode === 'time' && config.duo;
+  const uniqueList = selectedExercises;
+  const uniqueCount = uniqueList.length;
+  const displayIndex = isDoubled ? Math.floor(workoutState.curExIndex / 2) : workoutState.curExIndex;
+  const pass = isDoubled ? (workoutState.curExIndex % 2) : 0; // 0 = 1. person, 1 = 2. person ("runde to")
+
   // Progress
   document.getElementById('cur-round').textContent = workoutState.curRound;
   document.getElementById('progress-fill').style.width = (totalDone / totalExercises * 100) + '%';
 
-  // Cards row
+  // Duo turn indicator (which of the two people is up)
+  const turnPill = document.getElementById('cur-ex-turn');
+  if (turnPill) {
+    turnPill.style.display = isDoubled ? 'block' : 'none';
+    if (isDoubled) turnPill.textContent = pass === 0 ? '👤 1. person' : '👤 2. person';
+  }
+
+  // Cards row — 5 unique cards. In duo, each fills 50% green after person 1, then
+  // 100% when person 2 starts ("runde to på øvelsen").
   const row = document.getElementById('workout-cards-row');
-  row.innerHTML = effectiveExercises.map((e, i) => {
+  row.innerHTML = uniqueList.map((e, i) => {
     let cls = '';
-    if (i === workoutState.curExIndex) cls = 'active';
-    else if (i < workoutState.curExIndex) cls = 'done-card';
+    let fillPct = -1; // -1 = no battery fill layer (non-duo)
+    if (isDoubled) {
+      cls = 'duo-card';
+      if (i < displayIndex) { fillPct = 100; cls += ' duo-done'; }
+      else if (i === displayIndex) { fillPct = pass === 0 ? 50 : 100; cls += ' active'; }
+      else { fillPct = 0; }
+    } else {
+      if (i === displayIndex) cls = 'active';
+      else if (i < displayIndex) cls = 'done-card';
+    }
+    // Skip the fill div entirely at 0% — otherwise its border-right still paints a sliver.
+    const fillHtml = fillPct > 0 ? `<div class="wex-fill" style="width:${fillPct}%"></div>` : '';
     return `
     <div class="workout-ex-card ${cls}">
-      <div class="wex-num">${i + 1} / ${n}</div>
+      ${fillHtml}
+      <div class="wex-num">${i + 1} / ${uniqueCount}</div>
       <span class="wex-icon">${e.big}</span>
       <div class="wex-name">${e.name}</div>
     </div>`;
@@ -2939,7 +3059,10 @@ function nextExercise() {
     // Between exercises
     const nextEx = effectiveExercises[workoutState.curExIndex + 1];
     if (config.duo) {
-      startCountdown(DUO_SWITCH_SECONDS, 'BYTT!', nextEx, () => {
+      // Time+duo doubles each exercise per person, so this pause really is a person swap.
+      // Reps mode never doubles, so there's no swap happening here — just a breather.
+      const duoLabel = config.exMode === 'time' ? 'BYTT PERSON!' : 'NESTE ØVELSE!';
+      startCountdown(DUO_SWITCH_SECONDS, duoLabel, nextEx, () => {
         workoutState.curExIndex++;
         renderWorkout();
       });
@@ -3059,7 +3182,7 @@ function finishWorkout() {
   document.getElementById('done-exercises').textContent = selectedExercises.length * config.rounds;
   document.getElementById('done-time').textContent = durationLabel;
 
-  logWorkoutToSheet(selectedExercises.map(ex => ex.nr), config.rounds, durationLabel, config.exMode, config.duo ? config.duoPartner : '');
+  logWorkoutToSheet(selectedExercises.map(ex => ex.nr), config.rounds, durationLabel, config.exMode, config.duo ? config.duoPartner : '', currentWorkoutName);
 
   showScreen('screen-done');
 }
@@ -3075,6 +3198,7 @@ function doQuit() {
 
 function resetAll() {
   selectedExercises = [];
+  currentWorkoutName = '';
   config = { rounds: 3, restEx: 15, restRound: 60, exMode: 'reps', exDuration: 60, plannedReps: 15, duo: false, duoPartner: '' };
   stopExerciseTimer();
   renderExerciseGrid();
@@ -3177,14 +3301,15 @@ function useAppWithoutLogin() {
   showScreen('screen-select');
 }
 
-async function logWorkoutToSheet(exerciseNrs, rounds, durationLabel, exMode, duoPartner) {
+async function logWorkoutToSheet(exerciseNrs, rounds, durationLabel, exMode, duoPartner, workoutName) {
   if (!appsScriptUrl || !currentUser) return;
   try {
     const mode = exMode === 'time' ? 'Tid' : 'Repetisjoner';
     const url = `${appsScriptUrl}?action=logWorkout&username=${encodeURIComponent(currentUser)}`
       + `&exercises=${encodeURIComponent(exerciseNrs.join('-'))}&rounds=${encodeURIComponent(rounds)}`
       + `&mode=${encodeURIComponent(mode)}&duration=${encodeURIComponent(durationLabel)}`
-      + `&duoPartner=${encodeURIComponent(duoPartner || '')}`;
+      + `&duoPartner=${encodeURIComponent(duoPartner || '')}`
+      + `&name=${encodeURIComponent(workoutName || '')}`;
     await fetch(url);
     workoutHistory = null; // invalidate so calendar refetches next time it opens
   } catch(e) {
@@ -3376,6 +3501,19 @@ function dateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+// Non-favorite workouts have no saved name — label them by time of day instead.
+function timeOfDayWorkoutName(date) {
+  const h = date.getHours();
+  if (h >= 5 && h < 9) return 'Earlybird økt';
+  if (h >= 9 && h < 12) return 'Morgen økt';
+  if (h >= 12 && h < 17) return 'Ettermiddags økt';
+  return 'Kvelds økt'; // 17:00–04:59
+}
+function workoutDisplayName(entry) {
+  if (entry.name && String(entry.name).trim()) return String(entry.name).trim();
+  return timeOfDayWorkoutName(new Date(entry.date));
+}
+
 function renderCalendarGrid() {
   const grid = document.getElementById('calendar-grid');
   const title = document.getElementById('calendar-month-title');
@@ -3411,18 +3549,57 @@ function renderCalendarGrid() {
     const cls = ['calendar-day', 'in-month', hasWorkout ? 'has-workout' : '', key === todayKey ? 'is-today' : ''].filter(Boolean).join(' ');
     let inner = `${day}`;
     if (hasWorkout) {
-      const entries = calendarByDate[key];
-      const lastMode = entries[entries.length - 1].mode;
-      const modeIcon = lastMode === 'Tid' ? '⏱' : lastMode === 'Repetisjoner' ? '🔢' : '';
-      const isDuo = entries.some(e => e.duoWith);
+      // Keep tiles clean — day number + kettlebell. The full details (name, mode,
+      // duo partner) live in the workout cards listed below the grid.
       inner = `<img class="calendar-day-icon" src="favicon.png" alt="">`
-        + `<span class="calendar-day-num">${day}</span>`
-        + (modeIcon ? `<span class="calendar-day-badge calendar-day-badge-mode">${modeIcon}</span>` : '')
-        + (isDuo ? `<span class="calendar-day-badge calendar-day-badge-duo">🫱🏽‍🫲🏼</span>` : '');
+        + `<span class="calendar-day-num">${day}</span>`;
     }
     html += `<div class="${cls}" ${hasWorkout ? `onclick="showCalendarDay('${key}')"` : ''}>${inner}</div>`;
   }
   grid.innerHTML = html;
+  renderCalendarList();
+}
+
+// List of workout cards below the grid — the rich "info på utsiden" view.
+function renderCalendarList() {
+  const listEl = document.getElementById('calendar-list');
+  if (!listEl) return;
+  const year = calendarViewDate.getFullYear();
+  const month = calendarViewDate.getMonth();
+
+  const monthEntries = (workoutHistory || [])
+    .map(h => ({ ...h, _d: new Date(h.date) }))
+    .filter(h => h._d.getFullYear() === year && h._d.getMonth() === month)
+    .sort((a, b) => b._d - a._d);
+
+  if (monthEntries.length === 0) { listEl.innerHTML = ''; return; }
+
+  listEl.innerHTML = `<div class="calendar-list-title">Økter denne måneden</div>` + monthEntries.map(entry => {
+    const key = dateKey(entry._d);
+    const dayNum = entry._d.getDate();
+    const monthShort = MONTH_NAMES[entry._d.getMonth()].slice(0, 3).toLowerCase();
+    const name = workoutDisplayName(entry);
+    const exCount = String(entry.exercises || '').split('-').filter(s => s.trim() !== '').length;
+    const modeChip = entry.mode === 'Tid'
+      ? '<span class="cal-chip">⏱ Tid</span>'
+      : entry.mode === 'Repetisjoner' ? '<span class="cal-chip">🔢 Reps</span>' : '';
+    const duoChip = entry.duoWith
+      ? `<span class="cal-chip cal-chip-duo">🫱🏽‍🫲🏼 Duo med ${entry.duoWith}</span>`
+      : '';
+    const countChip = `<span class="cal-chip">${exCount} øvelser${entry.rounds ? ` · ${entry.rounds} runder` : ''}</span>`;
+    return `
+      <div class="cal-card" onclick="showCalendarDay('${key}')">
+        <img class="cal-card-icon" src="favicon.png" alt="" onerror="this.style.visibility='hidden'">
+        <div class="cal-card-body">
+          <div class="cal-card-top">
+            <span class="cal-card-name">${name}</span>
+            <span class="cal-card-date">${dayNum}. ${monthShort}</span>
+          </div>
+          <div class="cal-card-chips">${modeChip}${duoChip}${countChip}</div>
+        </div>
+        <span class="cal-card-arrow">›</span>
+      </div>`;
+  }).join('');
 }
 
 function showCalendarDay(key) {
@@ -3442,6 +3619,7 @@ function showCalendarDay(key) {
       : '';
 
     const statsHtml = `
+      <div class="cal-entry-name">${workoutDisplayName(entry)}</div>
       ${duoBadge}
       <div class="cal-entry-stats">
         <div class="cal-stat"><div class="cal-stat-val">${entry.rounds || '—'}</div><div class="cal-stat-key">Runder</div></div>
@@ -3569,6 +3747,7 @@ async function loadSheetFromUrl(url) {
     renderSavedWorkouts();
     renderSelectedStrip();
     selectedExercises = [];
+    currentWorkoutName = '';
     document.getElementById('btn-to-config').disabled = true;
 
     const wktMsg = workouts.length > 0 ? ` + ${workouts.length} økter` : '';
@@ -3863,6 +4042,7 @@ function loadSavedWorkout(index) {
   const wkt = renderedWorkoutList[index];
   if (!wkt) return;
   selectedExercises = [...wkt.exercises];
+  currentWorkoutName = wkt.name || '';
   renderSelectedStrip();
   renderExerciseGrid();
   document.getElementById('btn-to-config').disabled = false;
