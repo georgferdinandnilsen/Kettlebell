@@ -4086,6 +4086,12 @@ function applyExerciseData(exercises, workouts) {
   EXERCISES.length = 0;
   exercises.forEach((ex, i) => EXERCISES.push({ ...ex, id: i + 1 }));
   SAVED_WORKOUTS = workouts;
+
+  // Exercises picked before this data landed (e.g. from cache or the offline
+  // placeholder set) hold references to the old objects — remap them so fields
+  // like `sides` stay in sync once the real sheet data arrives.
+  selectedExercises = selectedExercises.map(old => EXERCISES.find(e => e.nr === old.nr) || old);
+
   rebuildCatFilter();
   renderExerciseGrid();
   renderSavedWorkouts();
