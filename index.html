@@ -1599,37 +1599,26 @@
   }
   .settings-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* Calendar nav button — styled to evoke a calendar icon (red top bar + page)
-     instead of using the 📅 emoji directly. */
+  /* Calendar nav button — wider outline button, no emoji, matching the app's
+     existing outlined-button language (same idea as .settings-btn). */
   .calendar-nav-btn-custom {
-    position: relative;
     width: 130px;
     height: 36px;
-    border: 1.5px solid #2c2c2c;
+    border: 1.5px solid var(--accent);
     border-radius: 8px;
-    background: #ffffff;
-    color: #1a1a1a;
+    background: transparent;
+    color: var(--accent);
     cursor: pointer;
     font-family: 'Inter', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 700;
+    font-size: 0.85rem;
+    font-weight: 600;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
-    padding-bottom: 5px;
-    overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-  .calendar-nav-btn-custom::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 11px;
-    background: var(--red);
+    transition: all 0.2s;
   }
   .calendar-nav-btn-custom:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+    background: var(--accent-dim);
   }
 
   .settings-overlay {
