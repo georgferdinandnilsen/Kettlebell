@@ -1570,6 +1570,20 @@
   .chat-msg-user { font-weight: 700; font-size: 0.82rem; color: var(--accent2); }
   .chat-msg-time { font-size: 0.72rem; color: var(--text-dim); flex-shrink: 0; }
   .chat-msg-text { font-size: 0.88rem; color: var(--text); line-height: 1.4; word-break: break-word; }
+  .chat-msg-text a { color: var(--accent2); font-weight: 600; text-decoration: underline; }
+  .chat-like-btn {
+    margin-top: 6px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    cursor: pointer;
+    padding: 2px 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .chat-like-btn:hover { color: var(--accent2); }
   .chat-empty { text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 20px 0; }
 
   .calendar-nav-btn {
@@ -1724,14 +1738,16 @@
     position: fixed;
     bottom: 0; left: 0; right: 0;
     height: 64px;
+    padding: 0 20px;
     padding-bottom: env(safe-area-inset-bottom, 0);
     background: var(--surface);
     border-top: 1px solid var(--border);
     display: flex;
+    justify-content: space-evenly;
     z-index: 250;
   }
   .bottom-nav-btn {
-    flex: 1;
+    flex: 0 1 90px;
     background: transparent;
     border: none;
     display: flex;
@@ -4031,7 +4047,9 @@ function renderHeaderProgress() {
   const completed = me ? me.completed : 0;
   const allDone = completed >= goal;
   wrap.innerHTML = Array.from({ length: goal }, (_, i) => {
-    const isDone = i < completed;
+    // Fills right-to-left — the row sits at the right edge of the header, so the
+    // rightmost icon is the first one to light up as sessions get logged.
+    const isDone = i >= (goal - completed);
     const cls = allDone ? 'header-progress-icon gold' : (isDone ? 'header-progress-icon done' : 'header-progress-icon');
     const src = allDone ? 'kettlebell_gold.png' : (isDone ? 'favicon.png' : 'favicon_lightgray.png');
     const fallback = allDone ? "this.onerror=null;this.src='favicon.png';" : '';
@@ -4097,7 +4115,9 @@ function renderScoreboardList() {
   wrap.innerHTML = scoreboardData.map(u => {
     const allDone = u.completed >= u.goal;
     const icons = Array.from({ length: u.goal }, (_, i) => {
-      const isDone = i < u.completed;
+      // Same right-to-left fill as the header widget, for the same reason —
+      // this row also sits flush against the right side of its card.
+      const isDone = i >= (u.goal - u.completed);
       const cls = allDone ? 'scoreboard-icon gold' : (isDone ? 'scoreboard-icon done' : 'scoreboard-icon');
       const src = allDone ? 'kettlebell_gold.png' : (isDone ? 'favicon.png' : 'favicon_lightgray.png');
       const fallback = allDone ? "this.onerror=null;this.src='favicon.png';" : '';
@@ -4127,6 +4147,18 @@ async function ensureChatMessages(force) {
   }
 }
 
+// Chat messages are user-submitted text stored in the sheet — escape before
+// inserting as HTML, then linkify the already-escaped text (safe: URLs never
+// contain the characters escapeHtml_ would have touched).
+function escapeHtml_(s) {
+  const div = document.createElement('div');
+  div.textContent = String(s == null ? '' : s);
+  return div.innerHTML;
+}
+function linkifyChatText_(escapedText) {
+  return escapedText.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">LINK</a>');
+}
+
 function renderChatMessages() {
   const wrap = document.getElementById('chat-messages');
   if (!wrap) return;
@@ -4137,12 +4169,33 @@ function renderChatMessages() {
   wrap.innerHTML = chatMessages.map(m => {
     const d = new Date(m.time);
     const timeLabel = isNaN(d) ? '' : `${d.getDate()}.${d.getMonth() + 1} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    const safeText = linkifyChatText_(escapeHtml_(m.message));
     return `
       <div class="chat-msg">
-        <div class="chat-msg-head"><span class="chat-msg-user">${m.username}</span><span class="chat-msg-time">${timeLabel}</span></div>
-        <div class="chat-msg-text">${m.message}</div>
+        <div class="chat-msg-head"><span class="chat-msg-user">${escapeHtml_(m.username)}</span><span class="chat-msg-time">${timeLabel}</span></div>
+        <div class="chat-msg-text">${safeText}</div>
+        <button class="chat-like-btn" onclick="likeChatMessage(${m.row}, this)">👍 <span class="chat-like-count">${m.likes || 0}</span></button>
       </div>`;
   }).join('');
+}
+
+async function likeChatMessage(row, btn) {
+  if (!row) return;
+  btn.disabled = true;
+  try {
+    const url = `${appsScriptUrl}?action=likeChatMessage&row=${row}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.success) {
+      const msg = chatMessages && chatMessages.find(m => m.row === row);
+      if (msg) msg.likes = data.likes;
+      btn.querySelector('.chat-like-count').textContent = data.likes;
+      try { localStorage.setItem(CHAT_CACHE_KEY, JSON.stringify(chatMessages)); } catch(e) {}
+    }
+  } catch(e) {
+    console.warn('Kunne ikke like meldingen:', e.message);
+  }
+  btn.disabled = false;
 }
 
 async function sendChatMessage() {
@@ -4158,8 +4211,10 @@ async function sendChatMessage() {
     const url = `${appsScriptUrl}?action=postChatMessage&username=${encodeURIComponent(currentUser)}&message=${encodeURIComponent(msg)}`;
     await fetch(url);
     input.value = '';
-    await ensureChatMessages(true);
+    // Sending is a good moment to pull fresh everything — messages, scores, calendar.
+    await Promise.all([ensureChatMessages(true), ensureScoreboardData(true), ensureWorkoutHistory(true)]);
     renderChatMessages();
+    renderScoreboardList();
   } catch(e) {
     console.warn('Kunne ikke sende melding:', e.message);
   }
