@@ -1462,7 +1462,11 @@
 
   /* ── CALENDAR SCREEN ── */
   .calendar-frame {
-    margin: 8px 20px 24px;
+    /* Cap the width so desktop doesn't stretch the day squares across the screen;
+       width calc keeps the 20px side gutters on narrow (mobile) viewports. */
+    max-width: 680px;
+    width: calc(100% - 40px);
+    margin: 8px auto 24px;
     padding: 20px 16px;
     background: var(--surface);
     border: 1px solid var(--border);
