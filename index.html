@@ -6,10 +6,11 @@
 <title>KETTL — Kettlebell Trening</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <script>
-  // Apply saved theme before first paint to avoid a flash of the wrong theme
+  // Apply saved theme before first paint to avoid a flash of the wrong theme.
+  // Light is the default — dark only applies if explicitly chosen before.
   (function() {
     try {
-      if (localStorage.getItem('ironbell_theme') === 'light') {
+      if (localStorage.getItem('ironbell_theme') !== 'dark') {
         document.documentElement.setAttribute('data-theme', 'light');
       }
     } catch(e) {}
