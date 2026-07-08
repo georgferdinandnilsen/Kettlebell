@@ -1551,7 +1551,9 @@
     flex-wrap: wrap;
   }
   .scoreboard-row.is-me { border-color: var(--accent); background: var(--accent-dim); }
+  .scoreboard-row-empty { border-style: dashed; opacity: 0.55; }
   .scoreboard-name { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+  .scoreboard-name-empty { font-weight: 600; color: var(--text-dim); font-style: italic; }
   .scoreboard-icons { display: flex; gap: 4px; flex-wrap: wrap; }
   .scoreboard-icon { width: 22px; height: 22px; object-fit: contain; opacity: 0.4; }
   .scoreboard-icon.done { opacity: 1; }
@@ -1607,6 +1609,7 @@
   }
   .chat-like-heart { font-size: 0.95rem; color: var(--text-dim); transition: color 0.15s; }
   .chat-like-btn.has-likes .chat-like-heart { color: var(--accent); }
+  span.chat-like-btn { cursor: default; } /* your own message — not clickable */
   .chat-empty { text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 20px 0; }
 
   .calendar-nav-btn {
@@ -2373,8 +2376,8 @@
   </div>
 
   <div id="scoreboard-content">
-    <div class="section-title">🏆 Scoreboard</div>
-    <div class="section-subtitle">Ukens fremgang — nullstilles hver mandag.</div>
+    <div class="section-title" style="max-width:680px;margin:0 auto;text-align:center">🏆 Scoreboard</div>
+    <div class="section-subtitle" style="max-width:680px;margin:0 auto 20px;text-align:center">Ukens fremgang — nullstilles hver mandag.</div>
 
     <div class="scoreboard-list" id="scoreboard-list"></div>
 
@@ -4188,11 +4191,13 @@ async function openScoreboard() {
 function renderScoreboardList() {
   const wrap = document.getElementById('scoreboard-list');
   if (!wrap) return;
-  if (!leaderboardData || leaderboardData.length === 0) {
-    wrap.innerHTML = '<div class="chat-empty">Ingen har fullført en økt denne uken ennå.</div>';
-    return;
-  }
-  wrap.innerHTML = leaderboardData.map(u => {
+
+  // Always show at least 3 rows (real entries first, then grayed-out empty
+  // slots), growing past 3 as more people qualify, capped at 5 total.
+  const real = (leaderboardData || []).slice(0, 5);
+  const emptySlotCount = Math.max(0, 3 - real.length);
+
+  const realRows = real.map(u => {
     const allDone = u.completed >= u.goal;
     const icons = Array.from({ length: u.goal }, (_, i) => {
       // Same right-to-left fill as the header widget, for the same reason —
@@ -4206,10 +4211,19 @@ function renderScoreboardList() {
     const isMe = currentUser && u.username.toLowerCase() === currentUser.toLowerCase();
     return `
       <div class="scoreboard-row ${isMe ? 'is-me' : ''}">
-        <div class="scoreboard-name">${u.username}</div>
+        <div class="scoreboard-name">${escapeHtml_(u.username)}</div>
         <div class="scoreboard-icons">${icons}</div>
       </div>`;
   }).join('');
+
+  const emptyIcons = Array.from({ length: 3 }, () => `<img class="scoreboard-icon" src="favicon_lightgray.png" alt="">`).join('');
+  const emptyRows = Array.from({ length: emptySlotCount }, () => `
+    <div class="scoreboard-row scoreboard-row-empty">
+      <div class="scoreboard-name-empty">Ledig plass</div>
+      <div class="scoreboard-icons">${emptyIcons}</div>
+    </div>`).join('');
+
+  wrap.innerHTML = realRows + emptyRows;
 }
 
 // ─── Chat (scoreboard-siden) ───
@@ -4251,11 +4265,17 @@ function renderChatMessages() {
     const timeLabel = isNaN(d) ? '' : `${d.getDate()}.${d.getMonth() + 1} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
     const safeText = linkifyChatText_(escapeHtml_(m.message));
     const likes = m.likes || 0;
+    const isOwn = currentUser && m.username.toLowerCase() === currentUser.toLowerCase();
+    // Backend only tracks a raw count, not who liked what — so "no liking your own
+    // message" can only be enforced client-side, by not giving yourself the button.
+    const likeControl = isOwn
+      ? `<span class="chat-like-btn ${likes >= 1 ? 'has-likes' : ''}" title="Du kan ikke like din egen melding"><span class="chat-like-heart">♥</span> <span class="chat-like-count">${likes}</span></span>`
+      : `<button class="chat-like-btn ${likes >= 1 ? 'has-likes' : ''}" onclick="likeChatMessage(${m.row}, this)"><span class="chat-like-heart">♥</span> <span class="chat-like-count">${likes}</span></button>`;
     return `
       <div class="chat-msg">
         <div class="chat-msg-head"><span class="chat-msg-user">${escapeHtml_(m.username)}</span><span class="chat-msg-time">${timeLabel}</span></div>
         <div class="chat-msg-text">${safeText}</div>
-        <button class="chat-like-btn ${likes >= 1 ? 'has-likes' : ''}" onclick="likeChatMessage(${m.row}, this)"><span class="chat-like-heart">♥</span> <span class="chat-like-count">${likes}</span></button>
+        ${likeControl}
       </div>`;
   }).join('');
 }
