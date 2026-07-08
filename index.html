@@ -4219,7 +4219,7 @@ function renderScoreboardList() {
   const emptyIcons = Array.from({ length: 3 }, () => `<img class="scoreboard-icon" src="favicon_lightgray.png" alt="">`).join('');
   const emptyRows = Array.from({ length: emptySlotCount }, () => `
     <div class="scoreboard-row scoreboard-row-empty">
-      <div class="scoreboard-name-empty">Ledig plass</div>
+      <div class="scoreboard-name-empty"></div>
       <div class="scoreboard-icons">${emptyIcons}</div>
     </div>`).join('');
 
