@@ -1508,6 +1508,28 @@
     font-weight: 600;
     color: var(--text);
   }
+  .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+    background: var(--border);
+    border-radius: 22px;
+    transition: 0.2s;
+  }
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    height: 16px; width: 16px;
+    left: 3px; bottom: 3px;
+    background: var(--surface);
+    border-radius: 50%;
+    transition: 0.2s;
+  }
+  .toggle-switch input:checked + .toggle-slider { background: var(--accent); }
+  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+  #weekly-goal-stepper { transition: opacity 0.2s; }
 
   /* ── Scoreboard ── */
   .scoreboard-list {
@@ -1583,7 +1605,8 @@
     align-items: center;
     gap: 4px;
   }
-  .chat-like-btn:hover { color: var(--accent2); }
+  .chat-like-heart { font-size: 0.95rem; color: var(--text-dim); transition: color 0.15s; }
+  .chat-like-btn.has-likes .chat-like-heart { color: var(--accent); }
   .chat-empty { text-align: center; color: var(--text-dim); font-size: 0.85rem; padding: 20px 0; }
 
   .calendar-nav-btn {
@@ -2291,8 +2314,9 @@
      SCREEN: TRENINGSKALENDER
 ══════════════════════════════════════════ -->
 <div class="screen" id="screen-calendar">
-  <div class="bottom-cta" style="justify-content:flex-start">
+  <div class="bottom-cta" style="justify-content:space-between">
     <button class="btn-secondary" onclick="showScreen('screen-select')">← Tilbake</button>
+    <button class="chat-refresh-btn" id="calendar-refresh-btn" onclick="refreshCalendarData()" title="Oppdater">🔄</button>
   </div>
 
   <div class="auth-required-box" id="calendar-auth-required" style="display:none">
@@ -2305,8 +2329,14 @@
   <div id="calendar-content">
   <div class="calendar-frame">
     <div class="weekly-goal-row">
-      <span class="weekly-goal-label">🎯 Ukesmål</span>
-      <div class="stepper">
+      <div style="display:flex;align-items:center;gap:10px">
+        <label class="toggle-switch">
+          <input type="checkbox" id="weekly-goal-toggle" checked onchange="toggleWeeklyGoalEnabled(this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="weekly-goal-label">🎯 Ukesmål</span>
+      </div>
+      <div class="stepper" id="weekly-goal-stepper">
         <button class="stepper-btn" onclick="adjustWeeklyGoal(-1)">−</button>
         <span class="stepper-val" id="weekly-goal-value">3</span>
         <button class="stepper-btn" onclick="adjustWeeklyGoal(1)">+</button>
@@ -3611,8 +3641,10 @@ let personalWorkouts = [];
 // calendar/scoreboard open and right after finishing a workout. ───
 const HISTORY_CACHE_KEY = 'ironbell_history_cache';
 const SCOREBOARD_CACHE_KEY = 'ironbell_scoreboard_cache';
+const LEADERBOARD_CACHE_KEY = 'ironbell_leaderboard_cache';
 const CHAT_CACHE_KEY = 'ironbell_chat_cache';
-let scoreboardData = null; // [{username, goal, completed}], null = not loaded yet
+let scoreboardData = null; // [{username, goal, completed, enabled}] — everyone, unfiltered
+let leaderboardData = null; // same shape, filtered+sorted — only what the Scoreboard screen shows
 let scoreboardFetchedFresh = false;
 let chatMessages = null; // [{time, username, message}], null = not loaded yet
 try {
@@ -3622,6 +3654,10 @@ try {
 try {
   const cachedScoreboard = localStorage.getItem(SCOREBOARD_CACHE_KEY);
   if (cachedScoreboard) scoreboardData = JSON.parse(cachedScoreboard);
+} catch(e) {}
+try {
+  const cachedLeaderboard = localStorage.getItem(LEADERBOARD_CACHE_KEY);
+  if (cachedLeaderboard) leaderboardData = JSON.parse(cachedLeaderboard);
 } catch(e) {}
 try {
   const cachedChat = localStorage.getItem(CHAT_CACHE_KEY);
@@ -3689,12 +3725,14 @@ function clearAccountCaches_() {
   workoutHistory = null;
   historyFetchedFresh = false;
   scoreboardData = null;
+  leaderboardData = null;
   scoreboardFetchedFresh = false;
   chatMessages = null;
   personalWorkouts = [];
   try {
     localStorage.removeItem(HISTORY_CACHE_KEY);
     localStorage.removeItem(SCOREBOARD_CACHE_KEY);
+    localStorage.removeItem(LEADERBOARD_CACHE_KEY);
     localStorage.removeItem(CHAT_CACHE_KEY);
   } catch(e) {}
 }
@@ -3990,13 +4028,25 @@ async function openCalendar() {
   content.style.display = 'block';
 
   calendarViewDate = new Date();
-  renderCalendarGrid(); // render immediately with whatever's cached, don't block on network
+  renderCalendarGrid(); // instantly from whatever's cached
   renderWeeklyGoalUi();
-  if (!historyFetchedFresh || !scoreboardFetchedFresh) {
+  // Only hit the network if there's truly nothing cached yet (first-ever load).
+  // Otherwise data stays as-is until a workout finishes or the 🔄 button is pressed —
+  // the previous "always refetch on open" behaviour felt slow for no real benefit.
+  if (workoutHistory === null || scoreboardData === null) {
     await Promise.all([ensureWorkoutHistory(), ensureScoreboardData()]);
-    renderCalendarGrid(); // re-render once fresh data lands
+    renderCalendarGrid();
     renderWeeklyGoalUi();
   }
+}
+
+async function refreshCalendarData() {
+  const btn = document.getElementById('calendar-refresh-btn');
+  if (btn) btn.disabled = true;
+  await Promise.all([ensureWorkoutHistory(true), ensureScoreboardData(true)]);
+  renderCalendarGrid();
+  renderWeeklyGoalUi();
+  if (btn) btn.disabled = false;
 }
 
 // Pass force=true to bypass the "already fetched this session" guard — used
@@ -4019,17 +4069,23 @@ async function ensureWorkoutHistory(force) {
 // ─── Ukesmål + scoreboard data (shared by header widget, calendar, scoreboard) ───
 async function ensureScoreboardData(force) {
   if (scoreboardFetchedFresh && !force) return;
-  if (!appsScriptUrl || !currentUser) { scoreboardData = scoreboardData || []; return; }
+  if (!appsScriptUrl || !currentUser) { scoreboardData = scoreboardData || []; leaderboardData = leaderboardData || []; return; }
   try {
     const url = `${appsScriptUrl}?action=scoreboard&username=${encodeURIComponent(currentUser)}`;
     const res = await fetch(url);
     const data = await res.json();
     scoreboardData = data.success ? data.users : (scoreboardData || []);
+    leaderboardData = data.success ? data.leaderboard : (leaderboardData || []);
     scoreboardFetchedFresh = true;
-    try { localStorage.setItem(SCOREBOARD_CACHE_KEY, JSON.stringify(scoreboardData)); } catch(e) {}
+    try {
+      localStorage.setItem(SCOREBOARD_CACHE_KEY, JSON.stringify(scoreboardData));
+      localStorage.setItem(LEADERBOARD_CACHE_KEY, JSON.stringify(leaderboardData));
+    } catch(e) {}
     renderHeaderProgress();
+    renderScoreboardList();
   } catch(e) {
     if (scoreboardData === null) scoreboardData = [];
+    if (leaderboardData === null) leaderboardData = [];
   }
 }
 
@@ -4041,8 +4097,8 @@ function myScoreboardEntry() {
 function renderHeaderProgress() {
   const wrap = document.getElementById('header-progress-row');
   if (!wrap) return;
-  if (!currentUser) { wrap.style.display = 'none'; return; }
   const me = myScoreboardEntry();
+  if (!currentUser || (me && me.enabled === false)) { wrap.style.display = 'none'; return; }
   const goal = me ? me.goal : 3;
   const completed = me ? me.completed : 0;
   const allDone = completed >= goal;
@@ -4059,10 +4115,34 @@ function renderHeaderProgress() {
 }
 
 function renderWeeklyGoalUi() {
-  const el = document.getElementById('weekly-goal-value');
-  if (!el) return;
+  const valEl = document.getElementById('weekly-goal-value');
+  const toggleEl = document.getElementById('weekly-goal-toggle');
+  const stepperEl = document.getElementById('weekly-goal-stepper');
+  if (!valEl) return;
   const me = myScoreboardEntry();
-  el.textContent = me ? me.goal : 3;
+  const enabled = me ? me.enabled !== false : true; // default on for brand-new users
+  valEl.textContent = me ? me.goal : 3;
+  if (toggleEl) toggleEl.checked = enabled;
+  if (stepperEl) {
+    stepperEl.style.opacity = enabled ? '1' : '0.4';
+    stepperEl.style.pointerEvents = enabled ? 'auto' : 'none';
+  }
+}
+
+async function toggleWeeklyGoalEnabled(enabled) {
+  if (!currentUser) return;
+  const me = myScoreboardEntry();
+  if (me) me.enabled = enabled;
+  renderWeeklyGoalUi();
+  renderHeaderProgress();
+
+  try {
+    const url = `${appsScriptUrl}?action=setWeeklyGoalEnabled&username=${encodeURIComponent(currentUser)}&enabled=${enabled ? 'på' : 'av'}`;
+    await fetch(url);
+    try { localStorage.setItem(SCOREBOARD_CACHE_KEY, JSON.stringify(scoreboardData)); } catch(e) {}
+  } catch(e) {
+    console.warn('Kunne ikke lagre av/på:', e.message);
+  }
 }
 
 async function adjustWeeklyGoal(delta) {
@@ -4108,11 +4188,11 @@ async function openScoreboard() {
 function renderScoreboardList() {
   const wrap = document.getElementById('scoreboard-list');
   if (!wrap) return;
-  if (!scoreboardData || scoreboardData.length === 0) {
-    wrap.innerHTML = '<div class="chat-empty">Ingen brukere ennå.</div>';
+  if (!leaderboardData || leaderboardData.length === 0) {
+    wrap.innerHTML = '<div class="chat-empty">Ingen har fullført en økt denne uken ennå.</div>';
     return;
   }
-  wrap.innerHTML = scoreboardData.map(u => {
+  wrap.innerHTML = leaderboardData.map(u => {
     const allDone = u.completed >= u.goal;
     const icons = Array.from({ length: u.goal }, (_, i) => {
       // Same right-to-left fill as the header widget, for the same reason —
@@ -4170,11 +4250,12 @@ function renderChatMessages() {
     const d = new Date(m.time);
     const timeLabel = isNaN(d) ? '' : `${d.getDate()}.${d.getMonth() + 1} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
     const safeText = linkifyChatText_(escapeHtml_(m.message));
+    const likes = m.likes || 0;
     return `
       <div class="chat-msg">
         <div class="chat-msg-head"><span class="chat-msg-user">${escapeHtml_(m.username)}</span><span class="chat-msg-time">${timeLabel}</span></div>
         <div class="chat-msg-text">${safeText}</div>
-        <button class="chat-like-btn" onclick="likeChatMessage(${m.row}, this)">👍 <span class="chat-like-count">${m.likes || 0}</span></button>
+        <button class="chat-like-btn ${likes >= 1 ? 'has-likes' : ''}" onclick="likeChatMessage(${m.row}, this)"><span class="chat-like-heart">♥</span> <span class="chat-like-count">${likes}</span></button>
       </div>`;
   }).join('');
 }
@@ -4190,6 +4271,7 @@ async function likeChatMessage(row, btn) {
       const msg = chatMessages && chatMessages.find(m => m.row === row);
       if (msg) msg.likes = data.likes;
       btn.querySelector('.chat-like-count').textContent = data.likes;
+      btn.classList.toggle('has-likes', data.likes >= 1);
       try { localStorage.setItem(CHAT_CACHE_KEY, JSON.stringify(chatMessages)); } catch(e) {}
     }
   } catch(e) {
