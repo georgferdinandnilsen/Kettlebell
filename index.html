@@ -4305,9 +4305,16 @@ async function sendChatMessage() {
   input.focus();
 }
 
+// Refreshes everything on the Scoreboard screen, not just chat — otherwise a
+// stale cached leaderboard (e.g. from before a backend redeploy) had no way to
+// force-update short of a full page reload.
 async function refreshChatMessages() {
-  await ensureChatMessages(true);
+  const btn = document.querySelector('.chat-refresh-btn[onclick="refreshChatMessages()"]');
+  if (btn) btn.disabled = true;
+  await Promise.all([ensureChatMessages(true), ensureScoreboardData(true)]);
   renderChatMessages();
+  renderScoreboardList();
+  if (btn) btn.disabled = false;
 }
 
 function shiftCalendarMonth(delta) {
