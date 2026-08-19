@@ -1044,6 +1044,62 @@
     border-color: var(--accent);
     background: linear-gradient(135deg, var(--accent-dark), var(--surface));
   }
+
+  /* ── UKESPLAN ── */
+  .weekly-plan-section { padding: 0 28px 8px; }
+  .plan-tiles-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+  .plan-tile {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 16px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .plan-tile.done { border-color: var(--accent); background: var(--accent-dim); color: var(--accent2); }
+  .plan-tile-edit {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    width: 38px;
+    height: 38px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+  .plan-grid-hint { font-size: 0.8rem; color: var(--text-muted); margin: 4px 0 14px; line-height: 1.5; }
+  .weekly-plan-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+  .plan-row { display: flex; align-items: center; gap: 8px; }
+  .plan-row-num {
+    width: 20px;
+    flex-shrink: 0;
+    text-align: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    color: var(--text-dim);
+  }
+  .plan-row-name { flex: 0 0 110px; margin: 0; }
+  .plan-row-slots { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; min-width: 0; }
+  .plan-slot {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px dashed var(--border);
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .plan-slot.filled { border-style: solid; border-color: var(--accent); background: var(--accent-dim); font-size: 1.1rem; }
+  .plan-exercise-picker-list { max-height: 360px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+
   .duo-partner-option {
     display: flex;
     align-items: center;
@@ -1741,6 +1797,18 @@
     opacity: 1;
     filter: sepia(1) saturate(6) hue-rotate(-15deg) brightness(1.05);
   }
+  /* Goals over 10 swap the icon row for this compact bar — 30 kettlebells won't fit. */
+  .progress-bar-mini {
+    width: 60px;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .progress-bar-mini-fill { height: 100%; background: var(--accent); border-radius: 4px; }
+  .progress-bar-mini-fill.gold { background: #d4a017; }
+  .progress-bar-mini-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
 
   /* ── BOTTOM NAV ── */
   .bottom-nav {
@@ -2038,6 +2106,13 @@
 
   <div class="section-title" id="select-screen-title">Velg Øvelser</div>
   <div class="section-subtitle">Velg 1–10 øvelser for din økt. Trykk for å legge til.</div>
+
+  <!-- Ukesplan -->
+  <div class="weekly-plan-section" id="weekly-plan-section" style="display:none">
+    <div class="saved-workouts-title">📅 Ukesplan</div>
+    <div id="weekly-plan-tiles"></div>
+    <hr class="saved-section-divider">
+  </div>
 
   <!-- Saved workouts from Sheet -->
   <div class="saved-workouts-section" id="saved-workouts-section" style="display:none">
@@ -2427,6 +2502,36 @@
 
     <div class="login-error" id="new-workout-error"></div>
     <button class="btn-primary" id="new-workout-save-btn" style="width:100%;margin-top:8px" onclick="saveNewWorkout()">Lagre økt</button>
+  </div>
+</div>
+
+<!-- Ukesplan editor -->
+<div class="wkt-popup-overlay" id="weekly-plan-editor-overlay" style="display:none" onclick="closeWeeklyPlanEditorIfBg(event)">
+  <div class="wkt-popup" style="max-width:900px">
+    <div class="wkt-popup-header">
+      <div class="wkt-popup-title">Ukesplan</div>
+      <button class="wkt-popup-close" onclick="closeWeeklyPlanEditor()">✕</button>
+    </div>
+    <div class="settings-field">
+      <label class="settings-label">Navn på ukesplan (valgfritt)</label>
+      <input type="text" class="settings-input" id="weekly-plan-name" placeholder="F.eks. Sommerplan">
+    </div>
+    <div class="plan-grid-hint">Gi hver rad et navn (f.eks. Mandag eller Push) for å ta den i bruk. Trykk + for å velge øvelser.</div>
+    <div id="weekly-plan-grid" class="weekly-plan-grid"></div>
+    <div class="login-error" id="weekly-plan-error"></div>
+    <button class="btn-primary" id="weekly-plan-save-btn" style="width:100%;margin-top:12px" onclick="saveWeeklyPlan()">Lagre ukesplan</button>
+  </div>
+</div>
+
+<!-- Exercise picker for a ukesplan slot -->
+<div class="wkt-popup-overlay" id="plan-exercise-picker-overlay" style="display:none" onclick="closePlanExercisePickerIfBg(event)">
+  <div class="wkt-popup">
+    <div class="wkt-popup-header">
+      <div class="wkt-popup-title">Velg øvelse</div>
+      <button class="wkt-popup-close" onclick="closePlanExercisePicker()">✕</button>
+    </div>
+    <input type="text" class="search-input" id="plan-exercise-search" placeholder="🔍 Søk øvelse…" oninput="renderPlanExercisePickerList()" style="margin-bottom:12px">
+    <div id="plan-exercise-picker-list" class="plan-exercise-picker-list"></div>
   </div>
 </div>
 
@@ -3639,11 +3744,23 @@ try {
   if (cachedChat) chatMessages = JSON.parse(cachedChat);
 } catch(e) {}
 
+// ─── Ukesplan ───
+const WEEKLY_PLAN_CACHE_KEY = 'ironbell_weekly_plan_cache';
+let weeklyPlan = null; // { planName, days: [{name,exercises}|null, ...7] }
+let weeklyPlanFetched = false;
+let planEditorDays = []; // editor scratch state: [{name, exercises:[nr|null x8]}, ...7]
+let planPickerTarget = null; // {dayIndex, slotIndex} while the exercise picker is open
+try {
+  const cachedPlan = localStorage.getItem(WEEKLY_PLAN_CACHE_KEY);
+  if (cachedPlan) weeklyPlan = JSON.parse(cachedPlan);
+} catch(e) {}
+
 function updateAuthUi() {
   const titleEl = document.getElementById('select-screen-title');
   if (titleEl) titleEl.textContent = currentUser ? `Hei ${currentUser}! Velg øvelser` : 'Velg Øvelser';
   renderHeaderProgress();
-  if (currentUser) ensureScoreboardData();
+  renderWeeklyPlanSection();
+  if (currentUser) { ensureScoreboardData(); ensureWeeklyPlan(); }
 }
 
 function toggleLoginMode() {
@@ -3704,11 +3821,14 @@ function clearAccountCaches_() {
   scoreboardFetchedFresh = false;
   chatMessages = null;
   personalWorkouts = [];
+  weeklyPlan = null;
+  weeklyPlanFetched = false;
   try {
     localStorage.removeItem(HISTORY_CACHE_KEY);
     localStorage.removeItem(SCOREBOARD_CACHE_KEY);
     localStorage.removeItem(LEADERBOARD_CACHE_KEY);
     localStorage.removeItem(CHAT_CACHE_KEY);
+    localStorage.removeItem(WEEKLY_PLAN_CACHE_KEY);
   } catch(e) {}
 }
 
@@ -3868,9 +3988,14 @@ async function saveNewWorkout() {
 
   try {
     const exercisesStr = selectedExercises.map(ex => ex.nr).join('-');
+    // Carries the current config over too, so loading this favorite later
+    // restores rounds/rest/mode exactly as they were when it was saved.
     const url = `${appsScriptUrl}?action=savePersonalWorkout&username=${encodeURIComponent(currentUser)}`
       + `&name=${encodeURIComponent(name)}&region=${encodeURIComponent(region)}`
-      + `&instructions=${encodeURIComponent(instructions)}&exercises=${encodeURIComponent(exercisesStr)}`;
+      + `&instructions=${encodeURIComponent(instructions)}&exercises=${encodeURIComponent(exercisesStr)}`
+      + `&mode=${encodeURIComponent(config.exMode)}&reps=${encodeURIComponent(config.plannedReps)}`
+      + `&time=${encodeURIComponent(config.exDuration)}&rounds=${encodeURIComponent(config.rounds)}`
+      + `&restEx=${encodeURIComponent(config.restEx)}&restRound=${encodeURIComponent(config.restRound)}`;
     const res = await fetch(url);
     const data = await res.json();
     if (data.success) {
@@ -3903,16 +4028,13 @@ async function openCalendar() {
   content.style.display = 'block';
 
   calendarViewDate = new Date();
-  renderCalendarGrid(); // instantly from whatever's cached
+  renderCalendarGrid(); // instantly from whatever's cached — never blocks on network
   renderWeeklyGoalUi();
-  // Only hit the network if there's truly nothing cached yet (first-ever load).
-  // Otherwise data stays as-is until a workout finishes or the 🔄 button is pressed —
-  // the previous "always refetch on open" behaviour felt slow for no real benefit.
-  if (workoutHistory === null || scoreboardData === null) {
-    await Promise.all([ensureWorkoutHistory(), ensureScoreboardData()]);
-    renderCalendarGrid();
-    renderWeeklyGoalUi();
-  }
+  // Stale-while-revalidate: always kick off a fresh fetch in the background too,
+  // so data self-updates without the user ever having to press refresh, while the
+  // initial paint stays instant since we don't await this before returning.
+  ensureWorkoutHistory(true).then(() => { renderCalendarGrid(); renderWeeklyGoalUi(); });
+  ensureScoreboardData(true).then(() => { renderCalendarGrid(); renderWeeklyGoalUi(); });
 }
 
 async function refreshCalendarData() {
@@ -3969,6 +4091,28 @@ function myScoreboardEntry() {
   return scoreboardData.find(u => u.username.toLowerCase() === currentUser.toLowerCase()) || null;
 }
 
+// goal<=10: one icon per session, right-to-left (existing look — cute and legible
+// at that size). goal>10 (now allowed up to 30): individual kettlebells would
+// overflow, so this switches to a compact fill-bar + "completed/goal" label instead.
+function buildProgressWidgetHtml_(goal, completed, iconClass) {
+  const allDone = completed >= goal;
+  if (goal <= 10) {
+    return Array.from({ length: goal }, (_, i) => {
+      // Fills right-to-left — these rows sit flush against a right edge, so the
+      // rightmost icon is the first one to light up as sessions get logged.
+      const isDone = i >= (goal - completed);
+      const cls = allDone ? `${iconClass} gold` : (isDone ? `${iconClass} done` : iconClass);
+      const src = allDone ? 'kettlebell_gold.png' : (isDone ? 'favicon.png' : 'favicon_lightgray.png');
+      const fallback = allDone ? "this.onerror=null;this.src='favicon.png';" : '';
+      return `<img class="${cls}" src="${src}" alt="" onerror="${fallback}">`;
+    }).join('');
+  }
+  const pct = Math.min(100, Math.round((completed / goal) * 100));
+  return `
+    <div class="progress-bar-mini"><div class="progress-bar-mini-fill${allDone ? ' gold' : ''}" style="width:${pct}%"></div></div>
+    <span class="progress-bar-mini-label">${completed}/${goal}</span>`;
+}
+
 function renderHeaderProgress() {
   const wrap = document.getElementById('header-progress-row');
   if (!wrap) return;
@@ -3976,16 +4120,7 @@ function renderHeaderProgress() {
   if (!currentUser || (me && me.enabled === false)) { wrap.style.display = 'none'; return; }
   const goal = me ? me.goal : 3;
   const completed = me ? me.completed : 0;
-  const allDone = completed >= goal;
-  wrap.innerHTML = Array.from({ length: goal }, (_, i) => {
-    // Fills right-to-left — the row sits at the right edge of the header, so the
-    // rightmost icon is the first one to light up as sessions get logged.
-    const isDone = i >= (goal - completed);
-    const cls = allDone ? 'header-progress-icon gold' : (isDone ? 'header-progress-icon done' : 'header-progress-icon');
-    const src = allDone ? 'kettlebell_gold.png' : (isDone ? 'favicon.png' : 'favicon_lightgray.png');
-    const fallback = allDone ? "this.onerror=null;this.src='favicon.png';" : '';
-    return `<img class="${cls}" src="${src}" alt="" onerror="${fallback}">`;
-  }).join('');
+  wrap.innerHTML = buildProgressWidgetHtml_(goal, completed, 'header-progress-icon');
   wrap.style.display = 'flex';
 }
 
@@ -4024,7 +4159,7 @@ async function adjustWeeklyGoal(delta) {
   if (!currentUser) return;
   const me = myScoreboardEntry();
   const current = me ? me.goal : 3;
-  const next = Math.max(2, Math.min(7, current + delta));
+  const next = Math.max(2, Math.min(30, current + delta));
   if (next === current) return;
 
   document.getElementById('weekly-goal-value').textContent = next;
@@ -4070,16 +4205,7 @@ function renderScoreboardList() {
   const emptySlotCount = Math.max(0, 3 - real.length);
 
   const realRows = real.map(u => {
-    const allDone = u.completed >= u.goal;
-    const icons = Array.from({ length: u.goal }, (_, i) => {
-      // Same right-to-left fill as the header widget, for the same reason —
-      // this row also sits flush against the right side of its card.
-      const isDone = i >= (u.goal - u.completed);
-      const cls = allDone ? 'scoreboard-icon gold' : (isDone ? 'scoreboard-icon done' : 'scoreboard-icon');
-      const src = allDone ? 'kettlebell_gold.png' : (isDone ? 'favicon.png' : 'favicon_lightgray.png');
-      const fallback = allDone ? "this.onerror=null;this.src='favicon.png';" : '';
-      return `<img class="${cls}" src="${src}" alt="" onerror="${fallback}">`;
-    }).join('');
+    const icons = buildProgressWidgetHtml_(u.goal, u.completed, 'scoreboard-icon');
     const isMe = currentUser && u.username.toLowerCase() === currentUser.toLowerCase();
     return `
       <div class="scoreboard-row ${isMe ? 'is-me' : ''}">
@@ -4342,7 +4468,8 @@ function showCalendarDay(key) {
         <div class="cal-stat"><div class="cal-stat-val">${entry.rounds || '—'}</div><div class="cal-stat-key">Runder</div></div>
         <div class="cal-stat"><div class="cal-stat-val">${entry.mode === 'Tid' ? '⏱' : entry.mode === 'Repetisjoner' ? '🔢' : '—'}</div><div class="cal-stat-key">${entry.mode || 'Modus'}</div></div>
         <div class="cal-stat"><div class="cal-stat-val">${entry.duration || '—'}</div><div class="cal-stat-key">Tid brukt</div></div>
-      </div>`;
+      </div>
+      <button class="btn-secondary" style="width:100%;margin-bottom:14px" onclick="restartLoggedWorkout('${entry.exercises}','${entry.mode}',${parseInt(entry.rounds) || 0})">🔁 Kjør denne økten på nytt</button>`;
 
     const exHtml = exList.map((ex, i) => `
       <div class="wkt-popup-ex">
@@ -4358,6 +4485,21 @@ function showCalendarDay(key) {
   }).join('<hr class="cal-entry-divider">');
 
   document.getElementById('calendar-day-overlay').style.display = 'flex';
+}
+
+// Loads a past logged workout's exercises + mode/rounds back into the picker
+// and takes the user straight to Konfigurer — per-exercise timing/rest aren't
+// logged per session, so those stay at whatever's currently set.
+function restartLoggedWorkout(exercisesStr, mode, rounds) {
+  const nrs = String(exercisesStr).split('-').map(s => parseInt(s)).filter(n => !isNaN(n));
+  const exList = nrs.map(nr => EXERCISES.find(e => e.nr === nr)).filter(Boolean);
+  if (exList.length === 0) return;
+  selectedExercises = exList;
+  currentWorkoutName = '';
+  config.exMode = mode === 'Tid' ? 'time' : 'reps';
+  if (rounds > 0) config.rounds = rounds;
+  closeCalendarDay();
+  goToConfig();
 }
 
 function closeCalendarDay() {
@@ -4633,7 +4775,10 @@ function parseSheetCSV(csv) {
 function personalWorkoutToSavedShape(pw) {
   const nrs = String(pw.exercises || '').split('-').map(s => parseInt(s)).filter(n => !isNaN(n));
   const exercises = nrs.map(nr => EXERCISES.find(e => e.nr === nr)).filter(Boolean);
-  return { name: pw.name, cat: pw.region, exercises, instructions: pw.instructions, isPersonal: true };
+  return {
+    name: pw.name, cat: pw.region, exercises, instructions: pw.instructions, isPersonal: true,
+    mode: pw.mode, reps: pw.reps, time: pw.time, rounds: pw.rounds, restEx: pw.restEx, restRound: pw.restRound
+  };
 }
 
 function renderSavedWorkouts() {
@@ -4656,6 +4801,196 @@ function renderSavedWorkouts() {
   ).join('');
 
   grid.innerHTML = html;
+}
+
+// ─── Ukesplan ───
+async function ensureWeeklyPlan(force) {
+  if (weeklyPlanFetched && !force) return;
+  if (!appsScriptUrl || !currentUser) { weeklyPlan = null; return; }
+  try {
+    const url = `${appsScriptUrl}?action=getWeeklyPlan&username=${encodeURIComponent(currentUser)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.success) {
+      weeklyPlan = { planName: data.planName, days: data.days };
+      weeklyPlanFetched = true;
+      try { localStorage.setItem(WEEKLY_PLAN_CACHE_KEY, JSON.stringify(weeklyPlan)); } catch(e) {}
+    }
+  } catch(e) {
+    console.warn('Kunne ikke hente ukesplan:', e.message);
+  }
+  renderWeeklyPlanSection();
+}
+
+// Monday 00:00 – Sunday 23:59:59 of the current week, client-side — used only to
+// check off ukesplan days, which is a genuinely weekly (not monthly) concept.
+function getClientWeekRange_() {
+  const now = new Date();
+  const day = now.getDay();
+  const diffToMonday = (day === 0 ? -6 : 1 - day);
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday);
+  monday.setHours(0, 0, 0, 0);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+  return { start: monday, end: sunday };
+}
+
+function isPlanDayCompletedThisWeek_(nrs, range) {
+  if (!workoutHistory || nrs.length === 0) return false;
+  const targetSet = [...nrs].sort((a, b) => a - b).join('-');
+  return workoutHistory.some(h => {
+    const d = new Date(h.date);
+    if (isNaN(d) || d < range.start || d > range.end) return false;
+    const hNrs = String(h.exercises || '').split('-').map(s => parseInt(s)).filter(n => !isNaN(n)).sort((a, b) => a - b).join('-');
+    return hNrs === targetSet && hNrs !== '';
+  });
+}
+
+function renderWeeklyPlanSection() {
+  const section = document.getElementById('weekly-plan-section');
+  const wrap = document.getElementById('weekly-plan-tiles');
+  if (!section || !wrap) return;
+  if (!currentUser) { section.style.display = 'none'; return; }
+
+  const activeDays = (weeklyPlan && weeklyPlan.days || [])
+    .map((d, i) => (d && d.name) ? { ...d, idx: i } : null)
+    .filter(Boolean);
+
+  if (activeDays.length === 0) {
+    wrap.innerHTML = `<button class="btn-secondary" onclick="openWeeklyPlanEditor()">➕ Ny ukesplan</button>`;
+    section.style.display = 'block';
+    return;
+  }
+
+  const range = getClientWeekRange_();
+  const tiles = activeDays.map((d, n) => {
+    const nrs = String(d.exercises || '').split('-').map(s => parseInt(s)).filter(x => !isNaN(x));
+    const done = isPlanDayCompletedThisWeek_(nrs, range);
+    return `<button class="plan-tile ${done ? 'done' : ''}" onclick="startPlanDay(${d.idx})">${done ? '✓ ' : ''}Økt ${n + 1}</button>`;
+  }).join('');
+  wrap.innerHTML = `<div class="plan-tiles-row">${tiles}<button class="plan-tile-edit" onclick="openWeeklyPlanEditor()" title="Rediger ukesplan">✏️</button></div>`;
+  section.style.display = 'block';
+}
+
+function startPlanDay(dayIdx) {
+  const day = weeklyPlan && weeklyPlan.days && weeklyPlan.days[dayIdx];
+  if (!day) return;
+  const nrs = String(day.exercises || '').split('-').map(s => parseInt(s)).filter(n => !isNaN(n));
+  const exList = nrs.map(nr => EXERCISES.find(e => e.nr === nr)).filter(Boolean);
+  if (exList.length === 0) return;
+  selectedExercises = exList;
+  currentWorkoutName = day.name || '';
+  goToConfig();
+}
+
+function openWeeklyPlanEditor() {
+  if (!currentUser) return;
+  planEditorDays = Array.from({ length: 7 }, (_, i) => {
+    const existing = weeklyPlan && weeklyPlan.days && weeklyPlan.days[i];
+    if (existing) {
+      const nrs = String(existing.exercises || '').split('-').map(s => parseInt(s)).filter(n => !isNaN(n));
+      const slots = Array.from({ length: 8 }, (_, s) => nrs[s] || null);
+      return { name: existing.name || '', exercises: slots };
+    }
+    return { name: '', exercises: Array(8).fill(null) };
+  });
+  document.getElementById('weekly-plan-name').value = (weeklyPlan && weeklyPlan.planName) || '';
+  document.getElementById('weekly-plan-error').textContent = '';
+  renderWeeklyPlanEditorGrid();
+  document.getElementById('weekly-plan-editor-overlay').style.display = 'flex';
+}
+
+function closeWeeklyPlanEditor() {
+  document.getElementById('weekly-plan-editor-overlay').style.display = 'none';
+}
+function closeWeeklyPlanEditorIfBg(e) {
+  if (e.target === document.getElementById('weekly-plan-editor-overlay')) closeWeeklyPlanEditor();
+}
+
+function renderWeeklyPlanEditorGrid() {
+  const wrap = document.getElementById('weekly-plan-grid');
+  wrap.innerHTML = planEditorDays.map((day, i) => {
+    const slots = day.exercises.map((nr, s) => {
+      const ex = nr ? EXERCISES.find(e => e.nr === nr) : null;
+      const title = ex ? ex.name.replace(/"/g, '&quot;') : 'Velg øvelse';
+      return `<button class="plan-slot ${ex ? 'filled' : ''}" onclick="openPlanExercisePicker(${i},${s})" title="${title}">${ex ? (ex.big || '🏋️') : '+'}</button>`;
+    }).join('');
+    return `
+      <div class="plan-row">
+        <div class="plan-row-num">${i + 1}</div>
+        <input type="text" class="settings-input plan-row-name" value="${(day.name || '').replace(/"/g, '&quot;')}" placeholder="Navn" oninput="planEditorDays[${i}].name=this.value">
+        <div class="plan-row-slots">${slots}</div>
+      </div>`;
+  }).join('');
+}
+
+function openPlanExercisePicker(dayIndex, slotIndex) {
+  planPickerTarget = { dayIndex, slotIndex };
+  document.getElementById('plan-exercise-search').value = '';
+  renderPlanExercisePickerList();
+  document.getElementById('plan-exercise-picker-overlay').style.display = 'flex';
+}
+function closePlanExercisePicker() {
+  document.getElementById('plan-exercise-picker-overlay').style.display = 'none';
+  planPickerTarget = null;
+}
+function closePlanExercisePickerIfBg(e) {
+  if (e.target === document.getElementById('plan-exercise-picker-overlay')) closePlanExercisePicker();
+}
+
+function renderPlanExercisePickerList() {
+  const term = (document.getElementById('plan-exercise-search').value || '').toLowerCase();
+  const list = document.getElementById('plan-exercise-picker-list');
+  const filtered = EXERCISES.filter(ex => ex.name.toLowerCase().includes(term));
+  list.innerHTML = filtered.map(ex => `
+    <div class="duo-partner-option" onclick="pickPlanExercise(${ex.nr})">${ex.big || '🏋️'} ${escapeHtml_(ex.name)}</div>
+  `).join('');
+}
+
+function pickPlanExercise(nr) {
+  if (!planPickerTarget) return;
+  const { dayIndex, slotIndex } = planPickerTarget;
+  planEditorDays[dayIndex].exercises[slotIndex] = nr;
+  closePlanExercisePicker();
+  renderWeeklyPlanEditorGrid();
+}
+
+async function saveWeeklyPlan() {
+  if (!currentUser) return;
+  const planName = document.getElementById('weekly-plan-name').value.trim();
+  const errEl = document.getElementById('weekly-plan-error');
+  errEl.textContent = '';
+
+  const daysPayload = planEditorDays.map(d => {
+    if (!d.name.trim()) return null;
+    const exNrs = d.exercises.filter(Boolean);
+    return { name: d.name.trim(), exercises: exNrs.join('-') };
+  });
+
+  const btn = document.getElementById('weekly-plan-save-btn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Lagrer…';
+  try {
+    const url = `${appsScriptUrl}?action=setWeeklyPlan&username=${encodeURIComponent(currentUser)}`
+      + `&planName=${encodeURIComponent(planName)}&days=${encodeURIComponent(JSON.stringify(daysPayload))}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.success) {
+      weeklyPlan = { planName, days: daysPayload };
+      try { localStorage.setItem(WEEKLY_PLAN_CACHE_KEY, JSON.stringify(weeklyPlan)); } catch(e) {}
+      closeWeeklyPlanEditor();
+      renderWeeklyPlanSection();
+    } else {
+      errEl.textContent = data.error || 'Noe gikk galt';
+    }
+  } catch(e) {
+    errEl.textContent = 'Fikk ikke kontakt med serveren';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
 }
 
 function showWorkoutDetail(index) {
@@ -4766,6 +5101,18 @@ function loadSavedWorkout(index) {
   if (!wkt) return;
   selectedExercises = [...wkt.exercises];
   currentWorkoutName = wkt.name || '';
+
+  // Personal favorites remember the config they were saved with (mode, rest, etc.)
+  // so re-running one later restores it exactly, not just the exercise list.
+  if (wkt.isPersonal) {
+    if (wkt.mode === 'time' || wkt.mode === 'reps') config.exMode = wkt.mode;
+    const reps = parseInt(wkt.reps, 10); if (!isNaN(reps) && reps > 0) config.plannedReps = reps;
+    const time = parseInt(wkt.time, 10); if (!isNaN(time) && time > 0) config.exDuration = time;
+    const rounds = parseInt(wkt.rounds, 10); if (!isNaN(rounds) && rounds > 0) config.rounds = rounds;
+    const restEx = parseInt(wkt.restEx, 10); if (!isNaN(restEx) && restEx >= 0) config.restEx = restEx;
+    const restRound = parseInt(wkt.restRound, 10); if (!isNaN(restRound) && restRound >= 0) config.restRound = restRound;
+  }
+
   renderSelectedStrip();
   renderExerciseGrid();
   document.getElementById('btn-to-config').disabled = false;
