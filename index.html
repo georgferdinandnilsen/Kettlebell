@@ -1084,8 +1084,8 @@
   .plan-row-name { flex: 0 0 110px; margin: 0; }
   .plan-row-slots { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; min-width: 0; }
   .plan-slot {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     border-radius: 8px;
     background: var(--surface2);
     border: 1px dashed var(--border);
@@ -1096,9 +1096,19 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    overflow: hidden;
+    padding: 0;
   }
   .plan-slot.filled { border-style: solid; border-color: var(--accent); background: var(--accent-dim); font-size: 1.1rem; }
-  .plan-exercise-picker-list { max-height: 360px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+  .plan-slot img { width: 100%; height: 100%; object-fit: cover; }
+  .plan-exercise-picker-list {
+    max-height: 70vh;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+    padding: 2px;
+  }
 
   .duo-partner-option {
     display: flex;
@@ -2525,7 +2535,7 @@
 
 <!-- Exercise picker for a ukesplan slot -->
 <div class="wkt-popup-overlay" id="plan-exercise-picker-overlay" style="display:none" onclick="closePlanExercisePickerIfBg(event)">
-  <div class="wkt-popup">
+  <div class="wkt-popup" style="max-width:900px;max-height:92vh">
     <div class="wkt-popup-header">
       <div class="wkt-popup-title">Velg øvelse</div>
       <button class="wkt-popup-close" onclick="closePlanExercisePicker()">✕</button>
@@ -4914,7 +4924,10 @@ function renderWeeklyPlanEditorGrid() {
     const slots = day.exercises.map((nr, s) => {
       const ex = nr ? EXERCISES.find(e => e.nr === nr) : null;
       const title = ex ? ex.name.replace(/"/g, '&quot;') : 'Velg øvelse';
-      return `<button class="plan-slot ${ex ? 'filled' : ''}" onclick="openPlanExercisePicker(${i},${s})" title="${title}">${ex ? (ex.big || '🏋️') : '+'}</button>`;
+      const inner = ex
+        ? (ex.img ? `<img src="${ex.img}" alt="" onerror="this.replaceWith(document.createTextNode('${(ex.big || '🏋️').replace(/'/g, "\\'")}'))">` : (ex.big || '🏋️'))
+        : '+';
+      return `<button class="plan-slot ${ex ? 'filled' : ''}" onclick="openPlanExercisePicker(${i},${s})" title="${title}">${inner}</button>`;
     }).join('');
     return `
       <div class="plan-row">
@@ -4942,10 +4955,18 @@ function closePlanExercisePickerIfBg(e) {
 function renderPlanExercisePickerList() {
   const term = (document.getElementById('plan-exercise-search').value || '').toLowerCase();
   const list = document.getElementById('plan-exercise-picker-list');
-  const filtered = EXERCISES.filter(ex => ex.name.toLowerCase().includes(term));
-  list.innerHTML = filtered.map(ex => `
-    <div class="duo-partner-option" onclick="pickPlanExercise(${ex.nr})">${ex.big || '🏋️'} ${escapeHtml_(ex.name)}</div>
-  `).join('');
+  const filtered = EXERCISES.filter(ex => ex.name.toLowerCase().includes(term) || (ex.muscles || '').toLowerCase().includes(term));
+  list.innerHTML = filtered.map(ex => {
+    const mediaHtml = ex.img
+      ? `<div class="ex-img-wrap"><img src="${ex.img}" alt="${escapeHtml_(ex.name)}" loading="lazy" onerror="this.src='favicon.png'"></div>`
+      : `<div class="ex-img-wrap"><img src="favicon.png" alt="${escapeHtml_(ex.name)}"></div>`;
+    return `
+    <div class="ex-card" onclick="pickPlanExercise(${ex.nr})">
+      ${mediaHtml}
+      <div class="ex-name">${escapeHtml_(ex.name)}</div>
+      <div class="ex-muscles">${escapeHtml_(ex.muscles || '')}</div>
+    </div>`;
+  }).join('');
 }
 
 function pickPlanExercise(nr) {
