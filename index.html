@@ -1083,7 +1083,20 @@
   }
   .plan-row-name { flex: 0 0 110px; margin: 0; }
   .plan-row-slots { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; min-width: 0; }
+  .plan-row-remove {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  .plan-row-remove:hover { border-color: var(--danger, #e05555); color: var(--danger, #e05555); }
   .plan-slot {
+    position: relative;
     width: 40px;
     height: 40px;
     border-radius: 8px;
@@ -1096,11 +1109,26 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    overflow: hidden;
+    overflow: visible;
     padding: 0;
   }
   .plan-slot.filled { border-style: solid; border-color: var(--accent); background: var(--accent-dim); font-size: 1.1rem; }
-  .plan-slot img { width: 100%; height: 100%; object-fit: cover; }
+  .plan-slot img { width: 100%; height: 100%; object-fit: cover; border-radius: 7px; }
+  .plan-slot-remove {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--danger, #e05555);
+    color: #fff;
+    font-size: 0.65rem;
+    line-height: 18px;
+    text-align: center;
+    cursor: pointer;
+    z-index: 2;
+  }
   .plan-exercise-picker-list {
     max-height: 70vh;
     overflow-y: auto;
@@ -2517,7 +2545,7 @@
 
 <!-- Ukesplan editor -->
 <div class="wkt-popup-overlay" id="weekly-plan-editor-overlay" style="display:none" onclick="closeWeeklyPlanEditorIfBg(event)">
-  <div class="wkt-popup" style="max-width:900px">
+  <div class="wkt-popup" style="max-width:1100px;max-height:94vh">
     <div class="wkt-popup-header">
       <div class="wkt-popup-title">Ukesplan</div>
       <button class="wkt-popup-close" onclick="closeWeeklyPlanEditor()">✕</button>
@@ -2526,7 +2554,7 @@
       <label class="settings-label">Navn på ukesplan (valgfritt)</label>
       <input type="text" class="settings-input" id="weekly-plan-name" placeholder="F.eks. Sommerplan">
     </div>
-    <div class="plan-grid-hint">Gi hver rad et navn (f.eks. Mandag eller Push) for å ta den i bruk. Trykk + for å velge øvelser.</div>
+    <div class="plan-grid-hint">Gi hver rad et navn (f.eks. Mandag eller Push) for å ta den i bruk. Trykk på en rute for å velge/bytte øvelse, dra den til en annen rute for å flytte, eller trykk ✕ for å fjerne. Bruk 🗑 for å fjerne en hel dag.</div>
     <div id="weekly-plan-grid" class="weekly-plan-grid"></div>
     <div class="login-error" id="weekly-plan-error"></div>
     <button class="btn-primary" id="weekly-plan-save-btn" style="width:100%;margin-top:12px" onclick="saveWeeklyPlan()">Lagre ukesplan</button>
@@ -2535,12 +2563,18 @@
 
 <!-- Exercise picker for a ukesplan slot -->
 <div class="wkt-popup-overlay" id="plan-exercise-picker-overlay" style="display:none" onclick="closePlanExercisePickerIfBg(event)">
-  <div class="wkt-popup" style="max-width:900px;max-height:92vh">
+  <div class="wkt-popup" style="max-width:1100px;max-height:94vh">
     <div class="wkt-popup-header">
       <div class="wkt-popup-title">Velg øvelse</div>
       <button class="wkt-popup-close" onclick="closePlanExercisePicker()">✕</button>
     </div>
     <input type="text" class="search-input" id="plan-exercise-search" placeholder="🔍 Søk øvelse…" oninput="renderPlanExercisePickerList()" style="margin-bottom:12px">
+    <div class="filter-row-label">Kroppsområde</div>
+    <div class="cat-filter" id="plan-picker-cat-filter"></div>
+    <div class="filter-row-label">Muskelgruppe</div>
+    <div class="cat-filter" id="plan-picker-muscle-filter"></div>
+    <div class="filter-row-label">Utstyr</div>
+    <div class="cat-filter" id="plan-picker-utstyr-filter"></div>
     <div id="plan-exercise-picker-list" class="plan-exercise-picker-list"></div>
   </div>
 </div>
@@ -4927,20 +4961,98 @@ function renderWeeklyPlanEditorGrid() {
       const inner = ex
         ? (ex.img ? `<img src="${ex.img}" alt="" onerror="this.replaceWith(document.createTextNode('${(ex.big || '🏋️').replace(/'/g, "\\'")}'))">` : (ex.big || '🏋️'))
         : '+';
-      return `<button class="plan-slot ${ex ? 'filled' : ''}" onclick="openPlanExercisePicker(${i},${s})" title="${title}">${inner}</button>`;
+      const removeBtn = ex ? `<span class="plan-slot-remove" onclick="event.stopPropagation(); removePlanSlot(${i},${s})" title="Fjern øvelse">✕</span>` : '';
+      return `<div class="plan-slot ${ex ? 'filled' : ''}" draggable="${ex ? 'true' : 'false'}"
+        ondragstart="planSlotDragStart(event,${i},${s})"
+        ondragover="event.preventDefault()"
+        ondrop="planSlotDrop(event,${i},${s})"
+        onclick="openPlanExercisePicker(${i},${s})" title="${title}">${inner}${removeBtn}</div>`;
     }).join('');
     return `
       <div class="plan-row">
         <div class="plan-row-num">${i + 1}</div>
         <input type="text" class="settings-input plan-row-name" value="${(day.name || '').replace(/"/g, '&quot;')}" placeholder="Navn" oninput="planEditorDays[${i}].name=this.value">
         <div class="plan-row-slots">${slots}</div>
+        <button class="plan-row-remove" onclick="clearPlanDay(${i})" title="Fjern denne dagen">🗑</button>
       </div>`;
   }).join('');
+}
+
+// ─── Drag & drop mellom ukesplan-rutene (kan flytte på tvers av dager) ───
+let planDragSource = null; // {dayIndex, slotIndex}
+
+function planSlotDragStart(e, dayIndex, slotIndex) {
+  if (!planEditorDays[dayIndex].exercises[slotIndex]) { e.preventDefault(); return; }
+  planDragSource = { dayIndex, slotIndex };
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function planSlotDrop(e, dayIndex, slotIndex) {
+  e.preventDefault();
+  if (!planDragSource) return;
+  const src = planDragSource;
+  planDragSource = null;
+  if (src.dayIndex === dayIndex && src.slotIndex === slotIndex) return;
+  // Swap — if the target slot already holds an exercise, it moves back to the
+  // source instead of being lost.
+  const srcVal = planEditorDays[src.dayIndex].exercises[src.slotIndex];
+  const destVal = planEditorDays[dayIndex].exercises[slotIndex];
+  planEditorDays[dayIndex].exercises[slotIndex] = srcVal;
+  planEditorDays[src.dayIndex].exercises[src.slotIndex] = destVal;
+  renderWeeklyPlanEditorGrid();
+}
+
+function removePlanSlot(dayIndex, slotIndex) {
+  planEditorDays[dayIndex].exercises[slotIndex] = null;
+  renderWeeklyPlanEditorGrid();
+}
+
+function clearPlanDay(dayIndex) {
+  const day = planEditorDays[dayIndex];
+  if ((day.name || '').trim() || day.exercises.some(Boolean)) {
+    if (!confirm('Fjerne denne dagen fra ukesplanen?')) return;
+  }
+  planEditorDays[dayIndex] = { name: '', exercises: Array(8).fill(null) };
+  renderWeeklyPlanEditorGrid();
+}
+
+// ─── Filtrering i øvelsesvelgeren (samme mønster som hovedsidens filtre) ───
+let planPickerFilters = { cats: new Set(), muscles: new Set(), utstyr: new Set() };
+const PLAN_PICKER_FILTER_IDS = { cats: 'plan-picker-cat-filter', muscles: 'plan-picker-muscle-filter', utstyr: 'plan-picker-utstyr-filter' };
+
+function rebuildPlanPickerFilters() {
+  const build = (key, values) => {
+    const el = document.getElementById(PLAN_PICKER_FILTER_IDS[key]);
+    el.innerHTML = `<button class="cat-btn active" onclick="resetPlanPickerFilter('${key}')">Alle</button>` +
+      values.map(v => `<button class="cat-btn" onclick="togglePlanPickerFilter('${key}','${v.replace(/'/g, "\\'")}', this)">${escapeHtml_(v)}</button>`).join('');
+  };
+  build('cats', [...new Set(EXERCISES.map(e => e.cat).filter(Boolean))]);
+  build('muscles', [...new Set(EXERCISES.flatMap(e => (e.muscles || '').split(',').map(m => m.trim())).filter(Boolean))]);
+  build('utstyr', [...new Set(EXERCISES.map(e => e.utstyr).filter(Boolean))]);
+}
+
+function resetPlanPickerFilter(key) {
+  planPickerFilters[key] = new Set();
+  const container = document.getElementById(PLAN_PICKER_FILTER_IDS[key]);
+  container.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  container.querySelector('.cat-btn').classList.add('active');
+  renderPlanExercisePickerList();
+}
+
+function togglePlanPickerFilter(key, value, btn) {
+  const set = planPickerFilters[key];
+  if (set.has(value)) { set.delete(value); btn.classList.remove('active'); }
+  else { set.add(value); btn.classList.add('active'); }
+  const container = document.getElementById(PLAN_PICKER_FILTER_IDS[key]);
+  container.querySelector('.cat-btn').classList.toggle('active', set.size === 0);
+  renderPlanExercisePickerList();
 }
 
 function openPlanExercisePicker(dayIndex, slotIndex) {
   planPickerTarget = { dayIndex, slotIndex };
   document.getElementById('plan-exercise-search').value = '';
+  planPickerFilters = { cats: new Set(), muscles: new Set(), utstyr: new Set() };
+  rebuildPlanPickerFilters();
   renderPlanExercisePickerList();
   document.getElementById('plan-exercise-picker-overlay').style.display = 'flex';
 }
@@ -4955,7 +5067,13 @@ function closePlanExercisePickerIfBg(e) {
 function renderPlanExercisePickerList() {
   const term = (document.getElementById('plan-exercise-search').value || '').toLowerCase();
   const list = document.getElementById('plan-exercise-picker-list');
-  const filtered = EXERCISES.filter(ex => ex.name.toLowerCase().includes(term) || (ex.muscles || '').toLowerCase().includes(term));
+  const filtered = EXERCISES.filter(ex => {
+    const matchCat = planPickerFilters.cats.size === 0 || planPickerFilters.cats.has(ex.cat);
+    const matchMuscle = planPickerFilters.muscles.size === 0 || [...planPickerFilters.muscles].some(m => (ex.muscles || '').toLowerCase().includes(m.toLowerCase()));
+    const matchUtstyr = planPickerFilters.utstyr.size === 0 || planPickerFilters.utstyr.has(ex.utstyr);
+    const matchSearch = ex.name.toLowerCase().includes(term) || (ex.muscles || '').toLowerCase().includes(term);
+    return matchCat && matchMuscle && matchUtstyr && matchSearch;
+  });
   list.innerHTML = filtered.map(ex => {
     const mediaHtml = ex.img
       ? `<div class="ex-img-wrap"><img src="${ex.img}" alt="${escapeHtml_(ex.name)}" loading="lazy" onerror="this.src='favicon.png'"></div>`
