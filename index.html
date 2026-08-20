@@ -1854,7 +1854,10 @@
   .header-progress-row {
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 4px;
+    max-width: 55%;
   }
   .header-progress-icon {
     width: 26px;
@@ -1862,24 +1865,15 @@
     object-fit: contain;
     opacity: 0.45;
   }
+  /* A high monthly goal means a lot of icons — shrink them so the header stays
+     a couple of rows tall instead of pushing the page down. */
+  .header-progress-row:has(> :nth-child(11)) .header-progress-icon { width: 18px; height: 18px; }
+  .header-progress-row:has(> :nth-child(19)) .header-progress-icon { width: 14px; height: 14px; }
   .header-progress-icon.done { opacity: 1; }
   .header-progress-icon.gold {
     opacity: 1;
     filter: sepia(1) saturate(6) hue-rotate(-15deg) brightness(1.05);
   }
-  /* Goals over 10 swap the icon row for this compact bar — 30 kettlebells won't fit. */
-  .progress-bar-mini {
-    width: 60px;
-    height: 8px;
-    background: var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-  .progress-bar-mini-fill { height: 100%; background: var(--accent); border-radius: 4px; }
-  .progress-bar-mini-fill.gold { background: #d4a017; }
-  .progress-bar-mini-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
-
   /* ── BOTTOM NAV ── */
   .bottom-nav {
     position: fixed;
@@ -4172,21 +4166,17 @@ function myScoreboardEntry() {
 // overflow, so this switches to a compact fill-bar + "completed/goal" label instead.
 function buildProgressWidgetHtml_(goal, completed, iconClass) {
   const allDone = completed >= goal;
-  if (goal <= 10) {
-    return Array.from({ length: goal }, (_, i) => {
-      // Fills right-to-left — these rows sit flush against a right edge, so the
-      // rightmost icon is the first one to light up as sessions get logged.
-      const isDone = i >= (goal - completed);
-      const cls = allDone ? `${iconClass} gold` : (isDone ? `${iconClass} done` : iconClass);
-      const src = allDone ? 'kettlebell_gold.png' : (isDone ? 'favicon.png' : 'favicon_lightgray.png');
-      const fallback = allDone ? "this.onerror=null;this.src='favicon.png';" : '';
-      return `<img class="${cls}" src="${src}" alt="" onerror="${fallback}">`;
-    }).join('');
-  }
-  const pct = Math.min(100, Math.round((completed / goal) * 100));
-  return `
-    <div class="progress-bar-mini"><div class="progress-bar-mini-fill${allDone ? ' gold' : ''}" style="width:${pct}%"></div></div>
-    <span class="progress-bar-mini-label">${completed}/${goal}</span>`;
+  // Always one kettlebell per planned session, however high the goal — the rows
+  // wrap rather than collapsing into a bar.
+  return Array.from({ length: goal }, (_, i) => {
+    // Fills left-to-right so the lit icons stay one contiguous block once a high
+    // goal wraps onto several rows.
+    const isDone = i < completed;
+    const cls = allDone ? `${iconClass} gold` : (isDone ? `${iconClass} done` : iconClass);
+    const src = allDone ? 'kettlebell_gold.png' : (isDone ? 'favicon.png' : 'favicon_lightgray.png');
+    const fallback = allDone ? "this.onerror=null;this.src='favicon.png';" : '';
+    return `<img class="${cls}" src="${src}" alt="" onerror="${fallback}">`;
+  }).join('');
 }
 
 function renderHeaderProgress() {
