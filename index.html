@@ -4911,7 +4911,8 @@ function renderWeeklyPlanSection() {
   const tiles = activeDays.map((d, n) => {
     const nrs = String(d.exercises || '').split('-').map(s => parseInt(s)).filter(x => !isNaN(x));
     const done = isPlanDayCompletedThisWeek_(nrs, range);
-    return `<button class="plan-tile ${done ? 'done' : ''}" onclick="startPlanDay(${d.idx})">${done ? '✓ ' : ''}Økt ${n + 1}</button>`;
+    const label = (d.name || '').trim() || `Økt ${n + 1}`;
+    return `<button class="plan-tile ${done ? 'done' : ''}" onclick="startPlanDay(${d.idx})">${done ? '✓ ' : ''}${escapeHtml_(label)}</button>`;
   }).join('');
   wrap.innerHTML = `<div class="plan-tiles-row">${tiles}<button class="plan-tile-edit" onclick="openWeeklyPlanEditor()" title="Rediger ukesplan">✏️</button></div>`;
   section.style.display = 'block';
