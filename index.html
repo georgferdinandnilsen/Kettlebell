@@ -1071,24 +1071,34 @@
     flex-shrink: 0;
   }
   .plan-grid-hint { font-size: 0.8rem; color: var(--text-muted); margin: 4px 0 14px; line-height: 1.5; }
-  .weekly-plan-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
-  .plan-row { display: flex; align-items: center; gap: 8px; }
+  .weekly-plan-grid { display: flex; flex-direction: column; gap: 14px; margin-bottom: 8px; }
+  .plan-row {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+    background: var(--surface2);
+  }
+  .plan-row-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
   .plan-row-num {
-    width: 20px;
+    width: 22px;
     flex-shrink: 0;
     text-align: center;
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1rem;
+    font-size: 1.1rem;
     color: var(--text-dim);
   }
-  .plan-row-name { flex: 0 0 110px; margin: 0; }
-  .plan-row-slots { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; min-width: 0; }
+  .plan-row-name { flex: 1; min-width: 0; margin: 0; }
+  .plan-row-slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+    gap: 8px;
+  }
   .plan-row-remove {
     flex-shrink: 0;
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border-radius: 8px;
-    background: var(--surface2);
+    background: var(--surface);
     border: 1px solid var(--border);
     color: var(--text-dim);
     font-size: 0.9rem;
@@ -1097,23 +1107,32 @@
   .plan-row-remove:hover { border-color: var(--danger, #e05555); color: var(--danger, #e05555); }
   .plan-slot {
     position: relative;
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    background: var(--surface2);
+    min-height: 120px;
+    border-radius: 10px;
+    background: var(--surface);
     border: 1px dashed var(--border);
     color: var(--text-dim);
-    font-size: 0.85rem;
     cursor: pointer;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+    flex-direction: column;
+    padding: 8px;
     overflow: visible;
-    padding: 0;
+    text-align: left;
   }
-  .plan-slot.filled { border-style: solid; border-color: var(--accent); background: var(--accent-dim); font-size: 1.1rem; }
-  .plan-slot img { width: 100%; height: 100%; object-fit: cover; border-radius: 7px; }
+  .plan-slot.filled { border-style: solid; border-color: var(--accent); background: var(--accent-dim); }
+  .plan-slot-plus { margin: auto; font-size: 1.5rem; }
+  .plan-slot-img {
+    width: 100%;
+    height: 62px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--surface2);
+    margin-bottom: 6px;
+    flex-shrink: 0;
+  }
+  .plan-slot-img img { width: 100%; height: 100%; object-fit: cover; }
+  .plan-slot-name { font-size: 0.72rem; font-weight: 600; color: var(--text); line-height: 1.25; }
+  .plan-slot-muscles { font-size: 0.64rem; color: var(--text-muted); line-height: 1.2; margin-top: 2px; }
   .plan-slot-remove {
     position: absolute;
     top: -6px;
@@ -1129,6 +1148,10 @@
     cursor: pointer;
     z-index: 2;
   }
+  /* The shared filter rows carry the main screen's 28px gutter — drop it so they
+     line up with the search field inside the popup. */
+  #plan-exercise-picker-overlay .filter-row-label,
+  #plan-exercise-picker-overlay .cat-filter { padding-left: 0; padding-right: 0; }
   .plan-exercise-picker-list {
     max-height: 70vh;
     overflow-y: auto;
@@ -1234,6 +1257,15 @@
     padding: 24px 24px 32px;
     overflow-y: auto;
     animation: slideUp 0.3s ease;
+  }
+  .wkt-popup.fullscreen {
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    border-radius: 0;
+    border-top: none;
+    padding: 20px 20px 28px;
   }
   .wkt-popup-header {
     display: flex;
@@ -2545,7 +2577,7 @@
 
 <!-- Ukesplan editor -->
 <div class="wkt-popup-overlay" id="weekly-plan-editor-overlay" style="display:none" onclick="closeWeeklyPlanEditorIfBg(event)">
-  <div class="wkt-popup" style="max-width:1100px;max-height:94vh">
+  <div class="wkt-popup fullscreen">
     <div class="wkt-popup-header">
       <div class="wkt-popup-title">Ukesplan</div>
       <button class="wkt-popup-close" onclick="closeWeeklyPlanEditor()">✕</button>
@@ -2554,7 +2586,7 @@
       <label class="settings-label">Navn på ukesplan (valgfritt)</label>
       <input type="text" class="settings-input" id="weekly-plan-name" placeholder="F.eks. Sommerplan">
     </div>
-    <div class="plan-grid-hint">Gi hver rad et navn (f.eks. Mandag eller Push) for å ta den i bruk. Trykk på en rute for å velge/bytte øvelse, dra den til en annen rute for å flytte, eller trykk ✕ for å fjerne. Bruk 🗑 for å fjerne en hel dag.</div>
+    <div class="plan-grid-hint">En rad blir med i planen så snart den har øvelser — navn er valgfritt. Trykk på en rute for å velge/bytte øvelse, dra den til en annen rute for å flytte, eller trykk ✕ for å fjerne. Bruk 🗑 for å fjerne en hel dag.</div>
     <div id="weekly-plan-grid" class="weekly-plan-grid"></div>
     <div class="login-error" id="weekly-plan-error"></div>
     <button class="btn-primary" id="weekly-plan-save-btn" style="width:100%;margin-top:12px" onclick="saveWeeklyPlan()">Lagre ukesplan</button>
@@ -2563,7 +2595,7 @@
 
 <!-- Exercise picker for a ukesplan slot -->
 <div class="wkt-popup-overlay" id="plan-exercise-picker-overlay" style="display:none" onclick="closePlanExercisePickerIfBg(event)">
-  <div class="wkt-popup" style="max-width:1100px;max-height:94vh">
+  <div class="wkt-popup fullscreen">
     <div class="wkt-popup-header">
       <div class="wkt-popup-title">Velg øvelse</div>
       <button class="wkt-popup-close" onclick="closePlanExercisePicker()">✕</button>
@@ -4898,7 +4930,7 @@ function renderWeeklyPlanSection() {
   if (!currentUser) { section.style.display = 'none'; return; }
 
   const activeDays = (weeklyPlan && weeklyPlan.days || [])
-    .map((d, i) => (d && d.name) ? { ...d, idx: i } : null)
+    .map((d, i) => (d && ((d.name || '').trim() || (d.exercises || '').trim())) ? { ...d, idx: i } : null)
     .filter(Boolean);
 
   if (activeDays.length === 0) {
@@ -4958,23 +4990,34 @@ function renderWeeklyPlanEditorGrid() {
   wrap.innerHTML = planEditorDays.map((day, i) => {
     const slots = day.exercises.map((nr, s) => {
       const ex = nr ? EXERCISES.find(e => e.nr === nr) : null;
-      const title = ex ? ex.name.replace(/"/g, '&quot;') : 'Velg øvelse';
-      const inner = ex
-        ? (ex.img ? `<img src="${ex.img}" alt="" onerror="this.replaceWith(document.createTextNode('${(ex.big || '🏋️').replace(/'/g, "\\'")}'))">` : (ex.big || '🏋️'))
-        : '+';
-      const removeBtn = ex ? `<span class="plan-slot-remove" onclick="event.stopPropagation(); removePlanSlot(${i},${s})" title="Fjern øvelse">✕</span>` : '';
-      return `<div class="plan-slot ${ex ? 'filled' : ''}" draggable="${ex ? 'true' : 'false'}"
+      if (!ex) {
+        return `<div class="plan-slot" draggable="false"
+          ondragover="event.preventDefault()"
+          ondrop="planSlotDrop(event,${i},${s})"
+          onclick="openPlanExercisePicker(${i},${s})" title="Velg øvelse"><span class="plan-slot-plus">+</span></div>`;
+      }
+      const img = ex.img
+        ? `<img src="${ex.img}" alt="" loading="lazy" onerror="this.src='favicon.png'">`
+        : `<img src="favicon.png" alt="">`;
+      return `<div class="plan-slot filled" draggable="true"
         ondragstart="planSlotDragStart(event,${i},${s})"
         ondragover="event.preventDefault()"
         ondrop="planSlotDrop(event,${i},${s})"
-        onclick="openPlanExercisePicker(${i},${s})" title="${title}">${inner}${removeBtn}</div>`;
+        onclick="openPlanExercisePicker(${i},${s})" title="${escapeHtml_(ex.name)}">
+        <div class="plan-slot-img">${img}</div>
+        <div class="plan-slot-name">${escapeHtml_(ex.name)}</div>
+        <div class="plan-slot-muscles">${escapeHtml_(ex.muscles || '')}</div>
+        <span class="plan-slot-remove" onclick="event.stopPropagation(); removePlanSlot(${i},${s})" title="Fjern øvelse">✕</span>
+      </div>`;
     }).join('');
     return `
       <div class="plan-row">
-        <div class="plan-row-num">${i + 1}</div>
-        <input type="text" class="settings-input plan-row-name" value="${(day.name || '').replace(/"/g, '&quot;')}" placeholder="Navn" oninput="planEditorDays[${i}].name=this.value">
+        <div class="plan-row-head">
+          <div class="plan-row-num">${i + 1}</div>
+          <input type="text" class="settings-input plan-row-name" value="${(day.name || '').replace(/"/g, '&quot;')}" placeholder="Navn på økt (valgfritt) — f.eks. Mandag eller Push" oninput="planEditorDays[${i}].name=this.value">
+          <button class="plan-row-remove" onclick="clearPlanDay(${i})" title="Fjern denne dagen">🗑</button>
+        </div>
         <div class="plan-row-slots">${slots}</div>
-        <button class="plan-row-remove" onclick="clearPlanDay(${i})" title="Fjern denne dagen">🗑</button>
       </div>`;
   }).join('');
 }
@@ -5102,9 +5145,10 @@ async function saveWeeklyPlan() {
   const errEl = document.getElementById('weekly-plan-error');
   errEl.textContent = '';
 
+  // A day counts as in use if it has a name OR at least one exercise — naming is optional.
   const daysPayload = planEditorDays.map(d => {
-    if (!d.name.trim()) return null;
     const exNrs = d.exercises.filter(Boolean);
+    if (!d.name.trim() && exNrs.length === 0) return null;
     return { name: d.name.trim(), exercises: exNrs.join('-') };
   });
 
