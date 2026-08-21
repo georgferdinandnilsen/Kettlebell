@@ -1661,7 +1661,9 @@
   .scoreboard-row-empty { border-style: dashed; opacity: 0.55; }
   .scoreboard-name { font-weight: 700; font-size: 0.95rem; color: var(--text); }
   .scoreboard-name-empty { font-weight: 600; color: var(--text-dim); font-style: italic; }
-  .scoreboard-icons { display: flex; gap: 4px; flex-wrap: wrap; }
+  /* row-reverse so icons fill right-to-left; the lit ones are first in the DOM,
+     which keeps them one contiguous block when a high goal wraps. */
+  .scoreboard-icons { display: flex; flex-direction: row-reverse; gap: 4px; flex-wrap: wrap; }
   .scoreboard-icon { width: 22px; height: 22px; object-fit: contain; opacity: 0.4; }
   .scoreboard-icon.done { opacity: 1; }
   .scoreboard-icon.gold { opacity: 1; filter: sepia(1) saturate(6) hue-rotate(-15deg) brightness(1.05); }
@@ -1853,8 +1855,11 @@
   /* ── HEADER WEEKLY-PROGRESS ROW ── */
   .header-progress-row {
     display: flex;
+    /* See .scoreboard-icons — same right-to-left fill. flex-start packs against
+       the right edge once the direction is reversed. */
+    flex-direction: row-reverse;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
     flex-wrap: wrap;
     gap: 4px;
     max-width: 55%;
@@ -4169,8 +4174,8 @@ function buildProgressWidgetHtml_(goal, completed, iconClass) {
   // Always one kettlebell per planned session, however high the goal — the rows
   // wrap rather than collapsing into a bar.
   return Array.from({ length: goal }, (_, i) => {
-    // Fills left-to-right so the lit icons stay one contiguous block once a high
-    // goal wraps onto several rows.
+    // Completed icons come first in the DOM; the containers use row-reverse, so
+    // on screen they fill right-to-left and stay contiguous when the row wraps.
     const isDone = i < completed;
     const cls = allDone ? `${iconClass} gold` : (isDone ? `${iconClass} done` : iconClass);
     const src = allDone ? 'kettlebell_gold.png' : (isDone ? 'favicon.png' : 'favicon_lightgray.png');
