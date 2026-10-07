@@ -762,8 +762,9 @@
     padding: 20px var(--gutter);
   }
   /* On Trening the "Neste" action floats above the tab bar so it's reachable
-     without scrolling past the whole grid. */
-  #screen-select .bottom-cta {
+     without scrolling past the whole grid. Only once something is selected:
+     an empty, disabled bar would just cover the filters. */
+  #screen-select .bottom-cta:has(#btn-to-config:not(:disabled)) {
     position: sticky;
     bottom: calc(var(--nav-h) + var(--nav-gap) * 2 + env(safe-area-inset-bottom, 0px));
     z-index: 20;
