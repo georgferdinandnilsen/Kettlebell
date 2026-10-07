@@ -1996,6 +1996,17 @@
     font-weight: 600;
   }
   .login-divider { height: 0.5px; background: var(--border); margin: 28px 0 20px; }
+  .or-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0 16px;
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+  }
+  .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 0.5px; background: var(--border); }
+  /* Google tegner knappen selv (i en iframe); vi sentrerer den bare. */
+  .google-btn { display: flex; justify-content: center; min-height: 44px; color-scheme: light; }
 
   /* ════════ LIGHTBOX ════════ */
   .lightbox-overlay {
@@ -2167,6 +2178,10 @@
       <button type="button" class="btn-primary btn-block" id="login-submit-btn" onclick="submitLogin()">Logg inn</button>
       <button type="button" class="btn-secondary btn-block" style="margin-top:10px" onclick="useAppWithoutLogin()">Bruk appen uten bruker</button>
       <button type="button" class="login-toggle" id="login-toggle-btn" onclick="toggleLoginMode()">Ny bruker? Opprett konto</button>
+      <div class="google-login-wrap" id="google-login-wrap" style="display:none">
+        <div class="or-divider"><span>eller</span></div>
+        <div class="google-btn" id="google-login-btn"></div>
+      </div>
       <div class="login-divider"></div>
       <button type="button" class="settings-link-row" onclick="openHowToAddOverlay()">
         <i class="ph ph-device-mobile" aria-hidden="true"></i>
@@ -2174,6 +2189,23 @@
         <i class="ph ph-caret-right" aria-hidden="true"></i>
       </button>
     </div>
+  </div>
+</div>
+
+<!-- Ny Google-bruker: velg brukernavn -->
+<div class="wkt-popup-overlay" id="google-username-overlay" style="display:none" onclick="closeGoogleUsernameIfBg(event)">
+  <div class="wkt-popup" role="dialog" aria-modal="true" aria-labelledby="google-username-title">
+    <div class="wkt-popup-header">
+      <h2 class="wkt-popup-title" id="google-username-title">Velg brukernavn</h2>
+      <button type="button" class="wkt-popup-close" onclick="closeGoogleUsername()" aria-label="Lukk"><i class="ph ph-x" aria-hidden="true"></i></button>
+    </div>
+    <div class="settings-field">
+      <label class="settings-label" for="google-username-input">Brukernavn</label>
+      <input type="text" class="settings-input" id="google-username-input" name="username" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="40" placeholder="F.eks. Georg" onkeydown="if(event.key==='Enter')submitGoogleUsername()">
+      <div class="settings-hint">Navnet vises på scoreboardet og i chatten.</div>
+    </div>
+    <div class="login-error" id="google-username-error" aria-live="polite"></div>
+    <button type="button" class="btn-primary btn-block" id="google-username-btn" onclick="submitGoogleUsername()">Opprett bruker</button>
   </div>
 </div>
 
@@ -2727,6 +2759,13 @@
       </div>
     </div>
 
+    <div class="settings-field" id="google-link-field" style="display:none">
+      <div class="settings-label">Google-innlogging</div>
+      <p class="settings-note">Koble Google til brukeren din, så kan du logge inn uten kode.</p>
+      <div class="google-btn" id="google-link-btn"></div>
+      <div class="settings-hint" id="google-link-status" aria-live="polite"></div>
+    </div>
+
     <div class="settings-field">
       <div class="settings-label">Øvelser og økter</div>
       <p class="settings-note">Øvelser og økter hentes fra et delt Google Sheet. Endringer der dukker opp neste gang appen lastes.</p>
@@ -3143,7 +3182,7 @@ async function openDuoPartnerPicker() {
   if (appsScriptUrl) {
     try {
       const url = `${appsScriptUrl}?action=listUsers&username=${encodeURIComponent(currentUser || '')}`;
-      const res = await fetch(url);
+      const res = await apiFetch(url);
       const data = await res.json();
       users = data.success ? data.users : [];
     } catch(e) {
@@ -3800,6 +3839,65 @@ let currentUser = null;
 try { currentUser = localStorage.getItem(USER_KEY) || null; } catch(e) {}
 let isGuest = false;
 try { isGuest = localStorage.getItem(GUEST_KEY) === 'true'; } catch(e) {}
+
+// Innloggingsbevis fra serveren. Sendes med hvert kall, og det er dette (ikke
+// brukernavnet) serveren stoler på.
+const TOKEN_KEY = 'ironbell_token';
+let authToken = null;
+try { authToken = localStorage.getItem(TOKEN_KEY) || null; } catch(e) {}
+// Lagret bruker uten bevis stammer fra før bevisene fantes: logg inn én gang til.
+if (currentUser && !authToken) {
+  currentUser = null;
+  try { localStorage.removeItem(USER_KEY); } catch(e) {}
+}
+
+// Client ID fra Google Cloud Console (ikke hemmelig). Tom = Google-knappen skjules.
+const GOOGLE_CLIENT_ID = '515091221732-pks07j3o4i0mj62tv0p3iu7a7ecb4pfb.apps.googleusercontent.com';
+
+// Alle kall til backenden går hit. Parametrene flyttes fra adressen til en
+// POST-kropp, så kode og bevis ikke havner i nettadresser og logger.
+async function apiFetch(url) {
+  const u = new URL(url);
+  const headers = { 'content-type': 'application/json' };
+  if (authToken) headers.authorization = 'Bearer ' + authToken;
+  const res = await fetch(u.origin + u.pathname, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(Object.fromEntries(u.searchParams)),
+  });
+  const data = await res.json();
+  if (data && data.code === 'AUTH' && currentUser) sessionExpired();
+  return { json: async () => data };
+}
+
+function setSession(username, token) {
+  currentUser = username;
+  authToken = token || null;
+  isGuest = false;
+  try {
+    localStorage.setItem(USER_KEY, currentUser);
+    localStorage.removeItem(GUEST_KEY);
+    if (authToken) localStorage.setItem(TOKEN_KEY, authToken); else localStorage.removeItem(TOKEN_KEY);
+  } catch(e) {}
+}
+
+function clearSession() {
+  currentUser = null;
+  authToken = null;
+  isGuest = false;
+  try { localStorage.removeItem(USER_KEY); localStorage.removeItem(GUEST_KEY); localStorage.removeItem(TOKEN_KEY); } catch(e) {}
+}
+
+function sessionExpired() {
+  logoutUser();
+  document.getElementById('login-error').textContent = 'Du må logge inn på nytt.';
+}
+
+function enterAppAfterLogin() {
+  updateAuthUi();
+  showScreen('screen-select');
+  fetchPersonalWorkouts();
+}
 let loginMode = 'login'; // 'login' | 'register'
 let calendarViewDate = new Date();
 let workoutHistory = null; // null = nothing to show yet (no cache, no fetch)
@@ -3882,14 +3980,11 @@ async function submitLogin() {
   try {
     const action = loginMode === 'login' ? 'login' : 'register';
     const url = `${appsScriptUrl}?action=${action}&username=${encodeURIComponent(username)}&code=${encodeURIComponent(code)}`;
-    const res = await fetch(url);
+    const res = await apiFetch(url);
     const data = await res.json();
     if (data.success) {
-      currentUser = data.username || username;
-      try { localStorage.setItem(USER_KEY, currentUser); } catch(e) {}
-      updateAuthUi();
-      showScreen('screen-select');
-      fetchPersonalWorkouts();
+      setSession(data.username || username, data.token);
+      enterAppAfterLogin();
     } else {
       errEl.textContent = data.error || 'Noe gikk galt';
     }
@@ -3923,9 +4018,7 @@ function clearAccountCaches_() {
 }
 
 function logoutUser() {
-  currentUser = null;
-  isGuest = false;
-  try { localStorage.removeItem(USER_KEY); localStorage.removeItem(GUEST_KEY); } catch(e) {}
+  clearSession();
   clearAccountCaches_();
   updateAuthUi();
   closeSettings();
@@ -3982,17 +4075,98 @@ async function performDeleteAccount() {
   if (!username) return;
   try {
     const url = `${appsScriptUrl}?action=deleteAccount&username=${encodeURIComponent(username)}`;
-    await fetch(url);
+    await apiFetch(url);
   } catch(e) {
     console.warn('Kunne ikke slette bruker på serveren:', e.message);
   }
-  currentUser = null;
-  isGuest = false;
-  try { localStorage.removeItem(USER_KEY); localStorage.removeItem(GUEST_KEY); } catch(e) {}
+  clearSession();
   clearAccountCaches_();
   updateAuthUi();
   closeSettings();
   showScreen('screen-login');
+}
+
+// ─── Google-innlogging ───
+let pendingGoogleCredential = null;
+
+function initGoogleLogin() {
+  if (!GOOGLE_CLIENT_ID) return;
+  const script = document.createElement('script');
+  script.src = 'https://accounts.google.com/gsi/client';
+  script.async = true;
+  script.onload = () => {
+    google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogleCredential });
+    const opts = { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', locale: 'no', width: 300 };
+    google.accounts.id.renderButton(document.getElementById('google-login-btn'), opts);
+    google.accounts.id.renderButton(document.getElementById('google-link-btn'), { ...opts, text: 'signin_with' });
+    document.getElementById('google-login-wrap').style.display = 'block';
+    document.getElementById('google-link-field').style.display = 'block';
+  };
+  document.head.appendChild(script);
+}
+
+// Google kaller denne med et signert bevis på hvem som logget inn. Samme knapp
+// brukes til å koble Google til en eksisterende bruker (fra Innstillinger).
+async function onGoogleCredential(response) {
+  const credential = response && response.credential;
+  if (!credential) return;
+  const linking = !!currentUser && document.getElementById('settings-overlay').style.display === 'flex';
+  const errEl = document.getElementById(linking ? 'google-link-status' : 'login-error');
+  errEl.textContent = linking ? 'Kobler til…' : '';
+  try {
+    if (linking) {
+      const res = await apiFetch(`${appsScriptUrl}?action=googleLink&credential=${encodeURIComponent(credential)}`);
+      const data = await res.json();
+      errEl.textContent = data.success ? 'Google er koblet til. Du kan nå logge inn med Google.' : (data.error || 'Noe gikk galt');
+      return;
+    }
+    const res = await apiFetch(`${appsScriptUrl}?action=googleLogin&credential=${encodeURIComponent(credential)}`);
+    const data = await res.json();
+    if (data.success) {
+      setSession(data.username, data.token);
+      enterAppAfterLogin();
+    } else if (data.needsUsername) {
+      pendingGoogleCredential = credential;
+      document.getElementById('google-username-input').value = data.suggested || '';
+      document.getElementById('google-username-error').textContent = '';
+      document.getElementById('google-username-overlay').style.display = 'flex';
+    } else {
+      errEl.textContent = data.error || 'Noe gikk galt';
+    }
+  } catch(e) {
+    errEl.textContent = 'Fikk ikke kontakt med serveren';
+  }
+}
+
+async function submitGoogleUsername() {
+  const username = document.getElementById('google-username-input').value.trim();
+  const errEl = document.getElementById('google-username-error');
+  errEl.textContent = '';
+  if (!username) { errEl.textContent = 'Skriv inn et brukernavn'; return; }
+  const btn = document.getElementById('google-username-btn');
+  btn.disabled = true;
+  try {
+    const res = await apiFetch(`${appsScriptUrl}?action=googleRegister&username=${encodeURIComponent(username)}&credential=${encodeURIComponent(pendingGoogleCredential || '')}`);
+    const data = await res.json();
+    if (data.success) {
+      closeGoogleUsername();
+      setSession(data.username, data.token);
+      enterAppAfterLogin();
+    } else {
+      errEl.textContent = data.error || 'Noe gikk galt';
+    }
+  } catch(e) {
+    errEl.textContent = 'Fikk ikke kontakt med serveren';
+  } finally {
+    btn.disabled = false;
+  }
+}
+function closeGoogleUsername() {
+  document.getElementById('google-username-overlay').style.display = 'none';
+  pendingGoogleCredential = null;
+}
+function closeGoogleUsernameIfBg(e) {
+  if (e.target === document.getElementById('google-username-overlay')) closeGoogleUsername();
 }
 
 function openHowToAddOverlay() {
@@ -4018,7 +4192,7 @@ async function logWorkoutToSheet(exerciseNrs, rounds, durationLabel, exMode, duo
       + `&mode=${encodeURIComponent(mode)}&duration=${encodeURIComponent(durationLabel)}`
       + `&duoPartner=${encodeURIComponent(duoPartner || '')}`
       + `&name=${encodeURIComponent(workoutName || '')}`;
-    await fetch(url);
+    await apiFetch(url);
     // Refresh calendar + weekly-goal data now rather than waiting for the user
     // to open those screens, so the header progress row updates right away.
     ensureWorkoutHistory(true);
@@ -4033,7 +4207,7 @@ async function fetchPersonalWorkouts() {
   if (!appsScriptUrl || !currentUser) { personalWorkouts = []; return; }
   try {
     const url = `${appsScriptUrl}?action=personalWorkouts&username=${encodeURIComponent(currentUser)}`;
-    const res = await fetch(url);
+    const res = await apiFetch(url);
     const data = await res.json();
     personalWorkouts = data.success ? data.workouts : [];
   } catch(e) {
@@ -4086,7 +4260,7 @@ async function saveNewWorkout() {
       + `&mode=${encodeURIComponent(config.exMode)}&reps=${encodeURIComponent(config.plannedReps)}`
       + `&time=${encodeURIComponent(config.exDuration)}&rounds=${encodeURIComponent(config.rounds)}`
       + `&restEx=${encodeURIComponent(config.restEx)}&restRound=${encodeURIComponent(config.restRound)}`;
-    const res = await fetch(url);
+    const res = await apiFetch(url);
     const data = await res.json();
     if (data.success) {
       closeCreateWorkout();
@@ -4143,7 +4317,7 @@ async function ensureWorkoutHistory(force) {
   if (!appsScriptUrl || !currentUser) { workoutHistory = workoutHistory || []; return; }
   try {
     const url = `${appsScriptUrl}?action=history&username=${encodeURIComponent(currentUser)}`;
-    const res = await fetch(url);
+    const res = await apiFetch(url);
     const data = await res.json();
     workoutHistory = data.success ? data.history : (workoutHistory || []);
     historyFetchedFresh = true;
@@ -4159,7 +4333,7 @@ async function ensureScoreboardData(force) {
   if (!appsScriptUrl || !currentUser) { scoreboardData = scoreboardData || []; leaderboardData = leaderboardData || []; return; }
   try {
     const url = `${appsScriptUrl}?action=scoreboard&username=${encodeURIComponent(currentUser)}`;
-    const res = await fetch(url);
+    const res = await apiFetch(url);
     const data = await res.json();
     scoreboardData = data.success ? data.users : (scoreboardData || []);
     leaderboardData = data.success ? data.leaderboard : (leaderboardData || []);
@@ -4234,7 +4408,7 @@ async function toggleWeeklyGoalEnabled(enabled) {
 
   try {
     const url = `${appsScriptUrl}?action=setWeeklyGoalEnabled&username=${encodeURIComponent(currentUser)}&enabled=${enabled ? 'på' : 'av'}`;
-    await fetch(url);
+    await apiFetch(url);
     try { localStorage.setItem(SCOREBOARD_CACHE_KEY, JSON.stringify(scoreboardData)); } catch(e) {}
   } catch(e) {
     console.warn('Kunne ikke lagre av/på:', e.message);
@@ -4253,7 +4427,7 @@ async function adjustWeeklyGoal(delta) {
 
   try {
     const url = `${appsScriptUrl}?action=setWeeklyGoal&username=${encodeURIComponent(currentUser)}&goal=${next}`;
-    await fetch(url);
+    await apiFetch(url);
     try { localStorage.setItem(SCOREBOARD_CACHE_KEY, JSON.stringify(scoreboardData)); } catch(e) {}
   } catch(e) {
     console.warn('Kunne ikke lagre månedsmål:', e.message);
@@ -4316,7 +4490,7 @@ async function ensureChatMessages(force) {
   if (!appsScriptUrl) { chatMessages = chatMessages || []; return; }
   try {
     const url = `${appsScriptUrl}?action=getChatMessages`;
-    const res = await fetch(url);
+    const res = await apiFetch(url);
     const data = await res.json();
     chatMessages = data.success ? data.messages : (chatMessages || []);
     try { localStorage.setItem(CHAT_CACHE_KEY, JSON.stringify(chatMessages)); } catch(e) {}
@@ -4369,7 +4543,7 @@ async function likeChatMessage(row, btn) {
   btn.disabled = true;
   try {
     const url = `${appsScriptUrl}?action=likeChatMessage&row=${row}`;
-    const res = await fetch(url);
+    const res = await apiFetch(url);
     const data = await res.json();
     if (data.success) {
       const msg = chatMessages && chatMessages.find(m => m.row === row);
@@ -4395,7 +4569,7 @@ async function sendChatMessage() {
   btn.disabled = true;
   try {
     const url = `${appsScriptUrl}?action=postChatMessage&username=${encodeURIComponent(currentUser)}&message=${encodeURIComponent(msg)}`;
-    await fetch(url);
+    await apiFetch(url);
     input.value = '';
     // Sending is a good moment to pull fresh everything — messages, scores, calendar.
     await Promise.all([ensureChatMessages(true), ensureScoreboardData(true), ensureWorkoutHistory(true)]);
@@ -4649,6 +4823,8 @@ function openSettings() {
   document.getElementById('settings-current-user').textContent = currentUser || (isGuest ? 'Gjest' : 'Ikke innlogget');
   document.getElementById('settings-auth-btn').textContent = currentUser ? 'Logg ut' : 'Logg inn';
   document.getElementById('settings-delete-btn').style.display = currentUser ? 'inline-flex' : 'none';
+  document.getElementById('google-link-field').style.display = (currentUser && window.google && GOOGLE_CLIENT_ID) ? 'block' : 'none';
+  document.getElementById('google-link-status').textContent = '';
   document.getElementById('appscript-url-input').value = appsScriptUrl;
   document.getElementById('settings-overlay').style.display = 'flex';
 }
@@ -4659,6 +4835,7 @@ function closeSettings() {
 // Esc closes the topmost open sheet — the keyboard twin of tapping the scrim.
 // Ordered top-most first (the plan picker sits on top of the plan editor).
 const ESC_CLOSERS = [
+  ['google-username-overlay', () => closeGoogleUsername()],
   ['plan-exercise-picker-overlay', () => closePlanExercisePicker()],
   ['weekly-plan-editor-overlay', () => closeWeeklyPlanEditor()],
   ['delete-account-confirm-overlay', () => cancelDeleteAccount()],
@@ -4926,7 +5103,7 @@ async function ensureWeeklyPlan(force) {
   if (!appsScriptUrl || !currentUser) { weeklyPlan = null; return; }
   try {
     const url = `${appsScriptUrl}?action=getWeeklyPlan&username=${encodeURIComponent(currentUser)}`;
-    const res = await fetch(url);
+    const res = await apiFetch(url);
     const data = await res.json();
     if (data.success) {
       weeklyPlan = { planName: data.planName, days: data.days };
@@ -5201,7 +5378,7 @@ async function saveWeeklyPlan() {
   try {
     const url = `${appsScriptUrl}?action=setWeeklyPlan&username=${encodeURIComponent(currentUser)}`
       + `&planName=${encodeURIComponent(planName)}&days=${encodeURIComponent(JSON.stringify(daysPayload))}`;
-    const res = await fetch(url);
+    const res = await apiFetch(url);
     const data = await res.json();
     if (data.success) {
       weeklyPlan = { planName, days: daysPayload };
@@ -5272,7 +5449,7 @@ async function deletePersonalWorkout(name) {
   deleteBtn.textContent = 'Sletter…';
   try {
     const url = `${appsScriptUrl}?action=deletePersonalWorkout&username=${encodeURIComponent(currentUser)}&name=${encodeURIComponent(name)}`;
-    const res = await fetch(url);
+    const res = await apiFetch(url);
     const data = await res.json();
     if (data.success) {
       closeWorkoutPopup();
@@ -5452,6 +5629,7 @@ async function init() {
   // 2. No cache → show generic placeholders immediately while we try to fetch
   if (!hasCache) applyExerciseData(OFFLINE_EXERCISES, OFFLINE_WORKOUTS);
   showScreen((currentUser || isGuest) ? 'screen-select' : 'screen-login');
+  initGoogleLogin();
   if (currentUser) fetchPersonalWorkouts();
 
   // 3. Fetch fresh data — replace generics with real exercises if successful
