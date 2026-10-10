@@ -3322,8 +3322,8 @@
       <div id="gif-maker-downloads" style="margin-top:12px">
         <p class="settings-note">Trenger du et program som kan lage GIF-er på PC-en fra en YouTube-lenke og laste dem rett opp til KETTL? Last ned dette:</p>
         <div class="download-row">
-          <a class="btn-secondary btn-sm" id="gif-maker-mac" download><i class="ph ph-apple-logo" aria-hidden="true"></i>Mac</a>
-          <a class="btn-secondary btn-sm" id="gif-maker-windows" download><i class="ph ph-windows-logo" aria-hidden="true"></i>Windows</a>
+          <a class="btn-secondary btn-sm" id="gif-maker-mac" href="https://github.com/georgferdinandnilsen/Kettlebell/releases/latest/download/GIFMaker-Mac.dmg"><i class="ph ph-apple-logo" aria-hidden="true"></i>Mac</a>
+          <a class="btn-secondary btn-sm" id="gif-maker-windows" href="https://github.com/georgferdinandnilsen/Kettlebell/releases/latest/download/GIFMaker-Windows.zip"><i class="ph ph-windows-logo" aria-hidden="true"></i>Windows</a>
         </div>
         <div class="settings-hint">Mac: ferdig program (60 MB). Windows: kildekode som må bygges først, se README i mappen.</div>
       </div>
@@ -5486,8 +5486,6 @@ function openSettings() {
   renderPushSettings();
   document.getElementById('add-exercise-row').style.display = currentUser ? 'flex' : 'none';
   document.getElementById('gif-maker-downloads').style.display = currentUser ? 'block' : 'none';
-  document.getElementById('gif-maker-mac').href = appsScriptUrl + '/download/mac';
-  document.getElementById('gif-maker-windows').href = appsScriptUrl + '/download/windows';
   document.getElementById('admin-field').style.display = (currentUser && isAdmin) ? 'block' : 'none';
   document.getElementById('settings-overlay').style.display = 'flex';
 }
