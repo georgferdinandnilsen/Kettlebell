@@ -714,13 +714,14 @@
   .workout-img-wrap img[src$="favicon.png"],
   .countdown-img-wrap img[src$="favicon.png"],
   .plan-slot-img img[src$="favicon.png"],
-  .ex-info-img-wrap img[src$="favicon.png"],
-  img.wkt-popup-ex-img[src$="favicon.png"] {
+  .ex-info-img-wrap img[src$="favicon.png"] {
     object-fit: contain;
     padding: 22%;
     opacity: 0.35;
     filter: grayscale(1);
   }
+  /* Fast padding her: prosent regnes av radens bredde og ville blåst opp miniatyren. */
+  img.wkt-popup-ex-img[src$="favicon.png"] { object-fit: contain; padding: 9px; opacity: 0.35; filter: grayscale(1); }
   .ex-img-fallback { font-size: 2.6rem; line-height: 1; }
 
   /* ════════ RANDOM PICKER + BOTTOM CTA ════════ */
@@ -1596,47 +1597,105 @@
     color: var(--text);
   }
   .chat-section-title .ph { color: var(--accent-ink); }
-  .chat-box {
+  .chat-refresh-btn { width: 44px; height: 44px; }
+
+  /* ════════ FEED (siste økter på Scoreboard) ════════ */
+  .feed-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: calc(100% - var(--gutter) * 2);
+    max-width: 680px;
+    margin: 0 auto 12px;
+  }
+  .feed-head .chat-section-title { width: auto; margin: 0; }
+  .feed-list {
     width: calc(100% - var(--gutter) * 2);
     max-width: 680px;
     margin: 0 auto 32px;
-    background: var(--surface);
-    box-shadow: var(--shadow-card);
-    border: none;
-    border-radius: var(--r-card);
-    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
-  .chat-input-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
-  .chat-input-row .search-input { flex: 1; margin: 0; min-width: 0; }
-  .chat-input-row .btn-primary { min-height: 44px; padding: 0 18px; font-size: 1rem; }
-  .chat-refresh-btn { width: 44px; height: 44px; }
-  .chat-messages { display: flex; flex-direction: column; gap: 8px; max-height: 440px; overflow-y: auto; overscroll-behavior: contain; }
-  .chat-msg { background: var(--surface2); border-radius: 16px; padding: 10px 12px; }
-  .chat-msg-head { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 2px; }
-  .chat-msg-user { font-weight: 650; font-size: 0.875rem; color: var(--accent-ink); }
-  .chat-msg-time { font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0; font-variant-numeric: tabular-nums; }
-  .chat-msg-text { font-size: 0.9375rem; color: var(--text); line-height: 1.4; overflow-wrap: anywhere; }
-  .chat-msg-text a { color: var(--accent-ink); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
-  .chat-like-btn {
-    margin-top: 6px;
+  .feed-card { background: var(--surface); box-shadow: var(--shadow-card); border-radius: var(--r-card); overflow: hidden; }
+  .feed-card-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 14px 10px;
+    background: none;
+    border: none;
+    text-align: left;
+    transition: background-color var(--dur-fast) ease;
+  }
+  .feed-card-main:active { background: var(--surface2); }
+  .feed-avatar {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-rounded);
+    font-weight: 700;
+    font-size: 1.0625rem;
+    text-transform: uppercase;
+  }
+  .feed-card-body { flex: 1; min-width: 0; display: block; }
+  .feed-card-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .feed-user { font-weight: 650; font-size: 0.9375rem; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .feed-time { font-size: 0.8125rem; color: var(--text-muted); flex-shrink: 0; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .feed-title { display: block; font-size: 1.0625rem; font-weight: 700; letter-spacing: -0.01em; color: var(--text); margin: 2px 0 8px; overflow-wrap: anywhere; }
+  .feed-card .cal-chip { background: var(--surface2); }
+  .feed-card .cal-chip-duo { background: var(--accent-soft); }
+  .feed-actions { display: flex; gap: 4px; padding: 0 8px 8px 60px; }
+  .feed-action {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    min-height: 28px;
-    padding: 2px 8px;
-    background: var(--surface);
+    gap: 6px;
+    min-height: 36px;
+    padding: 0 12px;
+    background: none;
     border: none;
     border-radius: var(--r-pill);
     color: var(--text-muted);
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
-    transition: transform var(--dur-press) var(--ease-out);
+    transition: transform var(--dur-press) var(--ease-out), background-color var(--dur-fast) ease, color var(--dur-fast) ease;
   }
-  button.chat-like-btn:active { transform: scale(0.92); }
-  .chat-like-heart { font-size: 0.9375rem; color: var(--text-dim); transition: color var(--dur-fast) ease; }
-  .chat-like-btn.has-likes .chat-like-heart { color: var(--danger); }
-  span.chat-like-btn { cursor: default; }
-  .chat-empty { text-align: center; color: var(--text-muted); font-size: 0.9375rem; padding: 24px 0; }
+  .feed-action .ph, .feed-action .ph-fill { font-size: 1.1875rem; }
+  .feed-action:active { transform: scale(0.92); }
+  @media (hover: hover) { .feed-action:hover { background: var(--surface2); } }
+  .feed-action.liked { color: var(--danger); }
+  .feed-action .ic-on { display: none; }
+  .feed-action.liked .ic-on { display: inline-block; }
+  .feed-action.liked .ic-off { display: none; }
+  .feed-empty { text-align: center; color: var(--text-muted); font-size: 0.9375rem; padding: 28px 16px; background: var(--surface); border-radius: var(--r-card); box-shadow: var(--shadow-card); }
+
+  /* Økt-arket fra feeden */
+  .feed-meta { color: var(--text-muted); font-size: 0.9375rem; margin: -6px 0 12px; }
+  .feed-wkt-actions { display: flex; gap: 8px; margin-bottom: 8px; }
+  .feed-wkt-actions > * { flex: 1; }
+  .feed-wkt-actions .feed-action { flex: 0 0 auto; background: var(--surface2); min-height: 50px; border-radius: var(--r-control); padding: 0 16px; }
+  .feed-status { min-height: 1.2em; font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 10px; }
+  .feed-subtitle { font-size: 1.0625rem; font-weight: 700; letter-spacing: -0.01em; margin: 18px 0 10px; }
+  .feed-comments { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .feed-comment { background: var(--surface2); border-radius: 16px; padding: 10px 12px; }
+  .feed-comment-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 2px; }
+  .feed-comment-user { font-weight: 650; font-size: 0.875rem; color: var(--accent-ink); }
+  .feed-comment-time { font-size: 0.75rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .feed-comment-text { font-size: 0.9375rem; line-height: 1.4; overflow-wrap: anywhere; }
+  .feed-comment-delete { background: none; border: none; color: var(--text-muted); font-size: 0.8125rem; padding: 4px 0 0; text-decoration: underline; text-underline-offset: 2px; }
+  .feed-comment-row { display: flex; gap: 8px; align-items: center; }
+  .feed-comment-row .search-input { flex: 1; min-width: 0; }
+  .feed-comment-row .btn-primary { min-height: 44px; padding: 0 18px; font-size: 1rem; }
+  .feed-comments-empty { color: var(--text-muted); font-size: 0.9375rem; }
 
   /* ════════ HEADER MONTHLY-PROGRESS ROW ════════ */
   .header-progress-row {
@@ -1938,19 +1997,13 @@
   .settings-link-row + .settings-link-row { margin-top: 8px; }
   .settings-note { font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin: 0 4px 10px; }
 
-  .sheet-status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    border-radius: var(--r-inner);
-    font-size: 0.875rem;
-    margin-top: 10px;
-    font-weight: 500;
-  }
-  .sheet-status.ok { background: var(--status-ok-bg); color: var(--accent-ink); }
-  .sheet-status.err { background: var(--status-err-bg); color: var(--danger); }
-  .sheet-status.loading { background: var(--surface2); color: var(--text-muted); }
+  .form-status { min-height: 1.3em; font-size: 0.875rem; color: var(--text-muted); margin: 0 4px 10px; }
+  .form-status.is-error, .file-pick-info.is-error { color: var(--danger); }
+  .file-pick { display: flex; align-items: center; gap: 12px; }
+  .file-pick .btn-sm { cursor: pointer; flex-shrink: 0; }
+  .file-pick:focus-within .btn-sm { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
+  .file-pick-info { font-size: 0.875rem; color: var(--text-muted); min-width: 0; overflow-wrap: anywhere; }
+  .file-pick-preview { display: block; width: 140px; height: 140px; object-fit: cover; border-radius: var(--r-control); margin-top: 12px; background: var(--surface2); }
 
   /* ════════ LOADING & LOGIN ════════ */
   .loading-screen {
@@ -2240,6 +2293,13 @@
   <div class="saved-workouts-section" id="saved-workouts-section" style="display:none">
     <h2 class="saved-workouts-title"><i class="ph ph-star" aria-hidden="true"></i>Favorittøkter</h2>
     <div class="saved-workouts-grid" id="saved-workouts-grid"></div>
+    <hr class="saved-section-divider">
+  </div>
+
+  <!-- Økter lagret fra andres økter i feeden -->
+  <div class="saved-workouts-section" id="others-workouts-section" style="display:none">
+    <h2 class="saved-workouts-title"><i class="ph ph-users-three" aria-hidden="true"></i>Andres økter</h2>
+    <div class="saved-workouts-grid" id="others-workouts-grid"></div>
     <hr class="saved-section-divider">
   </div>
 
@@ -2561,14 +2621,88 @@
 
     <div class="scoreboard-list" id="scoreboard-list"></div>
 
-    <h2 class="chat-section-title"><i class="ph ph-chat-circle" aria-hidden="true"></i>Chat</h2>
-    <div class="chat-box">
-      <div class="chat-input-row">
-        <input type="text" class="search-input" id="chat-input" placeholder="Skriv en melding…" aria-label="Skriv en melding" autocomplete="off" maxlength="200" onkeydown="if(event.key==='Enter')sendChatMessage()">
-        <button type="button" class="btn-primary" id="chat-send-btn" onclick="sendChatMessage()">Send</button>
-        <button type="button" class="chat-refresh-btn" onclick="refreshChatMessages()" aria-label="Oppdater meldinger"><i class="ph ph-arrow-clockwise" aria-hidden="true"></i></button>
+    <div class="feed-head">
+      <h2 class="chat-section-title"><i class="ph ph-users-three" aria-hidden="true"></i>Siste økter</h2>
+      <button type="button" class="chat-refresh-btn" id="feed-refresh-btn" onclick="refreshFeed()" aria-label="Oppdater"><i class="ph ph-arrow-clockwise" aria-hidden="true"></i></button>
+    </div>
+    <div class="feed-list" id="feed-list" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- Legg til øvelse (med GIF) + slett egne -->
+<div class="wkt-popup-overlay" id="add-exercise-overlay" style="display:none" onclick="closeAddExerciseIfBg(event)">
+  <div class="wkt-popup" role="dialog" aria-modal="true" aria-labelledby="add-exercise-title">
+    <div class="wkt-popup-header">
+      <h2 class="wkt-popup-title" id="add-exercise-title">Legg til øvelse</h2>
+      <button type="button" class="wkt-popup-close" onclick="closeAddExercise()" aria-label="Lukk"><i class="ph ph-x" aria-hidden="true"></i></button>
+    </div>
+
+    <div class="settings-field">
+      <label class="settings-label" for="ax-name">Navn</label>
+      <input type="text" class="settings-input" id="ax-name" name="exercise-name" autocomplete="off" maxlength="60" placeholder="F.eks. Goblet Squat">
+    </div>
+    <div class="settings-field">
+      <label class="settings-label" for="ax-cat">Kroppsområde</label>
+      <input type="text" class="settings-input" id="ax-cat" name="exercise-cat" list="ax-cat-list" autocomplete="off" maxlength="40" placeholder="F.eks. Full body">
+      <datalist id="ax-cat-list"></datalist>
+    </div>
+    <div class="settings-field">
+      <label class="settings-label" for="ax-muscles">Muskelgruppe</label>
+      <input type="text" class="settings-input" id="ax-muscles" name="exercise-muscles" list="ax-muscles-list" autocomplete="off" maxlength="60" placeholder="F.eks. Shoulders">
+      <datalist id="ax-muscles-list"></datalist>
+    </div>
+    <div class="settings-field">
+      <label class="settings-label" for="ax-utstyr">Utstyr</label>
+      <input type="text" class="settings-input" id="ax-utstyr" name="exercise-utstyr" list="ax-utstyr-list" autocomplete="off" maxlength="40" placeholder="F.eks. 1 Kettlebell">
+      <datalist id="ax-utstyr-list"></datalist>
+    </div>
+    <div class="settings-field">
+      <label class="settings-label" for="ax-variation">Variasjon (valgfritt)</label>
+      <input type="text" class="settings-input" id="ax-variation" name="exercise-variation" list="ax-variation-list" autocomplete="off" maxlength="40" placeholder="F.eks. Swing">
+      <datalist id="ax-variation-list"></datalist>
+      <div class="settings-hint">Øvelser med samme variasjon vises samlet under én overskrift.</div>
+    </div>
+    <div class="settings-field">
+      <div class="settings-group">
+        <div class="settings-row" style="padding-right:12px">
+          <label class="settings-row-title" for="ax-sides" style="font-weight:500">Gjøres på hver side</label>
+          <span class="toggle-switch"><input type="checkbox" id="ax-sides"><span class="toggle-slider"></span></span>
+        </div>
       </div>
-      <div class="chat-messages" id="chat-messages" aria-live="polite"></div>
+      <div class="settings-hint">Slå på for øvelser som tas med venstre og høyre hver for seg. Appen ber deg da bytte side.</div>
+    </div>
+    <div class="settings-field">
+      <div class="settings-label" id="ax-gif-label">GIF (valgfritt)</div>
+      <div class="file-pick">
+        <label class="btn-secondary btn-sm" for="ax-gif"><i class="ph ph-upload-simple" aria-hidden="true"></i>Velg GIF</label>
+        <input type="file" id="ax-gif" class="visually-hidden" accept="image/gif,.gif" aria-labelledby="ax-gif-label" onchange="onGifPicked()">
+        <span class="file-pick-info" id="ax-gif-info">Ingen fil valgt</span>
+      </div>
+      <img class="file-pick-preview" id="ax-gif-preview" alt="Forhåndsvisning av GIF-en" style="display:none">
+      <div class="settings-hint">Maks 12 MB. Kvadratisk format ser best ut.</div>
+    </div>
+
+    <div class="form-status" id="ax-status" aria-live="polite"></div>
+    <button type="button" class="btn-primary btn-block" id="ax-submit" onclick="submitExercise()">Legg til øvelse</button>
+
+    <h3 class="feed-subtitle" id="ax-manage-title" style="display:none">Øvelser du kan slette</h3>
+    <div class="settings-group" id="ax-manage"></div>
+  </div>
+</div>
+
+<!-- Økt fra feeden: detaljer, like, lagre og kommentarer -->
+<div class="wkt-popup-overlay" id="feed-workout-overlay" style="display:none" onclick="closeFeedWorkoutIfBg(event)">
+  <div class="wkt-popup" role="dialog" aria-modal="true" aria-labelledby="feed-wkt-title">
+    <div class="wkt-popup-header">
+      <h2 class="wkt-popup-title" id="feed-wkt-title"></h2>
+      <button type="button" class="wkt-popup-close" onclick="closeFeedWorkout()" aria-label="Lukk"><i class="ph ph-x" aria-hidden="true"></i></button>
+    </div>
+    <div id="feed-wkt-body"></div>
+    <h3 class="feed-subtitle">Kommentarer</h3>
+    <div class="feed-comments" id="feed-comments" aria-live="polite"></div>
+    <div class="feed-comment-row">
+      <input type="text" class="search-input" id="feed-comment-input" placeholder="Skriv en kommentar…" aria-label="Skriv en kommentar" autocomplete="off" maxlength="300" onkeydown="if(event.key==='Enter')sendFeedComment()">
+      <button type="button" class="btn-primary" id="feed-comment-btn" onclick="sendFeedComment()">Send</button>
     </div>
   </div>
 </div>
@@ -2767,11 +2901,10 @@
     </div>
 
     <div class="settings-field">
-      <div class="settings-label">Øvelser og økter</div>
-      <p class="settings-note">Øvelser og økter hentes fra et delt Google Sheet. Endringer der dukker opp neste gang appen lastes.</p>
-      <a class="settings-link-row" href="https://docs.google.com/spreadsheets/d/1QCP8SjXZWLN4zoXc2n92jT0x4V-qX-NQ6Jvxh7jfZhk/edit?usp=sharing" target="_blank" rel="noopener">
-        <i class="ph ph-table" aria-hidden="true"></i>Åpne Google Sheet<i class="ph ph-arrow-up-right" aria-hidden="true"></i>
-      </a>
+      <div class="settings-label">Øvelser</div>
+      <button type="button" class="settings-link-row" id="add-exercise-row" onclick="openAddExercise()">
+        <i class="ph ph-plus-circle" aria-hidden="true"></i>Legg til øvelse<i class="ph ph-caret-right" aria-hidden="true"></i>
+      </button>
       <button type="button" class="settings-link-row" id="refresh-sheet-btn" onclick="forceRefreshSheet()">
         <i class="ph ph-arrow-clockwise" aria-hidden="true"></i><span id="refresh-sheet-label">Hent øvelser på nytt</span>
       </button>
@@ -3910,11 +4043,11 @@ let personalWorkouts = [];
 const HISTORY_CACHE_KEY = 'ironbell_history_cache';
 const SCOREBOARD_CACHE_KEY = 'ironbell_scoreboard_cache';
 const LEADERBOARD_CACHE_KEY = 'ironbell_leaderboard_cache';
-const CHAT_CACHE_KEY = 'ironbell_chat_cache';
+const FEED_CACHE_KEY = 'ironbell_feed_cache';
 let scoreboardData = null; // [{username, goal, completed, enabled}] — everyone, unfiltered
 let leaderboardData = null; // same shape, filtered+sorted — only what the Scoreboard screen shows
 let scoreboardFetchedFresh = false;
-let chatMessages = null; // [{time, username, message}], null = not loaded yet
+let feedData = null; // siste økter fra alle, med likes/kommentarer. null = ikke lastet ennå
 try {
   const cachedHistory = localStorage.getItem(HISTORY_CACHE_KEY);
   if (cachedHistory) workoutHistory = JSON.parse(cachedHistory);
@@ -3928,8 +4061,8 @@ try {
   if (cachedLeaderboard) leaderboardData = JSON.parse(cachedLeaderboard);
 } catch(e) {}
 try {
-  const cachedChat = localStorage.getItem(CHAT_CACHE_KEY);
-  if (cachedChat) chatMessages = JSON.parse(cachedChat);
+  const cachedFeed = localStorage.getItem(FEED_CACHE_KEY);
+  if (cachedFeed) feedData = JSON.parse(cachedFeed);
 } catch(e) {}
 
 // ─── Ukesplan ───
@@ -4004,7 +4137,7 @@ function clearAccountCaches_() {
   scoreboardData = null;
   leaderboardData = null;
   scoreboardFetchedFresh = false;
-  chatMessages = null;
+  feedData = null;
   personalWorkouts = [];
   weeklyPlan = null;
   weeklyPlanFetched = false;
@@ -4012,7 +4145,8 @@ function clearAccountCaches_() {
     localStorage.removeItem(HISTORY_CACHE_KEY);
     localStorage.removeItem(SCOREBOARD_CACHE_KEY);
     localStorage.removeItem(LEADERBOARD_CACHE_KEY);
-    localStorage.removeItem(CHAT_CACHE_KEY);
+    localStorage.removeItem(FEED_CACHE_KEY);
+    localStorage.removeItem('ironbell_chat_cache'); // rest fra den gamle chatten
     localStorage.removeItem(WEEKLY_PLAN_CACHE_KEY);
   } catch(e) {}
 }
@@ -4449,10 +4583,11 @@ async function openScoreboard() {
   content.style.display = 'block';
 
   renderScoreboardList(); // instantly from cache
-  renderChatMessages();
-  await Promise.all([ensureScoreboardData(), ensureChatMessages()]);
+  renderFeed();
+  // Feeden hentes på nytt hver gang siden åpnes: nye økter, likes og kommentarer.
+  await Promise.all([ensureScoreboardData(), ensureFeed(true)]);
   renderScoreboardList();
-  renderChatMessages();
+  renderFeed();
 }
 
 function renderScoreboardList() {
@@ -4484,115 +4619,260 @@ function renderScoreboardList() {
   wrap.innerHTML = realRows + emptyRows;
 }
 
-// ─── Chat (scoreboard-siden) ───
-async function ensureChatMessages(force) {
-  if (chatMessages !== null && !force) return;
-  if (!appsScriptUrl) { chatMessages = chatMessages || []; return; }
-  try {
-    const url = `${appsScriptUrl}?action=getChatMessages`;
-    const res = await apiFetch(url);
-    const data = await res.json();
-    chatMessages = data.success ? data.messages : (chatMessages || []);
-    try { localStorage.setItem(CHAT_CACHE_KEY, JSON.stringify(chatMessages)); } catch(e) {}
-  } catch(e) {
-    if (chatMessages === null) chatMessages = [];
-  }
-}
-
-// Chat messages are user-submitted text stored in the sheet — escape before
-// inserting as HTML, then linkify the already-escaped text (safe: URLs never
-// contain the characters escapeHtml_ would have touched).
+// Tekst fra brukere (navn, øktnavn, kommentarer) må escapes før den settes inn som HTML.
 function escapeHtml_(s) {
   const div = document.createElement('div');
   div.textContent = String(s == null ? '' : s);
   return div.innerHTML;
 }
-function linkifyChatText_(escapedText) {
-  return escapedText.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">LINK</a>');
-}
 
-function renderChatMessages() {
-  const wrap = document.getElementById('chat-messages');
-  if (!wrap) return;
-  if (!chatMessages || chatMessages.length === 0) {
-    wrap.innerHTML = '<div class="chat-empty">Ingen meldinger ennå. Vær den første!</div>';
-    return;
-  }
-  wrap.innerHTML = chatMessages.map(m => {
-    const d = new Date(m.time);
-    const timeLabel = isNaN(d) ? '' : `${d.getDate()}.${d.getMonth() + 1} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-    const safeText = linkifyChatText_(escapeHtml_(m.message));
-    const likes = m.likes || 0;
-    const isOwn = currentUser && m.username.toLowerCase() === currentUser.toLowerCase();
-    // Backend only tracks a raw count, not who liked what — so "no liking your own
-    // message" can only be enforced client-side, by not giving yourself the button.
-    const likeControl = isOwn
-      ? `<span class="chat-like-btn ${likes >= 1 ? 'has-likes' : ''}" title="Du kan ikke like din egen melding"><span class="chat-like-heart">♥</span> <span class="chat-like-count">${likes}</span></span>`
-      : `<button class="chat-like-btn ${likes >= 1 ? 'has-likes' : ''}" onclick="likeChatMessage(${m.row}, this)"><span class="chat-like-heart">♥</span> <span class="chat-like-count">${likes}</span></button>`;
-    return `
-      <div class="chat-msg">
-        <div class="chat-msg-head"><span class="chat-msg-user">${escapeHtml_(m.username)}</span><span class="chat-msg-time">${timeLabel}</span></div>
-        <div class="chat-msg-text">${safeText}</div>
-        ${likeControl}
-      </div>`;
-  }).join('');
-}
-
-async function likeChatMessage(row, btn) {
-  if (!row) return;
-  btn.disabled = true;
+// ─── Feed: siste økter fra alle (Scoreboard-siden) ───
+async function ensureFeed(force) {
+  if (feedData !== null && !force) return;
+  if (!appsScriptUrl || !currentUser) { feedData = feedData || []; return; }
   try {
-    const url = `${appsScriptUrl}?action=likeChatMessage&row=${row}`;
-    const res = await apiFetch(url);
+    const res = await apiFetch(`${appsScriptUrl}?action=feed`);
     const data = await res.json();
     if (data.success) {
-      const msg = chatMessages && chatMessages.find(m => m.row === row);
-      if (msg) msg.likes = data.likes;
-      btn.querySelector('.chat-like-count').textContent = data.likes;
-      btn.classList.toggle('has-likes', data.likes >= 1);
-      try { localStorage.setItem(CHAT_CACHE_KEY, JSON.stringify(chatMessages)); } catch(e) {}
+      feedData = data.workouts;
+      try { localStorage.setItem(FEED_CACHE_KEY, JSON.stringify(feedData)); } catch(e) {}
+    } else if (feedData === null) {
+      feedData = [];
     }
   } catch(e) {
-    console.warn('Kunne ikke like meldingen:', e.message);
+    if (feedData === null) feedData = [];
   }
-  btn.disabled = false;
 }
 
-async function sendChatMessage() {
-  if (!currentUser) return;
-  const input = document.getElementById('chat-input');
-  const msg = input.value.trim();
-  if (!msg) return;
+const FEED_TIME_FMT = new Intl.DateTimeFormat('nb-NO', { hour: '2-digit', minute: '2-digit' });
+const FEED_DATE_FMT = new Intl.DateTimeFormat('nb-NO', { day: 'numeric', month: 'short' });
+function feedTimeLabel(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  const today = new Date();
+  const yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
+  const day = dateKey(d) === dateKey(today) ? 'I dag'
+    : dateKey(d) === dateKey(yesterday) ? 'I går'
+    : FEED_DATE_FMT.format(d);
+  return `${day} ${FEED_TIME_FMT.format(d)}`;
+}
+const isMe_ = (username) => !!currentUser && String(username).toLowerCase() === currentUser.toLowerCase();
+const feedExerciseCount_ = (w) => String(w.exercises || '').split('-').filter(Boolean).length;
 
-  const btn = document.getElementById('chat-send-btn');
+function feedChipsHtml_(w) {
+  const chips = [];
+  if (w.duration) chips.push(`<span class="cal-chip"><i class="ph ph-clock" aria-hidden="true"></i>${escapeHtml_(w.duration)}</span>`);
+  if (w.mode === 'Tid') chips.push('<span class="cal-chip"><i class="ph ph-timer" aria-hidden="true"></i>Tid</span>');
+  else if (w.mode === 'Repetisjoner') chips.push('<span class="cal-chip"><i class="ph ph-hash" aria-hidden="true"></i>Reps</span>');
+  chips.push(`<span class="cal-chip">${feedExerciseCount_(w)} øvelser${w.rounds ? `, ${escapeHtml_(w.rounds)} runder` : ''}</span>`);
+  if (w.duoWith) chips.push(`<span class="cal-chip cal-chip-duo"><i class="ph ph-users" aria-hidden="true"></i>Duo med ${escapeHtml_(w.duoWith)}</span>`);
+  return chips.join('');
+}
+
+function feedLikeButtonHtml_(w) {
+  return `<button type="button" class="feed-action ${w.liked ? 'liked' : ''}" onclick="toggleFeedLike(${w.id})" data-like="${w.id}" aria-pressed="${w.liked ? 'true' : 'false'}" aria-label="Lik økten">
+      <i class="ph ph-heart ic-off" aria-hidden="true"></i><i class="ph-fill ph-heart ic-on" aria-hidden="true"></i><span>${w.likes || 0}</span>
+    </button>`;
+}
+
+function renderFeed() {
+  const wrap = document.getElementById('feed-list');
+  if (!wrap) return;
+  if (feedData === null) { wrap.innerHTML = '<div class="feed-empty">Laster…</div>'; return; }
+  if (feedData.length === 0) { wrap.innerHTML = '<div class="feed-empty">Ingen økter ennå. Den første økten som logges, dukker opp her.</div>'; return; }
+  wrap.innerHTML = feedData.map(w => `
+    <article class="feed-card">
+      <button type="button" class="feed-card-main" onclick="openFeedWorkout(${w.id})">
+        <span class="feed-avatar" aria-hidden="true">${escapeHtml_(String(w.username).charAt(0))}</span>
+        <span class="feed-card-body">
+          <span class="feed-card-top">
+            <span class="feed-user">${escapeHtml_(w.username)}${isMe_(w.username) ? ' (deg)' : ''}</span>
+            <span class="feed-time">${feedTimeLabel(w.date)}</span>
+          </span>
+          <span class="feed-title">${escapeHtml_(workoutDisplayName(w))}</span>
+          <span class="cal-card-chips">${feedChipsHtml_(w)}</span>
+        </span>
+      </button>
+      <div class="feed-actions">
+        ${feedLikeButtonHtml_(w)}
+        <button type="button" class="feed-action" onclick="openFeedWorkout(${w.id}, true)" aria-label="Kommentarer">
+          <i class="ph ph-chat-circle" aria-hidden="true"></i><span data-comment-count="${w.id}">${w.comments || 0}</span>
+        </button>
+      </div>
+    </article>`).join('');
+}
+
+async function refreshFeed() {
+  const btn = document.getElementById('feed-refresh-btn');
+  if (btn) btn.disabled = true;
+  await Promise.all([ensureFeed(true), ensureScoreboardData(true)]);
+  renderFeed();
+  renderScoreboardList();
+  if (btn) btn.disabled = false;
+}
+
+// Ett like per bruker: trykk igjen for å angre. Oppdaterer både kortet i feeden
+// og knappen i økt-arket, siden samme økt kan vises begge steder.
+async function toggleFeedLike(id) {
+  const w = (feedData || []).find(x => x.id === id);
+  if (!w) return;
+  const paint = () => document.querySelectorAll(`[data-like="${id}"]`).forEach(btn => {
+    btn.classList.toggle('liked', !!w.liked);
+    btn.setAttribute('aria-pressed', w.liked ? 'true' : 'false');
+    btn.querySelector('span').textContent = w.likes || 0;
+  });
+  // Svar med en gang, rett opp hvis serveren sier noe annet.
+  const before = { liked: w.liked, likes: w.likes };
+  w.liked = !w.liked;
+  w.likes = Math.max(0, (w.likes || 0) + (w.liked ? 1 : -1));
+  paint();
+  try {
+    const res = await apiFetch(`${appsScriptUrl}?action=likeWorkout&workoutId=${id}`);
+    const data = await res.json();
+    if (data.success) { w.liked = data.liked; w.likes = data.likes; } else { Object.assign(w, before); }
+  } catch(e) {
+    Object.assign(w, before);
+  }
+  paint();
+  try { localStorage.setItem(FEED_CACHE_KEY, JSON.stringify(feedData)); } catch(e) {}
+}
+
+let openFeedWorkoutId = null;
+
+function openFeedWorkout(id, focusComment) {
+  const w = (feedData || []).find(x => x.id === id);
+  if (!w) return;
+  openFeedWorkoutId = id;
+  document.getElementById('feed-wkt-title').textContent = workoutDisplayName(w);
+
+  const nrs = String(w.exercises || '').split('-').map(s => parseInt(s)).filter(n => !isNaN(n));
+  const exList = nrs.map(nr => EXERCISES.find(e => e.nr === nr) || { name: `#${nr}`, img: '', muscles: '' });
+  const mine = isMe_(w.username);
+  const modeIcon = w.mode === 'Tid' ? '<i class="ph ph-timer" aria-hidden="true"></i>'
+    : w.mode === 'Repetisjoner' ? '<i class="ph ph-hash" aria-hidden="true"></i>' : '-';
+
+  document.getElementById('feed-wkt-body').innerHTML = `
+    <div class="feed-meta">${escapeHtml_(w.username)}${mine ? ' (deg)' : ''}, ${feedTimeLabel(w.date).toLowerCase()}</div>
+    ${w.duoWith ? `<div class="cal-duo-badge"><i class="ph ph-users" aria-hidden="true"></i>Duo-økt med ${escapeHtml_(w.duoWith)}</div>` : ''}
+    <div class="cal-entry-stats">
+      <div class="cal-stat"><div class="cal-stat-val">${escapeHtml_(w.rounds || '-')}</div><div class="cal-stat-key">Runder</div></div>
+      <div class="cal-stat"><div class="cal-stat-val">${modeIcon}</div><div class="cal-stat-key">${escapeHtml_(w.mode || 'Modus')}</div></div>
+      <div class="cal-stat"><div class="cal-stat-val">${escapeHtml_(w.duration || '-')}</div><div class="cal-stat-key">Varighet</div></div>
+    </div>
+    <div class="feed-wkt-actions">
+      <button type="button" class="btn-primary" onclick="tryFeedWorkout()"><i class="ph-fill ph-play" aria-hidden="true"></i>Prøv økten</button>
+      ${mine ? '' : `<button type="button" class="btn-secondary" id="feed-save-btn" onclick="saveFeedWorkout()"><i class="ph ph-bookmark-simple" aria-hidden="true"></i>Lagre</button>`}
+      ${feedLikeButtonHtml_(w)}
+    </div>
+    <div class="feed-status" id="feed-status" aria-live="polite"></div>
+    <div class="wkt-popup-ex-list" style="margin-bottom:0">
+      ${exList.map((ex, i) => `
+        <div class="wkt-popup-ex">
+          <div class="wkt-popup-ex-num">${i + 1}</div>
+          <img class="wkt-popup-ex-img" src="${ex.img || 'favicon.png'}" alt="" onerror="this.src='favicon.png'">
+          <div class="wkt-popup-ex-info">
+            <div class="wkt-popup-ex-name">${escapeHtml_(ex.name)}</div>
+            ${ex.muscles ? `<div class="wkt-popup-ex-muscles">${escapeHtml_(ex.muscles)}</div>` : ''}
+          </div>
+        </div>`).join('')}
+    </div>`;
+
+  document.getElementById('feed-comments').innerHTML = '<div class="feed-comments-empty">Laster…</div>';
+  document.getElementById('feed-comment-input').value = '';
+  document.getElementById('feed-workout-overlay').style.display = 'flex';
+  loadFeedComments().then(() => {
+    if (focusComment) document.getElementById('feed-comment-input').scrollIntoView({ block: 'center' });
+  });
+}
+
+function closeFeedWorkout() {
+  document.getElementById('feed-workout-overlay').style.display = 'none';
+  openFeedWorkoutId = null;
+}
+function closeFeedWorkoutIfBg(e) {
+  if (e.target === document.getElementById('feed-workout-overlay')) closeFeedWorkout();
+}
+
+// Laster øvelsene (og modus/runder) inn i Konfigurer, som "Kjør økten på nytt" i kalenderen.
+function tryFeedWorkout() {
+  const w = (feedData || []).find(x => x.id === openFeedWorkoutId);
+  if (!w) return;
+  closeFeedWorkout();
+  restartLoggedWorkout(w.exercises, w.mode, parseInt(w.rounds) || 0);
+}
+
+// Lagrer økten under "Andres økter" på Trening-siden.
+async function saveFeedWorkout() {
+  const w = (feedData || []).find(x => x.id === openFeedWorkoutId);
+  if (!w) return;
+  const btn = document.getElementById('feed-save-btn');
+  const status = document.getElementById('feed-status');
+  btn.disabled = true;
+  status.textContent = 'Lagrer…';
+  try {
+    const name = workoutDisplayName(w);
+    const res = await apiFetch(`${appsScriptUrl}?action=saveFeedWorkout&workoutId=${w.id}&name=${encodeURIComponent(name)}`);
+    const data = await res.json();
+    status.textContent = data.success ? 'Lagret under «Andres økter» på Trening-siden.' : (data.error || 'Noe gikk galt');
+    if (data.success) fetchPersonalWorkouts(); else btn.disabled = false;
+  } catch(e) {
+    status.textContent = 'Fikk ikke kontakt med serveren';
+    btn.disabled = false;
+  }
+}
+
+async function loadFeedComments() {
+  const id = openFeedWorkoutId;
+  const wrap = document.getElementById('feed-comments');
+  let comments = null;
+  try {
+    const res = await apiFetch(`${appsScriptUrl}?action=workoutComments&workoutId=${id}`);
+    const data = await res.json();
+    if (data.success) comments = data.comments;
+  } catch(e) {}
+  if (openFeedWorkoutId !== id) return; // arket ble lukket eller byttet mens vi ventet
+  if (comments === null) { wrap.innerHTML = '<div class="feed-comments-empty">Fikk ikke hentet kommentarene.</div>'; return; }
+
+  const w = (feedData || []).find(x => x.id === id);
+  if (w) w.comments = comments.length;
+  document.querySelectorAll(`[data-comment-count="${id}"]`).forEach(el => { el.textContent = comments.length; });
+
+  wrap.innerHTML = comments.length === 0
+    ? '<div class="feed-comments-empty">Ingen kommentarer ennå.</div>'
+    : comments.map(c => `
+      <div class="feed-comment">
+        <div class="feed-comment-head">
+          <span class="feed-comment-user">${escapeHtml_(c.username)}</span>
+          <span class="feed-comment-time">${feedTimeLabel(c.time)}</span>
+        </div>
+        <div class="feed-comment-text">${escapeHtml_(c.text)}</div>
+        ${c.mine ? `<button type="button" class="feed-comment-delete" onclick="deleteFeedComment(${c.id})">Slett</button>` : ''}
+      </div>`).join('');
+}
+
+async function sendFeedComment() {
+  const input = document.getElementById('feed-comment-input');
+  const text = input.value.trim();
+  if (!text || !openFeedWorkoutId) return;
+  const btn = document.getElementById('feed-comment-btn');
   input.disabled = true;
   btn.disabled = true;
   try {
-    const url = `${appsScriptUrl}?action=postChatMessage&username=${encodeURIComponent(currentUser)}&message=${encodeURIComponent(msg)}`;
-    await apiFetch(url);
-    input.value = '';
-    // Sending is a good moment to pull fresh everything — messages, scores, calendar.
-    await Promise.all([ensureChatMessages(true), ensureScoreboardData(true), ensureWorkoutHistory(true)]);
-    renderChatMessages();
-    renderScoreboardList();
+    const res = await apiFetch(`${appsScriptUrl}?action=commentWorkout&workoutId=${openFeedWorkoutId}&text=${encodeURIComponent(text)}`);
+    const data = await res.json();
+    if (data.success) { input.value = ''; await loadFeedComments(); }
   } catch(e) {
-    console.warn('Kunne ikke sende melding:', e.message);
+    console.warn('Kunne ikke sende kommentar:', e.message);
   }
   input.disabled = false;
   btn.disabled = false;
-  input.focus();
 }
 
-// Refreshes everything on the Scoreboard screen, not just chat — otherwise a
-// stale cached leaderboard (e.g. from before a backend redeploy) had no way to
-// force-update short of a full page reload.
-async function refreshChatMessages() {
-  const btn = document.querySelector('.chat-refresh-btn[onclick="refreshChatMessages()"]');
-  if (btn) btn.disabled = true;
-  await Promise.all([ensureChatMessages(true), ensureScoreboardData(true)]);
-  renderChatMessages();
-  renderScoreboardList();
-  if (btn) btn.disabled = false;
+async function deleteFeedComment(commentId) {
+  try {
+    await apiFetch(`${appsScriptUrl}?action=deleteComment&commentId=${commentId}`);
+  } catch(e) {}
+  await loadFeedComments();
 }
 
 function shiftCalendarMonth(delta) {
@@ -4689,7 +4969,7 @@ function renderCalendarList() {
       ? '<span class="cal-chip">⏱ Tid</span>'
       : entry.mode === 'Repetisjoner' ? '<span class="cal-chip"><i class="ph ph-hash" aria-hidden="true"></i>Reps</span>' : '';
     const duoChip = entry.duoWith
-      ? `<span class="cal-chip cal-chip-duo"><i class="ph ph-users" aria-hidden="true"></i>Duo med ${entry.duoWith}</span>`
+      ? `<span class="cal-chip cal-chip-duo"><i class="ph ph-users" aria-hidden="true"></i>Duo med ${escapeHtml_(entry.duoWith)}</span>`
       : '';
     const countChip = `<span class="cal-chip">${exCount} øvelser${entry.rounds ? ` · ${entry.rounds} runder` : ''}</span>`;
     return `
@@ -4720,7 +5000,7 @@ function showCalendarDay(key) {
     const exList = nrs.map(nr => EXERCISES.find(e => e.nr === nr) || { name: `#${nr}`, img: '', muscles: '' });
 
     const duoBadge = entry.duoWith
-      ? `<div class="cal-duo-badge"><i class="ph ph-users" aria-hidden="true"></i>Duo-økt med ${entry.duoWith}</div>`
+      ? `<div class="cal-duo-badge"><i class="ph ph-users" aria-hidden="true"></i>Duo-økt med ${escapeHtml_(entry.duoWith)}</div>`
       : '';
 
     const statsHtml = `
@@ -4772,13 +5052,9 @@ function closeCalendarDayIfBg(e) {
 }
 
 // ════════════════════════════════════════
-// SETTINGS & GOOGLE SHEETS
+// SETTINGS
 // ════════════════════════════════════════
-const SHEET_URL_KEY = 'ironbell_sheet_url';
-const SHEET_CACHE_KEY = 'ironbell_cache';
-const DEFAULT_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQCKCTbNFmRKaz0e7iBRDGueFqovP40Eyn4lxYJ6uf8-UUkB8L1bgw72juAMjUn2cMpkx47T_HoFVZ7/pub?output=csv';
-let sheetUrl = DEFAULT_SHEET_URL;
-try { sheetUrl = localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL; } catch(e) {}
+const SHEET_CACHE_KEY = 'ironbell_cache'; // siste øvelser + fellesøkter, for rask oppstart
 
 // ════════════════════════════════════════
 // THEME
@@ -4825,6 +5101,7 @@ function openSettings() {
   document.getElementById('settings-delete-btn').style.display = currentUser ? 'inline-flex' : 'none';
   document.getElementById('google-link-field').style.display = (currentUser && window.google && GOOGLE_CLIENT_ID) ? 'block' : 'none';
   document.getElementById('google-link-status').textContent = '';
+  document.getElementById('add-exercise-row').style.display = currentUser ? 'flex' : 'none';
   document.getElementById('appscript-url-input').value = appsScriptUrl;
   document.getElementById('settings-overlay').style.display = 'flex';
 }
@@ -4836,6 +5113,8 @@ function closeSettings() {
 // Ordered top-most first (the plan picker sits on top of the plan editor).
 const ESC_CLOSERS = [
   ['google-username-overlay', () => closeGoogleUsername()],
+  ['feed-workout-overlay', () => closeFeedWorkout()],
+  ['add-exercise-overlay', () => closeAddExercise()],
   ['plan-exercise-picker-overlay', () => closePlanExercisePicker()],
   ['weekly-plan-editor-overlay', () => closeWeeklyPlanEditor()],
   ['delete-account-confirm-overlay', () => cancelDeleteAccount()],
@@ -4857,222 +5136,159 @@ document.addEventListener('keydown', e => {
 });
 async function forceRefreshSheet() {
   const btn = document.getElementById('refresh-sheet-btn');
+  const label = document.getElementById('refresh-sheet-label') || btn;
+  const IDLE = 'Hent øvelser på nytt';
   btn.disabled = true;
-  const refreshLabel = document.getElementById('refresh-sheet-label') || btn;
-  const REFRESH_IDLE = 'Hent øvelser på nytt';
-  refreshLabel.textContent = 'Henter…';
-  let urlToLoad = DEFAULT_SHEET_URL;
-  try { urlToLoad = localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL; } catch(e) {}
+  label.textContent = 'Henter…';
   try {
-    const parsed = await fetchSheet(urlToLoad);
-    if (parsed.exercises.length > 0) {
-      applyExerciseData(parsed.exercises, parsed.workouts);
-      sheetUrl = urlToLoad;
-      try { localStorage.setItem(SHEET_CACHE_KEY, JSON.stringify({ exercises: parsed.exercises, workouts: parsed.workouts })); } catch(e) {}
-      refreshLabel.textContent = `${parsed.exercises.length} øvelser hentet`;
-      setTimeout(() => { closeSettings(); btn.disabled = false; refreshLabel.textContent = REFRESH_IDLE; }, 1500);
-    } else {
-      refreshLabel.textContent = 'Fant ingen øvelser. Sjekk arket.';
-      setTimeout(() => { btn.disabled = false; refreshLabel.textContent = REFRESH_IDLE; }, 2500);
-    }
+    const parsed = await refreshCatalog();
+    label.textContent = parsed.exercises.length > 0 ? `${parsed.exercises.length} øvelser hentet` : 'Fant ingen øvelser.';
   } catch(e) {
-    refreshLabel.textContent = 'Fikk ikke hentet. Prøv igjen.';
-    setTimeout(() => { btn.disabled = false; refreshLabel.textContent = REFRESH_IDLE; }, 2500);
+    label.textContent = 'Fikk ikke hentet. Prøv igjen.';
+  }
+  setTimeout(() => { btn.disabled = false; label.textContent = IDLE; }, 2000);
+}
+
+// ─── Legg til / administrer øvelser ───
+let isAdmin = false;
+
+function fillDatalist_(id, values) {
+  document.getElementById(id).innerHTML = [...new Set(values.filter(Boolean))].sort()
+    .map(v => `<option value="${escapeHtml_(v)}"></option>`).join('');
+}
+
+async function openAddExercise() {
+  if (!currentUser) return;
+  closeSettings();
+  // Forslag hentes fra øvelsene som finnes, så samme område ikke staves på tre måter.
+  fillDatalist_('ax-cat-list', EXERCISES.map(e => e.cat));
+  fillDatalist_('ax-muscles-list', EXERCISES.flatMap(e => (e.muscles || '').split(',').map(m => m.trim())));
+  fillDatalist_('ax-utstyr-list', EXERCISES.map(e => e.utstyr));
+  fillDatalist_('ax-variation-list', EXERCISES.map(e => e.variation));
+  resetAddExerciseForm();
+  renderManageExercises();
+  document.getElementById('add-exercise-overlay').style.display = 'flex';
+  try {
+    const data = await (await apiFetch(`${appsScriptUrl}?action=me`)).json();
+    if (data.success) { isAdmin = !!data.isAdmin; renderManageExercises(); }
+  } catch(e) {}
+}
+function closeAddExercise() {
+  document.getElementById('add-exercise-overlay').style.display = 'none';
+}
+function closeAddExerciseIfBg(e) {
+  if (e.target === document.getElementById('add-exercise-overlay')) closeAddExercise();
+}
+
+function resetAddExerciseForm() {
+  ['ax-name', 'ax-cat', 'ax-muscles', 'ax-utstyr', 'ax-variation'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('ax-sides').checked = false;
+  document.getElementById('ax-gif').value = '';
+  document.getElementById('ax-status').textContent = '';
+  onGifPicked();
+}
+
+const MAX_GIF_BYTES = 12 * 1024 * 1024;
+function onGifPicked() {
+  const file = document.getElementById('ax-gif').files[0];
+  const info = document.getElementById('ax-gif-info');
+  const preview = document.getElementById('ax-gif-preview');
+  if (preview.src.startsWith('blob:')) URL.revokeObjectURL(preview.src);
+  if (!file) { info.textContent = 'Ingen fil valgt'; preview.style.display = 'none'; preview.removeAttribute('src'); return true; }
+  const mb = (file.size / 1024 / 1024).toFixed(1).replace('.', ',');
+  const isGif = file.type === 'image/gif' || /\.gif$/i.test(file.name);
+  const problem = !isGif ? 'Filen må være en GIF.' : file.size > MAX_GIF_BYTES ? `GIF-en er ${mb} MB. Maks er 12 MB.` : '';
+  info.textContent = problem || `${file.name} (${mb} MB)`;
+  info.classList.toggle('is-error', !!problem);
+  if (problem) { preview.style.display = 'none'; return false; }
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = 'block';
+  return true;
+}
+
+async function submitExercise() {
+  const status = document.getElementById('ax-status');
+  const name = document.getElementById('ax-name').value.trim();
+  const cat = document.getElementById('ax-cat').value.trim();
+  status.classList.add('is-error');
+  if (!name) { status.textContent = 'Skriv inn et navn på øvelsen.'; document.getElementById('ax-name').focus(); return; }
+  if (!cat) { status.textContent = 'Velg eller skriv inn et kroppsområde.'; document.getElementById('ax-cat').focus(); return; }
+  if (!onGifPicked()) { status.textContent = 'Velg en annen GIF, eller fjern filen.'; return; }
+
+  const form = new FormData();
+  form.append('action', 'addExercise');
+  form.append('name', name);
+  form.append('cat', cat);
+  form.append('muscles', document.getElementById('ax-muscles').value.trim());
+  form.append('utstyr', document.getElementById('ax-utstyr').value.trim());
+  form.append('variation', document.getElementById('ax-variation').value.trim());
+  form.append('sides', document.getElementById('ax-sides').checked ? 'LR' : '1');
+  const file = document.getElementById('ax-gif').files[0];
+  if (file) form.append('gif', file);
+
+  const btn = document.getElementById('ax-submit');
+  btn.disabled = true;
+  status.classList.remove('is-error');
+  status.textContent = file ? 'Laster opp…' : 'Lagrer…';
+  try {
+    const res = await fetch(appsScriptUrl, { method: 'POST', headers: { authorization: 'Bearer ' + (authToken || '') }, body: form });
+    const data = await res.json();
+    if (data.code === 'AUTH') { closeAddExercise(); sessionExpired(); return; }
+    if (!data.success) { status.classList.add('is-error'); status.textContent = data.error || 'Noe gikk galt'; return; }
+    await refreshCatalog();
+    resetAddExerciseForm();
+    renderManageExercises();
+    status.textContent = `«${name}» er lagt til som øvelse nr. ${data.nr}.`;
+  } catch(e) {
+    status.classList.add('is-error');
+    status.textContent = 'Fikk ikke kontakt med serveren';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// Øvelser du selv har lagt inn (administrator: alle) kan slettes.
+function renderManageExercises() {
+  const wrap = document.getElementById('ax-manage');
+  const title = document.getElementById('ax-manage-title');
+  const mine = EXERCISES.filter(e => isAdmin || isMe_(e.createdBy));
+  title.style.display = mine.length ? 'block' : 'none';
+  wrap.innerHTML = mine.map(e => `
+    <div class="settings-row">
+      <span class="settings-row-title">${e.nr}. ${escapeHtml_(e.name)}</span>
+      <button type="button" class="plan-row-remove" onclick="deleteExercise(${e.nr})" aria-label="Slett ${escapeHtml_(e.name)}"><i class="ph ph-trash" aria-hidden="true"></i></button>
+    </div>`).join('');
+}
+
+async function deleteExercise(nr) {
+  const ex = EXERCISES.find(e => e.nr === nr);
+  if (!ex) return;
+  if (!confirm(`Slette «${ex.name}»? Økter som bruker den, vil mangle øvelsen. Dette kan ikke angres.`)) return;
+  const status = document.getElementById('ax-status');
+  try {
+    const data = await (await apiFetch(`${appsScriptUrl}?action=deleteExercise&nr=${nr}`)).json();
+    status.classList.toggle('is-error', !data.success);
+    status.textContent = data.success ? `«${ex.name}» er slettet.` : (data.error || 'Noe gikk galt');
+    if (data.success) { await refreshCatalog(); renderManageExercises(); }
+  } catch(e) {
+    status.classList.add('is-error');
+    status.textContent = 'Fikk ikke kontakt med serveren';
   }
 }
 
 function closeSettingsIfBg(e) {
   if (e.target === document.getElementById('settings-overlay')) closeSettings();
 }
-function onSheetUrlChange() {
-  document.getElementById('sheet-status').style.display = 'none';
-}
-
-function setSheetStatus(type, msg) {
-  const el = document.getElementById('sheet-status');
-  el.className = 'sheet-status ' + type;
-  el.textContent = msg;
-  el.style.display = 'flex';
-}
-
-async function loadSheetFromUrl(url) {
-  try {
-    const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
-    const res = await fetch(CORS_PROXY + encodeURIComponent(url));
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const csv = await res.text();
-    const { exercises, workouts } = parseSheetCSV(csv);
-    if (exercises.length === 0) throw new Error('Ingen øvelser funnet. Sjekk kolonnenavn.');
-
-    EXERCISES.length = 0;
-    exercises.forEach((ex, i) => EXERCISES.push({ ...ex, id: i + 1 }));
-    SAVED_WORKOUTS = workouts;
-    sheetUrl = url;
-
-    rebuildCatFilter();
-    renderExerciseGrid();
-    renderSavedWorkouts();
-    renderSelectedStrip();
-    selectedExercises = [];
-    currentWorkoutName = '';
-    document.getElementById('btn-to-config').disabled = true;
-
-    const wktMsg = workouts.length > 0 ? ` + ${workouts.length} økter` : '';
-    setSheetStatus('ok', `${exercises.length} øvelser${wktMsg} lastet inn!`);
-    return true;
-  } catch (err) {
-    setSheetStatus('err', 'Kunne ikke laste: ' + err.message);
-    return false;
-  }
-}
-
-async function loadFromSheet() {
-  const url = document.getElementById('sheet-url-input').value.trim();
-  if (!url) { setSheetStatus('err', 'Lim inn en CSV-URL først'); return; }
-
-  setSheetStatus('loading', '⏳ Laster fra Google Sheets…');
-  const ok = await loadSheetFromUrl(url);
-  if (ok) {
-    localStorage.setItem(SHEET_URL_KEY, url);
-    setTimeout(() => { closeSettings(); }, 1200);
-  }
-}
-
-// Global saved workouts from sheet
+// Fellesøkter fra katalogen
 let SAVED_WORKOUTS = [];
 let renderedWorkoutList = []; // SAVED_WORKOUTS + personalWorkouts, normalized, for index lookups
-
-// Google Drive "share" links (…/file/d/ID/view or ?id=ID) point to a preview
-// page, not the raw file. Rewrite them to a direct-embeddable image URL.
-function normalizeImageUrl(url) {
-  const trimmed = (url || '').trim();
-  if (!trimmed.includes('drive.google.com')) return trimmed;
-  const match = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  return match ? `https://lh3.googleusercontent.com/d/${match[1]}` : trimmed;
-}
-
-function parseSheetCSV(csv) {
-  const lines = csv.trim().split('\n');
-  if (lines.length < 2) return { exercises: [], workouts: [] };
-
-  // Robust cell splitter (handles quoted commas)
-  const splitRow = line => {
-    const cells = [];
-    let cur = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      const c = line[i];
-      if (c === '"') { inQ = !inQ; continue; }
-      if (c === ',' && !inQ) { cells.push(cur.trim()); cur = ''; continue; }
-      cur += c;
-    }
-    cells.push(cur.trim());
-    return cells;
-  };
-
-  // Normalise: lowercase, strip underscores and spaces
-  const norm = s => (s || '').toLowerCase().replace(/[_\s]/g, '');
-
-  // Find header row dynamically — scan until we find a row containing 'navn' or 'name'
-  let headerLineIdx = 0;
-  for (let i = 0; i < Math.min(lines.length, 20); i++) {
-    const cells = splitRow(lines[i]).map(norm);
-    if (cells.some(c => c === 'navn' || c === 'name' || c === 'øvelse' || c === 'exercise')) {
-      headerLineIdx = i;
-      break;
-    }
-  }
-  const headers = splitRow(lines[headerLineIdx]).map(norm);
-
-  const findCol = (...names) => {
-    for (const n of names) {
-      const idx = headers.indexOf(norm(n));
-      if (idx >= 0) return idx;
-    }
-    return -1;
-  };
-
-  // ── Exercise columns (A–F)
-  const iNr      = findCol('øvelsenr', 'nr', 'number', 'id');
-  const iName    = findCol('navn', 'name', 'øvelse', 'exercise');
-  const iCat     = findCol('kategori', 'category', 'cat', 'bodyregion', 'body region', 'region');
-  const iMuscles = findCol('muskler', 'muscles', 'muskelgruppe', 'musclegroup', 'muscle group');
-  const iImg     = findCol('bildeurl', 'bildeurl', 'imageurl', 'bilde', 'img', 'image');
-  const iEmoji   = findCol('emoji', 'ikon', 'icon');
-  const iVariation = findCol('variation', 'variasjon');
-  const iSides   = findCol('l + r rounds', 'l+r rounds', 'sides', 'side');
-  const iUtstyr  = findCol('utstyr', 'equipment', 'utstyr type');
-
-  // ── Workout columns (H+) — find 'økt' header
-  const iWktName = findCol('økt', 'workout', 'øktnavn', 'workoutname');
-  const iWktInstr = findCol('instruksjoner', 'instructions', 'beskrivelse', 'description');
-  // Second 'kategori' occurrence (after the exercise one) = workout category
-  let iWktCat = -1;
-  if (iWktName >= 0) {
-    for (let i = iWktName + 1; i < headers.length; i++) {
-      if (['kategori','category','bodyregion','region'].includes(headers[i])) { iWktCat = i; break; }
-    }
-  }
-  // New layout: single column with hyphen-separated exercise numbers, e.g. "10-7-8-9"
-  const iWktExercises = findCol('øvelser', 'exercises', 'øvelsesliste', 'exerciselist');
-  // Old layout: one column per slot — 'øvelse1'..'øvelse10' or 'exercise1'..'exercise10'
-  const exerciseCols = headers
-    .map((h, i) => (/^(øvelse|exercise|ex)\d+$/.test(h) ? i : -1))
-    .filter(i => i >= 0);
-
-  // ── Parse rows
-  const exerciseMap = {}; // nr → exercise object
-  const exercises = [];
-
-  lines.slice(headerLineIdx + 1).forEach(line => {
-    const row = splitRow(line);
-    const name = iName >= 0 ? (row[iName] || '').trim() : '';
-    if (!name) return;
-    const nr = iNr >= 0 ? parseInt(row[iNr]) : exercises.length + 1;
-    const ex = {
-      nr: isNaN(nr) ? exercises.length + 1 : nr,
-      name,
-      cat:       (iCat       >= 0 ? row[iCat]       : '') || 'Annet',
-      muscles:   (iMuscles   >= 0 ? row[iMuscles]   : '') || '',
-      img:       normalizeImageUrl(iImg >= 0 ? row[iImg] : ''),
-      big:       (iEmoji     >= 0 ? row[iEmoji]     : '') || '🏋️',
-      variation: (iVariation >= 0 ? row[iVariation] : '') || '',
-      sides:     (iSides >= 0 && (row[iSides] || '').trim().toLowerCase().startsWith('l')) ? 'LR' : '1',
-      utstyr:    (iUtstyr >= 0 ? (row[iUtstyr] || '').trim() : ''),
-    };
-    exercises.push(ex);
-    exerciseMap[ex.nr] = ex;
-  });
-
-  // ── Parse workouts
-  const workouts = [];
-  if (iWktName >= 0) {
-    lines.slice(headerLineIdx + 1).forEach(line => {
-      const row = splitRow(line);
-      const wktName = (row[iWktName] || '').trim();
-      if (!wktName) return;
-      const wktCat = iWktCat >= 0 ? (row[iWktCat] || '').trim() : '';
-      let exNrs;
-      if (iWktExercises >= 0 && row[iWktExercises]) {
-        exNrs = row[iWktExercises].split('-').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n > 0);
-      } else {
-        exNrs = exerciseCols.map(ci => parseInt(row[ci] || '')).filter(n => !isNaN(n) && n > 0);
-      }
-      const resolved = exNrs.map(n => exerciseMap[n]).filter(Boolean);
-      if (resolved.length > 0) {
-        const instructions = iWktInstr >= 0 ? (row[iWktInstr] || '').trim() : '';
-        workouts.push({ name: wktName, cat: wktCat, exercises: resolved, instructions });
-      }
-    });
-  }
-
-  return { exercises, workouts };
-}
 
 function personalWorkoutToSavedShape(pw) {
   const nrs = String(pw.exercises || '').split('-').map(s => parseInt(s)).filter(n => !isNaN(n));
   const exercises = nrs.map(nr => EXERCISES.find(e => e.nr === nr)).filter(Boolean);
   return {
     name: pw.name, cat: pw.region, exercises, instructions: pw.instructions, isPersonal: true,
+    fromUser: pw.sourceUser || '', // satt når økten er lagret fra en annens økt i feeden
     mode: pw.mode, reps: pw.reps, time: pw.time, rounds: pw.rounds, restEx: pw.restEx, restRound: pw.restRound
   };
 }
@@ -5080,21 +5296,33 @@ function personalWorkoutToSavedShape(pw) {
 function renderSavedWorkouts() {
   const section = document.getElementById('saved-workouts-section');
   const grid = document.getElementById('saved-workouts-grid');
+  const othersSection = document.getElementById('others-workouts-section');
+  const othersGrid = document.getElementById('others-workouts-grid');
   if (!section || !grid) return;
 
   renderedWorkoutList = [...SAVED_WORKOUTS, ...personalWorkouts.map(personalWorkoutToSavedShape)];
 
-  if (renderedWorkoutList.length === 0 && !currentUser) { section.style.display = 'none'; return; }
-
-  section.style.display = 'block';
-  let html = renderedWorkoutList.map((wkt, i) => `
+  // Samme liste, to hyller: egne/felles favoritter, og økter lagret fra andre.
+  // Indeksen peker inn i renderedWorkoutList, som showWorkoutDetail bruker.
+  const card = (wkt, i) => {
+    const badge = wkt.fromUser ? `fra ${wkt.fromUser}` : wkt.cat;
+    return `
     <button type="button" class="saved-workout-card" onclick="showWorkoutDetail(${i})">
-      <span class="swc-name">${wkt.name}</span>
-      ${wkt.cat ? `<span class="swc-cat-badge">${wkt.cat}</span>` : ''}
-    </button>`
-  ).join('');
+      <span class="swc-name">${escapeHtml_(wkt.name)}</span>
+      ${badge ? `<span class="swc-cat-badge">${escapeHtml_(badge)}</span>` : ''}
+    </button>`;
+  };
+  const indexed = renderedWorkoutList.map((wkt, i) => ({ wkt, i }));
+  const favorites = indexed.filter(x => !x.wkt.fromUser);
+  const others = indexed.filter(x => x.wkt.fromUser);
 
-  grid.innerHTML = html;
+  section.style.display = (favorites.length === 0 && !currentUser) ? 'none' : 'block';
+  grid.innerHTML = favorites.map(x => card(x.wkt, x.i)).join('');
+
+  if (othersSection && othersGrid) {
+    othersSection.style.display = others.length ? 'block' : 'none';
+    othersGrid.innerHTML = others.map(x => card(x.wkt, x.i)).join('');
+  }
 }
 
 // ─── Ukesplan ───
@@ -5402,7 +5630,8 @@ function showWorkoutDetail(index) {
 
   document.getElementById('wkt-popup-title').textContent = wkt.name;
   const catEl = document.getElementById('wkt-popup-cat');
-  catEl.innerHTML = wkt.cat ? `<span class="swc-cat-badge">${wkt.cat}</span>` : '';
+  const badge = wkt.fromUser ? `fra ${wkt.fromUser}` : wkt.cat;
+  catEl.innerHTML = badge ? `<span class="swc-cat-badge">${escapeHtml_(badge)}</span>` : '';
 
   const instrEl = document.getElementById('wkt-popup-instructions');
   if (wkt.instructions) {
@@ -5523,16 +5752,6 @@ function loadSavedWorkout(index) {
   document.getElementById('selected-strip').scrollIntoView({ behavior: 'smooth' });
 }
 
-function resetToDefault() {
-  sheetUrl = DEFAULT_SHEET_URL;
-  localStorage.removeItem(SHEET_URL_KEY);
-  document.getElementById('sheet-url-input').value = '';
-  setSheetStatus('loading', '⏳ Laster standardøvelser…');
-  loadSheetFromUrl(DEFAULT_SHEET_URL).then(() => {
-    setTimeout(closeSettings, 1000);
-  });
-}
-
 function rebuildCatFilter() {
   selectedCats = new Set();
   selectedMuscles = new Set();
@@ -5576,45 +5795,36 @@ function applyExerciseData(exercises, workouts) {
 const OFFLINE_EXERCISES = [{"nr":1,"name":"Single Arm Bent Over Row","cat":"Upper body","muscles":"Back","img":"https://i.makeagif.com/media/6-27-2026/h7RlHm.gif","big":"🏋️","variation":"Row","sides":"1"},{"nr":2,"name":"Double Curl","cat":"Upper body","muscles":"Arms","img":"https://gifrun.blob.core.windows.net/temp/5fd02c8eee5940418589d89bdd2bcbe1.gif","big":"🏋️","variation":"","sides":"LR"},{"nr":3,"name":"Alternating Halo","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/94cef901de1c43429401aa9190e7442d.gif","big":"🏋️","variation":"Halo","sides":"LR"},{"nr":4,"name":"Shrugs","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/a5917c4a1e614d84a95784c9bc4de3ec.gif","big":"🏋️","variation":"","sides":"LR"},{"nr":5,"name":"Single Arm Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/2aaf14749d8d460f9efb6ecc3117f584.gif","big":"🏋️","variation":"Swing","sides":"1"},{"nr":6,"name":"Double Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/50013e400fb34738935fd783d3cf2375.gif","big":"🏋️","variation":"Swing","sides":"LR"},{"nr":7,"name":"Kettlebell Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/27961457ce154522a959e398c140b782.gif","big":"🏋️","variation":"Swing","sides":"LR"},{"nr":8,"name":"Single Arm squat and Thrust","cat":"Full body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/1e47abbc9bdb43babcce822d1cb4ea77.gif","big":"🏋️","variation":"Squat","sides":"1"},{"nr":9,"name":"Kneeling Alternating Halo","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/0b50561970744f8ea65d9eb264a1caba.gif","big":"🏋️","variation":"Halo","sides":"LR"},{"nr":10,"name":"High pull","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/4810470719164fe9b264f48d9172e348.gif","big":"🏋️","variation":"","sides":"LR"},{"nr":11,"name":"Eight to palm","cat":"Full body","muscles":"Arms","img":"https://gifrun.blob.core.windows.net/temp/da77ec586e1245c584fe00775c2ece02.gif","big":"🏋️","variation":"","sides":"1"},{"nr":12,"name":"Chest Swing","cat":"Upper body","muscles":"Back","img":"https://gifrun.blob.core.windows.net/temp/56649bb2efb44bc893dc13a985bf6ff8.gif","big":"🏋️","variation":"","sides":"1"},{"nr":13,"name":"Goblet Squat","cat":"Full body","muscles":"Legs - Quadriceps","img":"https://gifrun.blob.core.windows.net/temp/5805b21d1955453ca20328454055df07.gif","big":"🏋️","variation":"Squat","sides":"1"},{"nr":14,"name":"Around the world","cat":"Core","muscles":"Abs/Core","img":"https://gifrun.blob.core.windows.net/temp/5ae22e2d0f50442aa800375dbc7cad85.gif","big":"🏋️","variation":"","sides":"LR"},{"nr":15,"name":"Cross Body Row","cat":"Upper body","muscles":"Back","img":"https://gifrun.blob.core.windows.net/temp/bb61c93b9a734bf689696ebf31f2eb81.gif","big":"🏋️","variation":"Row","sides":"LR"},{"nr":16,"name":"Swing Snatch","cat":"Full body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/d443c8ce8e67490ab0688b98aef524fd.gif","big":"🏋️","variation":"Swing","sides":"LR"}];
 const OFFLINE_WORKOUTS = [{"name":"Ferdinands HIIT","cat":"Full body","exercises":[{"nr":7,"name":"Kettlebell Swing","cat":"Full body","muscles":"Glutes","img":"https://gifrun.blob.core.windows.net/temp/27961457ce154522a959e398c140b782.gif","big":"🏋️","variation":"Swing","sides":"LR"},{"nr":14,"name":"Around the world","cat":"Core","muscles":"Abs/Core","img":"https://gifrun.blob.core.windows.net/temp/5ae22e2d0f50442aa800375dbc7cad85.gif","big":"🏋️","variation":"","sides":"LR"},{"nr":10,"name":"High pull","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/4810470719164fe9b264f48d9172e348.gif","big":"🏋️","variation":"","sides":"LR"},{"nr":9,"name":"Kneeling Alternating Halo","cat":"Upper body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/0b50561970744f8ea65d9eb264a1caba.gif","big":"🏋️","variation":"Halo","sides":"LR"},{"nr":8,"name":"Single Arm squat and Thrust","cat":"Full body","muscles":"Shoulders","img":"https://gifrun.blob.core.windows.net/temp/1e47abbc9bdb43babcce822d1cb4ea77.gif","big":"🏋️","variation":"Squat","sides":"1"}],"instructions":"letsgo! kjapp økt med 5 gode øvelser som treffer hele kroppen"}];
 
-async function fetchWithProxy(proxy, url) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 12000);
-  try {
-    const res = await fetch(proxy + encodeURIComponent(url), { signal: controller.signal });
-    clearTimeout(timeout);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return await res.text();
-  } catch(e) {
-    clearTimeout(timeout);
-    throw e;
-  }
+// Øvelser og fellesøkter fra backenden. Fellesøktene kommer som nummerlister
+// ("20-19-5") og kobles til øvelsesobjektene her.
+async function fetchCatalog() {
+  const res = await fetch(`${appsScriptUrl}?action=catalog`);
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error || 'Kunne ikke hente øvelser');
+  const exercises = data.exercises.map(e => ({ ...e, big: '🏋️' }));
+  const byNr = Object.fromEntries(exercises.map(e => [e.nr, e]));
+  const workouts = data.workouts
+    .map(w => ({
+      name: w.name, cat: w.cat, instructions: w.instructions,
+      exercises: String(w.exercises || '').split('-').map(n => byNr[parseInt(n)]).filter(Boolean),
+    }))
+    .filter(w => w.exercises.length > 0);
+  return { exercises, workouts };
 }
 
-async function fetchSheet(urlToLoad) {
-  const bustUrl = urlToLoad + (urlToLoad.includes('?') ? '&' : '?') + '_v=' + Date.now();
-  const proxies = [
-    'https://api.allorigins.win/raw?url=',
-    'https://corsproxy.io/?url=',
-  ];
-  let lastErr;
-  for (const proxy of proxies) {
-    try {
-      const csv = await fetchWithProxy(proxy, bustUrl);
-      return parseSheetCSV(csv);
-    } catch(e) {
-      lastErr = e;
-    }
-  }
-  throw lastErr;
+// Henter katalogen på nytt og oppdaterer både skjermen og mellomlageret.
+async function refreshCatalog() {
+  const parsed = await fetchCatalog();
+  if (parsed.exercises.length === 0) return parsed;
+  applyExerciseData(parsed.exercises, parsed.workouts);
+  try { localStorage.setItem(SHEET_CACHE_KEY, JSON.stringify(parsed)); } catch(e) {}
+  return parsed;
 }
 
 async function init() {
   updateThemeButtons(currentThemeChoice());
   updateBottomNavHomeIcon();
   updateAuthUi();
-
-  let urlToLoad = DEFAULT_SHEET_URL;
-  try { urlToLoad = localStorage.getItem(SHEET_URL_KEY) || DEFAULT_SHEET_URL; } catch(e) {}
 
   // 1. Load cache instantly
   let hasCache = false;
@@ -5634,15 +5844,10 @@ async function init() {
 
   // 3. Fetch fresh data — replace generics with real exercises if successful
   try {
-    const parsed = await fetchSheet(urlToLoad);
-    if (parsed.exercises.length > 0) {
-      applyExerciseData(parsed.exercises, parsed.workouts);
-      sheetUrl = urlToLoad;
-      try { localStorage.setItem(SHEET_CACHE_KEY, JSON.stringify({ exercises: parsed.exercises, workouts: parsed.workouts })); } catch(e) {}
-      requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, 0)));
-    }
+    const parsed = await refreshCatalog();
+    if (parsed.exercises.length > 0) requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, 0)));
   } catch(e) {
-    console.warn('Sheet load failed, keeping placeholders/cache:', e.message);
+    console.warn('Kunne ikke hente øvelser, beholder mellomlager/reserveliste:', e.message);
   }
 }
 
