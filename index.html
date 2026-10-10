@@ -1997,6 +1997,64 @@
   .settings-link-row + .settings-link-row { margin-top: 8px; }
   .settings-note { font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; margin: 0 4px 10px; }
 
+  /* ════════ ADMIN ════════ */
+  .admin-wrap { width: calc(100% - var(--gutter) * 2); max-width: 680px; margin: 0 auto 32px; }
+  .admin-wrap .feed-head, .admin-wrap .feed-head .chat-section-title { width: 100%; }
+  .admin-summary { font-size: 0.875rem; color: var(--text-muted); margin: 0 4px 12px; }
+  .is-over { color: var(--danger); font-weight: 650; }
+  .admin-table { background: var(--surface); box-shadow: var(--shadow-card); border-radius: var(--r-card); overflow: hidden; }
+  .admin-row {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) 68px 16px;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 14px;
+    background: none;
+    border: none;
+    box-shadow: inset 0 0.5px 0 var(--border);
+    text-align: left;
+    color: var(--text);
+    transition: background-color var(--dur-fast) ease;
+  }
+  button.admin-row:active { background: var(--surface2); }
+  @media (hover: hover) { button.admin-row:hover { background: var(--surface2); } }
+  .admin-row-head { padding: 8px 14px; box-shadow: none; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
+  .admin-row-body { display: block; min-width: 0; }
+  .admin-row-name { display: block; font-weight: 600; font-size: 0.9375rem; overflow-wrap: anywhere; }
+  .admin-row-name .cal-chip { margin-left: 6px; background: var(--surface2); vertical-align: 1px; }
+  .admin-row-meta { display: block; font-size: 0.8125rem; color: var(--text-muted); overflow-wrap: anywhere; }
+  .admin-size { text-align: right; font-size: 0.875rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .admin-size.is-missing { color: var(--text-dim); }
+  .admin-row .ph-caret-right { color: var(--text-dim); font-size: 0.875rem; }
+  .admin-option-card { background: var(--surface); box-shadow: var(--shadow-card); border-radius: var(--r-card); padding: 16px; margin-bottom: 10px; }
+  .admin-option-title { font-size: 1rem; font-weight: 650; margin-bottom: 10px; }
+  .admin-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .admin-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    min-height: 32px;
+    padding: 0 4px 0 12px;
+    background: var(--surface2);
+    border-radius: var(--r-pill);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  .admin-chip button {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    border-radius: 50%;
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+  }
+  @media (hover: hover) { .admin-chip button:hover { background: var(--danger-soft); color: var(--danger); } }
+
   .form-status { min-height: 1.3em; font-size: 0.875rem; color: var(--text-muted); margin: 0 4px 10px; }
   .form-status.is-error, .file-pick-info.is-error { color: var(--danger); }
   .file-pick { display: flex; align-items: center; gap: 12px; }
@@ -2643,24 +2701,20 @@
     </div>
     <div class="settings-field">
       <label class="settings-label" for="ax-cat">Kroppsområde</label>
-      <input type="text" class="settings-input" id="ax-cat" name="exercise-cat" list="ax-cat-list" autocomplete="off" maxlength="40" placeholder="F.eks. Full body">
-      <datalist id="ax-cat-list"></datalist>
+      <select class="settings-input" id="ax-cat" name="exercise-cat"></select>
     </div>
     <div class="settings-field">
       <label class="settings-label" for="ax-muscles">Muskelgruppe</label>
-      <input type="text" class="settings-input" id="ax-muscles" name="exercise-muscles" list="ax-muscles-list" autocomplete="off" maxlength="60" placeholder="F.eks. Shoulders">
-      <datalist id="ax-muscles-list"></datalist>
+      <select class="settings-input" id="ax-muscles" name="exercise-muscles"></select>
     </div>
     <div class="settings-field">
       <label class="settings-label" for="ax-utstyr">Utstyr</label>
-      <input type="text" class="settings-input" id="ax-utstyr" name="exercise-utstyr" list="ax-utstyr-list" autocomplete="off" maxlength="40" placeholder="F.eks. 1 Kettlebell">
-      <datalist id="ax-utstyr-list"></datalist>
+      <select class="settings-input" id="ax-utstyr" name="exercise-utstyr"></select>
     </div>
     <div class="settings-field">
-      <label class="settings-label" for="ax-variation">Variasjon (valgfritt)</label>
-      <input type="text" class="settings-input" id="ax-variation" name="exercise-variation" list="ax-variation-list" autocomplete="off" maxlength="40" placeholder="F.eks. Swing">
-      <datalist id="ax-variation-list"></datalist>
-      <div class="settings-hint">Øvelser med samme variasjon vises samlet under én overskrift.</div>
+      <label class="settings-label" for="ax-variation">Variasjon (gruppe)</label>
+      <select class="settings-input" id="ax-variation" name="exercise-variation"></select>
+      <div class="settings-hint" id="ax-options-hint">Øvelser med samme variasjon vises samlet under én overskrift.</div>
     </div>
     <div class="settings-field">
       <div class="settings-group">
@@ -2679,11 +2733,12 @@
         <span class="file-pick-info" id="ax-gif-info">Ingen fil valgt</span>
       </div>
       <img class="file-pick-preview" id="ax-gif-preview" alt="Forhåndsvisning av GIF-en" style="display:none">
-      <div class="settings-hint">Maks 12 MB. Kvadratisk format ser best ut.</div>
+      <div class="settings-hint">Maks 2 MB. Kvadratisk format ser best ut.</div>
     </div>
 
     <div class="form-status" id="ax-status" aria-live="polite"></div>
     <button type="button" class="btn-primary btn-block" id="ax-submit" onclick="submitExercise()">Legg til øvelse</button>
+    <button type="button" class="btn-secondary btn-danger-ghost btn-block" id="ax-delete" style="display:none;margin-top:10px" onclick="deleteExercise(editingExerciseNr)">Slett øvelse</button>
 
     <h3 class="feed-subtitle" id="ax-manage-title" style="display:none">Øvelser du kan slette</h3>
     <div class="settings-group" id="ax-manage"></div>
@@ -2704,6 +2759,34 @@
       <input type="text" class="search-input" id="feed-comment-input" placeholder="Skriv en kommentar…" aria-label="Skriv en kommentar" autocomplete="off" maxlength="300" onkeydown="if(event.key==='Enter')sendFeedComment()">
       <button type="button" class="btn-primary" id="feed-comment-btn" onclick="sendFeedComment()">Send</button>
     </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: ADMIN (bare for administrator)
+══════════════════════════════════════════ -->
+<div class="screen" id="screen-admin">
+  <h1 class="section-title" style="padding-top:18px">Admin</h1>
+  <div class="section-subtitle">Øvelser og valglister. Bare administratorer ser denne siden.</div>
+
+  <div class="admin-wrap">
+    <div class="feed-head">
+      <h2 class="chat-section-title" id="admin-exercise-title"><i class="ph ph-barbell" aria-hidden="true"></i>Øvelser</h2>
+      <button type="button" class="btn-primary btn-sm" onclick="openExerciseForm(null)"><i class="ph ph-plus" aria-hidden="true"></i>Ny øvelse</button>
+    </div>
+    <div class="admin-summary" id="admin-summary" aria-live="polite"></div>
+    <div class="search-field" style="margin-bottom:10px">
+      <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+      <input type="search" class="search-input" id="admin-search" placeholder="Søk i øvelsene…" aria-label="Søk i øvelsene" autocomplete="off" spellcheck="false" oninput="renderAdminExercises()">
+    </div>
+    <div class="admin-table" id="admin-exercise-list"></div>
+
+    <div class="feed-head" style="margin-top:32px">
+      <h2 class="chat-section-title"><i class="ph ph-list-checks" aria-hidden="true"></i>Valglister</h2>
+    </div>
+    <p class="settings-note">Dette er valgene i skjemaet for nye øvelser. Et valg som er i bruk, kan ikke fjernes før øvelsene er endret.</p>
+    <div class="form-status" id="admin-status" aria-live="polite"></div>
+    <div id="admin-options"></div>
   </div>
 </div>
 
@@ -2898,6 +2981,13 @@
       <p class="settings-note">Koble Google til brukeren din, så kan du logge inn uten kode.</p>
       <div class="google-btn" id="google-link-btn"></div>
       <div class="settings-hint" id="google-link-status" aria-live="polite"></div>
+    </div>
+
+    <div class="settings-field" id="admin-field" style="display:none">
+      <div class="settings-label">Admin-tilgang</div>
+      <button type="button" class="settings-link-row" onclick="openAdmin()">
+        <i class="ph ph-shield-check" aria-hidden="true"></i>Admin<i class="ph ph-caret-right" aria-hidden="true"></i>
+      </button>
     </div>
 
     <div class="settings-field">
@@ -4018,7 +4108,8 @@ function clearSession() {
   currentUser = null;
   authToken = null;
   isGuest = false;
-  try { localStorage.removeItem(USER_KEY); localStorage.removeItem(GUEST_KEY); localStorage.removeItem(TOKEN_KEY); } catch(e) {}
+  isAdmin = false;
+  try { localStorage.removeItem(USER_KEY); localStorage.removeItem(GUEST_KEY); localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(ADMIN_KEY); } catch(e) {}
 }
 
 function sessionExpired() {
@@ -4027,6 +4118,7 @@ function sessionExpired() {
 }
 
 function enterAppAfterLogin() {
+  refreshAdminFlag();
   updateAuthUi();
   showScreen('screen-select');
   fetchPersonalWorkouts();
@@ -5102,6 +5194,7 @@ function openSettings() {
   document.getElementById('google-link-field').style.display = (currentUser && window.google && GOOGLE_CLIENT_ID) ? 'block' : 'none';
   document.getElementById('google-link-status').textContent = '';
   document.getElementById('add-exercise-row').style.display = currentUser ? 'flex' : 'none';
+  document.getElementById('admin-field').style.display = (currentUser && isAdmin) ? 'block' : 'none';
   document.getElementById('appscript-url-input').value = appsScriptUrl;
   document.getElementById('settings-overlay').style.display = 'flex';
 }
@@ -5149,29 +5242,67 @@ async function forceRefreshSheet() {
   setTimeout(() => { btn.disabled = false; label.textContent = IDLE; }, 2000);
 }
 
-// ─── Legg til / administrer øvelser ───
+// ─── Øvelsesskjema (legg til / rediger) og admin-tilgang ───
+const ADMIN_KEY = 'ironbell_admin';
+const MAX_GIF_BYTES = 2 * 1024 * 1024; // samme grense som serveren håndhever
 let isAdmin = false;
+try { isAdmin = localStorage.getItem(ADMIN_KEY) === 'true'; } catch(e) {}
+// Valglistene fra serveren. Admin styrer dem; alle velger fra dem i skjemaet.
+let OPTIONS = { cat: [], variation: [], utstyr: [], muscles: [] };
+let editingExerciseNr = null; // null = legger til ny
 
-function fillDatalist_(id, values) {
-  document.getElementById(id).innerHTML = [...new Set(values.filter(Boolean))].sort()
-    .map(v => `<option value="${escapeHtml_(v)}"></option>`).join('');
-}
-
-async function openAddExercise() {
-  if (!currentUser) return;
-  closeSettings();
-  // Forslag hentes fra øvelsene som finnes, så samme område ikke staves på tre måter.
-  fillDatalist_('ax-cat-list', EXERCISES.map(e => e.cat));
-  fillDatalist_('ax-muscles-list', EXERCISES.flatMap(e => (e.muscles || '').split(',').map(m => m.trim())));
-  fillDatalist_('ax-utstyr-list', EXERCISES.map(e => e.utstyr));
-  fillDatalist_('ax-variation-list', EXERCISES.map(e => e.variation));
-  resetAddExerciseForm();
-  renderManageExercises();
-  document.getElementById('add-exercise-overlay').style.display = 'flex';
+// Serveren avgjør hvem som er admin. Flagget her styrer bare hva som vises.
+async function refreshAdminFlag() {
+  if (!currentUser) { isAdmin = false; return; }
   try {
     const data = await (await apiFetch(`${appsScriptUrl}?action=me`)).json();
-    if (data.success) { isAdmin = !!data.isAdmin; renderManageExercises(); }
+    if (data.success) {
+      isAdmin = !!data.isAdmin;
+      try { localStorage.setItem(ADMIN_KEY, String(isAdmin)); } catch(e) {}
+    }
   } catch(e) {}
+}
+
+const formatMb_ = (bytes) => (bytes / 1024 / 1024).toFixed(1).replace('.', ',') + ' MB';
+
+// Fyller en nedtrekksliste. En verdi øvelsen allerede har, men som ikke finnes
+// i lista lenger, tas med så den ikke forsvinner ved lagring.
+function fillSelect_(id, values, current, emptyLabel) {
+  const list = [...values];
+  if (current && !list.includes(current)) list.push(current);
+  document.getElementById(id).innerHTML =
+    (emptyLabel ? `<option value="">${emptyLabel}</option>` : '') +
+    list.map(v => `<option value="${escapeHtml_(v)}"${v === current ? ' selected' : ''}>${escapeHtml_(v)}</option>`).join('');
+}
+
+function openAddExercise() { openExerciseForm(null); }
+
+function openExerciseForm(nr) {
+  if (!currentUser) return;
+  const ex = nr ? EXERCISES.find(e => e.nr === nr) : null;
+  if (nr && (!ex || !isAdmin)) return;
+  editingExerciseNr = ex ? ex.nr : null;
+  closeSettings();
+
+  document.getElementById('add-exercise-title').textContent = ex ? `Rediger øvelse ${ex.nr}` : 'Legg til øvelse';
+  document.getElementById('ax-submit').textContent = ex ? 'Lagre endringer' : 'Legg til øvelse';
+  document.getElementById('ax-delete').style.display = ex ? 'inline-flex' : 'none';
+  document.getElementById('ax-gif-label').textContent = ex && ex.img ? 'Bytt GIF (valgfritt)' : 'GIF (valgfritt)';
+  document.getElementById('ax-options-hint').textContent = isAdmin
+    ? 'Øvelser med samme variasjon vises samlet under én overskrift. Nye valg legger du til på Admin-siden.'
+    : 'Øvelser med samme variasjon vises samlet under én overskrift.';
+
+  document.getElementById('ax-name').value = ex ? ex.name : '';
+  fillSelect_('ax-cat', OPTIONS.cat, ex ? ex.cat : '', 'Velg kroppsområde');
+  fillSelect_('ax-muscles', OPTIONS.muscles, ex ? ex.muscles : '', 'Ingen');
+  fillSelect_('ax-utstyr', OPTIONS.utstyr, ex ? ex.utstyr : '', 'Ingen');
+  fillSelect_('ax-variation', OPTIONS.variation, ex ? ex.variation : '', 'Ingen');
+  document.getElementById('ax-sides').checked = !!ex && ex.sides === 'LR';
+  document.getElementById('ax-gif').value = '';
+  document.getElementById('ax-status').textContent = '';
+  onGifPicked();
+  renderManageExercises();
+  document.getElementById('add-exercise-overlay').style.display = 'flex';
 }
 function closeAddExercise() {
   document.getElementById('add-exercise-overlay').style.display = 'none';
@@ -5180,25 +5311,30 @@ function closeAddExerciseIfBg(e) {
   if (e.target === document.getElementById('add-exercise-overlay')) closeAddExercise();
 }
 
-function resetAddExerciseForm() {
-  ['ax-name', 'ax-cat', 'ax-muscles', 'ax-utstyr', 'ax-variation'].forEach(id => { document.getElementById(id).value = ''; });
-  document.getElementById('ax-sides').checked = false;
-  document.getElementById('ax-gif').value = '';
-  document.getElementById('ax-status').textContent = '';
-  onGifPicked();
-}
-
-const MAX_GIF_BYTES = 12 * 1024 * 1024;
 function onGifPicked() {
   const file = document.getElementById('ax-gif').files[0];
   const info = document.getElementById('ax-gif-info');
   const preview = document.getElementById('ax-gif-preview');
-  if (preview.src.startsWith('blob:')) URL.revokeObjectURL(preview.src);
-  if (!file) { info.textContent = 'Ingen fil valgt'; preview.style.display = 'none'; preview.removeAttribute('src'); return true; }
-  const mb = (file.size / 1024 / 1024).toFixed(1).replace('.', ',');
+  if ((preview.getAttribute('src') || '').startsWith('blob:')) URL.revokeObjectURL(preview.src);
+  info.classList.remove('is-error');
+  if (!file) {
+    // I redigering vises GIF-en øvelsen har fra før.
+    const ex = editingExerciseNr ? EXERCISES.find(e => e.nr === editingExerciseNr) : null;
+    if (ex && ex.img) {
+      info.textContent = ex.gifBytes ? `Nåværende GIF (${formatMb_(ex.gifBytes)})` : 'Nåværende GIF';
+      preview.src = ex.img;
+      preview.style.display = 'block';
+    } else {
+      info.textContent = 'Ingen fil valgt';
+      preview.style.display = 'none';
+      preview.removeAttribute('src');
+    }
+    return true;
+  }
   const isGif = file.type === 'image/gif' || /\.gif$/i.test(file.name);
-  const problem = !isGif ? 'Filen må være en GIF.' : file.size > MAX_GIF_BYTES ? `GIF-en er ${mb} MB. Maks er 12 MB.` : '';
-  info.textContent = problem || `${file.name} (${mb} MB)`;
+  const problem = !isGif ? 'Filen må være en GIF.'
+    : file.size > MAX_GIF_BYTES ? `GIF-en er ${formatMb_(file.size)}. Maks er 2 MB.` : '';
+  info.textContent = problem || `${file.name} (${formatMb_(file.size)})`;
   info.classList.toggle('is-error', !!problem);
   if (problem) { preview.style.display = 'none'; return false; }
   preview.src = URL.createObjectURL(file);
@@ -5209,19 +5345,21 @@ function onGifPicked() {
 async function submitExercise() {
   const status = document.getElementById('ax-status');
   const name = document.getElementById('ax-name').value.trim();
-  const cat = document.getElementById('ax-cat').value.trim();
+  const cat = document.getElementById('ax-cat').value;
   status.classList.add('is-error');
   if (!name) { status.textContent = 'Skriv inn et navn på øvelsen.'; document.getElementById('ax-name').focus(); return; }
-  if (!cat) { status.textContent = 'Velg eller skriv inn et kroppsområde.'; document.getElementById('ax-cat').focus(); return; }
+  if (!cat) { status.textContent = 'Velg et kroppsområde.'; document.getElementById('ax-cat').focus(); return; }
   if (!onGifPicked()) { status.textContent = 'Velg en annen GIF, eller fjern filen.'; return; }
 
+  const editing = editingExerciseNr;
   const form = new FormData();
-  form.append('action', 'addExercise');
+  form.append('action', editing ? 'updateExercise' : 'addExercise');
+  if (editing) form.append('nr', editing);
   form.append('name', name);
   form.append('cat', cat);
-  form.append('muscles', document.getElementById('ax-muscles').value.trim());
-  form.append('utstyr', document.getElementById('ax-utstyr').value.trim());
-  form.append('variation', document.getElementById('ax-variation').value.trim());
+  form.append('muscles', document.getElementById('ax-muscles').value);
+  form.append('utstyr', document.getElementById('ax-utstyr').value);
+  form.append('variation', document.getElementById('ax-variation').value);
   form.append('sides', document.getElementById('ax-sides').checked ? 'LR' : '1');
   const file = document.getElementById('ax-gif').files[0];
   if (file) form.append('gif', file);
@@ -5236,9 +5374,14 @@ async function submitExercise() {
     if (data.code === 'AUTH') { closeAddExercise(); sessionExpired(); return; }
     if (!data.success) { status.classList.add('is-error'); status.textContent = data.error || 'Noe gikk galt'; return; }
     await refreshCatalog();
-    resetAddExerciseForm();
-    renderManageExercises();
-    status.textContent = `«${name}» er lagt til som øvelse nr. ${data.nr}.`;
+    renderAdmin();
+    if (editing) {
+      closeAddExercise();
+      setAdminStatus_(`«${name}» er oppdatert.`);
+    } else {
+      openExerciseForm(null); // tomt skjema, klart for neste
+      document.getElementById('ax-status').textContent = `«${name}» er lagt til som øvelse nr. ${data.nr}.`;
+    }
   } catch(e) {
     status.classList.add('is-error');
     status.textContent = 'Fikk ikke kontakt med serveren';
@@ -5247,11 +5390,11 @@ async function submitExercise() {
   }
 }
 
-// Øvelser du selv har lagt inn (administrator: alle) kan slettes.
+// Vanlige brukere kan slette øvelser de selv har lagt inn. Admin bruker Admin-siden.
 function renderManageExercises() {
   const wrap = document.getElementById('ax-manage');
   const title = document.getElementById('ax-manage-title');
-  const mine = EXERCISES.filter(e => isAdmin || isMe_(e.createdBy));
+  const mine = (isAdmin || editingExerciseNr) ? [] : EXERCISES.filter(e => isMe_(e.createdBy));
   title.style.display = mine.length ? 'block' : 'none';
   wrap.innerHTML = mine.map(e => `
     <div class="settings-row">
@@ -5267,12 +5410,123 @@ async function deleteExercise(nr) {
   const status = document.getElementById('ax-status');
   try {
     const data = await (await apiFetch(`${appsScriptUrl}?action=deleteExercise&nr=${nr}`)).json();
-    status.classList.toggle('is-error', !data.success);
-    status.textContent = data.success ? `«${ex.name}» er slettet.` : (data.error || 'Noe gikk galt');
-    if (data.success) { await refreshCatalog(); renderManageExercises(); }
+    if (!data.success) { status.classList.add('is-error'); status.textContent = data.error || 'Noe gikk galt'; return; }
+    await refreshCatalog();
+    renderAdmin();
+    if (editingExerciseNr === nr) {
+      closeAddExercise();
+      setAdminStatus_(`«${ex.name}» er slettet.`);
+    } else {
+      status.classList.remove('is-error');
+      status.textContent = `«${ex.name}» er slettet.`;
+      renderManageExercises();
+    }
   } catch(e) {
     status.classList.add('is-error');
     status.textContent = 'Fikk ikke kontakt med serveren';
+  }
+}
+
+// ─── Admin-siden ───
+const OPTION_LABELS = { cat: 'Kroppsområder', variation: 'Variasjoner (grupper)', utstyr: 'Utstyr', muscles: 'Muskelgrupper' };
+
+async function openAdmin() {
+  await refreshAdminFlag();
+  if (!isAdmin) return;
+  closeSettings();
+  document.getElementById('admin-search').value = '';
+  setAdminStatus_('');
+  showScreen('screen-admin');
+  renderAdmin();
+}
+
+function setAdminStatus_(msg, isError) {
+  const el = document.getElementById('admin-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.toggle('is-error', !!isError);
+}
+
+function renderAdmin() {
+  if (!document.getElementById('screen-admin').classList.contains('active')) return;
+  renderAdminExercises();
+  renderAdminOptions();
+}
+
+function renderAdminExercises() {
+  const term = (document.getElementById('admin-search').value || '').toLowerCase();
+  const rows = EXERCISES.filter(e => !term || [e.name, e.cat, e.muscles, e.utstyr, e.variation].some(v => (v || '').toLowerCase().includes(term)));
+
+  const total = EXERCISES.reduce((sum, e) => sum + (e.gifBytes || 0), 0);
+  const tooBig = EXERCISES.filter(e => (e.gifBytes || 0) > MAX_GIF_BYTES).length;
+  document.getElementById('admin-summary').innerHTML =
+    `${EXERCISES.length} øvelser. GIF-ene bruker ${formatMb_(total)} av 1 GB.` +
+    (tooBig ? ` <span class="is-over">${tooBig} er over 2 MB.</span>` : ' Ingen er over 2 MB.');
+
+  const head = `
+    <div class="admin-row admin-row-head" aria-hidden="true">
+      <span></span><span>Øvelse</span><span class="admin-size">GIF</span><span></span>
+    </div>`;
+  document.getElementById('admin-exercise-list').innerHTML = head + (rows.length ? rows.map(e => {
+    const over = (e.gifBytes || 0) > MAX_GIF_BYTES;
+    const size = e.gifBytes ? formatMb_(e.gifBytes) : (e.img ? 'Lenke' : 'Mangler');
+    const details = [e.cat, e.muscles, e.utstyr, e.variation].filter(Boolean).map(escapeHtml_).join(', ');
+    return `
+    <button type="button" class="admin-row" onclick="openExerciseForm(${e.nr})">
+      <img class="wkt-popup-ex-img" src="${e.img || 'favicon.png'}" alt="" loading="lazy" onerror="this.src='favicon.png'">
+      <span class="admin-row-body">
+        <span class="admin-row-name">${e.nr}. ${escapeHtml_(e.name)}${e.sides === 'LR' ? ' <span class="cal-chip">Hver side</span>' : ''}</span>
+        <span class="admin-row-meta">${details}</span>
+      </span>
+      <span class="admin-size ${over ? 'is-over' : ''} ${e.gifBytes ? '' : 'is-missing'}">${size}</span>
+      <i class="ph ph-caret-right" aria-hidden="true"></i>
+    </button>`;
+  }).join('') : '<div class="feed-empty">Ingen øvelser passer søket.</div>');
+}
+
+function renderAdminOptions() {
+  document.getElementById('admin-options').innerHTML = Object.keys(OPTION_LABELS).map(kind => `
+    <div class="admin-option-card">
+      <h3 class="admin-option-title">${OPTION_LABELS[kind]}</h3>
+      <div class="admin-chips">
+        ${(OPTIONS[kind] || []).map((v, i) => `
+          <span class="admin-chip">${escapeHtml_(v)}<button type="button" onclick="deleteOption('${kind}', ${i})" aria-label="Fjern ${escapeHtml_(v)}"><i class="ph ph-x" aria-hidden="true"></i></button></span>`).join('')
+          || '<span class="admin-row-meta">Ingen valg ennå.</span>'}
+      </div>
+      <div class="feed-comment-row">
+        <input type="text" class="search-input" id="opt-new-${kind}" placeholder="Nytt valg…" aria-label="Nytt valg i ${OPTION_LABELS[kind]}" autocomplete="off" maxlength="40" onkeydown="if(event.key==='Enter')addOption('${kind}')">
+        <button type="button" class="btn-secondary btn-sm" onclick="addOption('${kind}')">Legg til</button>
+      </div>
+    </div>`).join('');
+}
+
+async function addOption(kind) {
+  const input = document.getElementById('opt-new-' + kind);
+  const value = input.value.trim();
+  if (!value) { input.focus(); return; }
+  try {
+    const data = await (await apiFetch(`${appsScriptUrl}?action=addOption&kind=${kind}&value=${encodeURIComponent(value)}`)).json();
+    if (!data.success) { setAdminStatus_(data.error || 'Noe gikk galt', true); return; }
+    await refreshCatalog();
+    renderAdmin();
+    setAdminStatus_(`«${value}» er lagt til under ${OPTION_LABELS[kind].toLowerCase()}.`);
+    document.getElementById('opt-new-' + kind).focus();
+  } catch(e) {
+    setAdminStatus_('Fikk ikke kontakt med serveren', true);
+  }
+}
+
+async function deleteOption(kind, index) {
+  const value = (OPTIONS[kind] || [])[index];
+  if (value === undefined) return;
+  try {
+    const data = await (await apiFetch(`${appsScriptUrl}?action=deleteOption&kind=${kind}&value=${encodeURIComponent(value)}`)).json();
+    if (!data.success) { setAdminStatus_(data.error || 'Noe gikk galt', true); return; }
+    await refreshCatalog();
+    renderAdmin();
+    setAdminStatus_(`«${value}» er fjernet.`);
+  } catch(e) {
+    setAdminStatus_('Fikk ikke kontakt med serveren', true);
   }
 }
 
@@ -5809,13 +6063,14 @@ async function fetchCatalog() {
       exercises: String(w.exercises || '').split('-').map(n => byNr[parseInt(n)]).filter(Boolean),
     }))
     .filter(w => w.exercises.length > 0);
-  return { exercises, workouts };
+  return { exercises, workouts, options: data.options || null };
 }
 
 // Henter katalogen på nytt og oppdaterer både skjermen og mellomlageret.
 async function refreshCatalog() {
   const parsed = await fetchCatalog();
   if (parsed.exercises.length === 0) return parsed;
+  if (parsed.options) OPTIONS = parsed.options;
   applyExerciseData(parsed.exercises, parsed.workouts);
   try { localStorage.setItem(SHEET_CACHE_KEY, JSON.stringify(parsed)); } catch(e) {}
   return parsed;
@@ -5831,7 +6086,8 @@ async function init() {
   try {
     const cached = localStorage.getItem(SHEET_CACHE_KEY);
     if (cached) {
-      const { exercises, workouts } = JSON.parse(cached);
+      const { exercises, workouts, options } = JSON.parse(cached);
+      if (options) OPTIONS = options;
       if (exercises?.length > 0) { applyExerciseData(exercises, workouts || []); hasCache = true; }
     }
   } catch(e) {}
@@ -5840,7 +6096,7 @@ async function init() {
   if (!hasCache) applyExerciseData(OFFLINE_EXERCISES, OFFLINE_WORKOUTS);
   showScreen((currentUser || isGuest) ? 'screen-select' : 'screen-login');
   initGoogleLogin();
-  if (currentUser) fetchPersonalWorkouts();
+  if (currentUser) { fetchPersonalWorkouts(); refreshAdminFlag(); }
 
   // 3. Fetch fresh data — replace generics with real exercises if successful
   try {
