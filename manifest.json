@@ -1,0 +1,14 @@
+{
+  "name": "KETTL",
+  "short_name": "KETTL",
+  "description": "Kettlebell-trening",
+  "lang": "no",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F2F2F5",
+  "theme_color": "#F2F2F5",
+  "icons": [
+    { "src": "favicon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

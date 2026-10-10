@@ -12,6 +12,7 @@
 <title>KETTL: Kettlebell-trening</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="favicon.png">
+<link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -2119,6 +2120,193 @@
   /* Google tegner knappen selv (i en iframe); vi sentrerer den bare. */
   .google-btn { display: flex; justify-content: center; min-height: 44px; color-scheme: light; }
 
+  /* ════════ PROFILBILDER ════════ */
+  .avatar {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    font-family: var(--font-rounded);
+    font-weight: 700;
+    font-size: 1.0625rem;
+    text-transform: uppercase;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .avatar.sm { width: 28px; height: 28px; font-size: 0.8125rem; }
+  .avatar.xl { width: 96px; height: 96px; font-size: 2.25rem; }
+
+  /* ════════ HEADER: INNBOKS ════════ */
+  header .header-progress-row { margin-left: auto; }
+  .header-bell { position: relative; width: 40px; height: 40px; font-size: 1.25rem; }
+  .bell-dot {
+    position: absolute;
+    top: 7px;
+    right: 8px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--danger);
+    box-shadow: 0 0 0 2px var(--surface2);
+  }
+  .bell-dot[hidden] { display: none; }
+
+  .nav-avatar { display: inline-flex; align-items: center; justify-content: center; height: 24px; }
+  .nav-avatar .avatar { width: 24px; height: 24px; font-size: 0.75rem; }
+  .bottom-nav-btn.active .nav-avatar .avatar { box-shadow: 0 0 0 2px var(--accent); }
+
+  /* ════════ FEED: profilknapp ved siden av kortet ════════ */
+  .feed-card-row { display: flex; align-items: flex-start; }
+  .feed-avatar-btn { background: none; border: none; padding: 14px 0 0 14px; border-radius: 50%; }
+  .feed-card-row .feed-card-main { padding-left: 12px; min-width: 0; }
+  .user-link { background: none; border: none; padding: 0; font: inherit; color: var(--accent-ink); font-weight: 650; }
+
+  .scoreboard-row { width: 100%; text-align: left; font: inherit; color: inherit; }
+  .scoreboard-who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  button.scoreboard-row:active { transform: scale(0.99); }
+
+  .segmented { display: inline-flex; gap: 2px; padding: 3px; background: var(--surface2); border-radius: var(--r-pill); }
+  .segmented button {
+    min-height: 34px;
+    padding: 0 14px;
+    background: transparent;
+    border: none;
+    border-radius: var(--r-pill);
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  .segmented button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
+  :root[data-theme="dark"] .segmented button[aria-pressed="true"] { background: var(--surface3); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .segmented button[aria-pressed="true"] { background: var(--surface3); } }
+
+  /* ════════ PROFILSØK ════════ */
+  .people-search { width: calc(100% - var(--gutter) * 2); max-width: 680px; margin: 0 auto 16px; }
+  .people-search .search-input { background: var(--surface); box-shadow: var(--shadow-card); }
+  .people-list { display: flex; flex-direction: column; margin-top: 8px; background: var(--surface); border-radius: var(--r-card); box-shadow: var(--shadow-card); overflow: hidden; }
+  .people-list:empty { display: none; }
+  .people-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 56px;
+    padding: 8px 14px;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .people-row + .people-row { box-shadow: inset 0 0.5px 0 var(--border); }
+  .people-row:active { background: var(--surface2); }
+  .people-row .people-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .people-row .people-note { font-size: 0.8125rem; font-weight: 500; color: var(--text-muted); }
+  .people-empty { padding: 16px; color: var(--text-muted); font-size: 0.9375rem; text-align: center; }
+
+  /* ════════ PROFIL ════════ */
+  .profile-wrap { width: calc(100% - var(--gutter) * 2); max-width: 680px; margin: 8px auto 32px; }
+  .profile-head { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; margin-bottom: 18px; }
+  .profile-avatar-wrap { position: relative; margin-bottom: 8px; }
+  .profile-camera {
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-card), 0 0 0 0.5px var(--border);
+    font-size: 1.125rem;
+    cursor: pointer;
+  }
+  .profile-avatar-wrap:focus-within .profile-camera { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
+  .profile-name { font-size: 1.625rem; font-weight: 800; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+  .profile-meta { color: var(--text-muted); font-size: 0.875rem; }
+  .profile-status { min-height: 1.2em; font-size: 0.8125rem; color: var(--text-muted); }
+  .profile-status.is-error { color: var(--danger); }
+  .profile-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+  .profile-actions .btn-primary, .profile-actions .btn-secondary { min-height: 44px; padding: 0 18px; font-size: 1rem; }
+  .profile-actions .icon-btn { width: 44px; height: 44px; font-size: 1.25rem; }
+  .profile-actions .icon-btn[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-ink); }
+  .link-btn { background: none; border: none; padding: 4px 8px; color: var(--text-muted); font-size: 0.8125rem; text-decoration: underline; text-underline-offset: 2px; }
+
+  .profile-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 22px; }
+  .profile-stat { background: var(--surface); box-shadow: var(--shadow-card); border-radius: var(--r-control); padding: 12px 6px; text-align: center; }
+  .profile-stat-val { font-family: var(--font-rounded); font-size: 1.375rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .profile-stat-key { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+  .profile-section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 10px; }
+  .profile-section-head h2 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.015em; }
+  .profile-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+
+  /* ════════ UTFORDRINGER ════════ */
+  .challenge-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px;
+    background: var(--surface);
+    box-shadow: var(--shadow-card);
+    border: none;
+    border-radius: var(--r-card);
+    text-align: left;
+    color: var(--text);
+  }
+  .challenge-card:active { background: var(--surface2); }
+  .challenge-card > .ph { font-size: 1.5rem; color: var(--accent-ink); flex-shrink: 0; }
+  .challenge-card-body { flex: 1; min-width: 0; }
+  .challenge-card-title { font-size: 1rem; font-weight: 700; }
+  .challenge-card-sub { font-size: 0.8125rem; color: var(--text-muted); margin-top: 2px; }
+  .status-chip { flex-shrink: 0; font-size: 0.75rem; font-weight: 650; padding: 4px 10px; border-radius: var(--r-pill); background: var(--surface2); color: var(--text-muted); }
+  .status-chip.is-on { background: var(--accent-soft); color: var(--accent-ink); }
+  .status-chip.is-bad { background: rgba(217, 58, 58, 0.14); color: var(--danger); }
+
+  .challenge-facts { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; font-size: 0.9375rem; }
+  .challenge-facts div { display: flex; gap: 8px; align-items: baseline; }
+  .challenge-facts .ph { color: var(--accent-ink); font-size: 1.0625rem; transform: translateY(2px); }
+  .standing-row { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 12px; background: var(--surface2); border-radius: var(--r-control); }
+  .standing-row + .standing-row { margin-top: 6px; }
+  .standing-name { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .standing-score { font-family: var(--font-rounded); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .standing-months { display: flex; gap: 3px; }
+  .standing-months span { min-width: 22px; padding: 2px 4px; border-radius: 6px; background: var(--surface3); font-size: 0.75rem; font-weight: 650; text-align: center; font-variant-numeric: tabular-nums; }
+  .standing-months span.ok { background: var(--accent-soft); color: var(--accent-ink); }
+  .standing-months span.miss { background: rgba(217, 58, 58, 0.14); color: var(--danger); }
+  .sheet-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .sheet-actions > * { flex: 1; }
+  .settings-row.is-plain { padding-right: 12px; }
+
+  .invite-list { max-height: 240px; overflow-y: auto; background: var(--surface2); border-radius: var(--r-control); margin-top: 8px; }
+  .invite-row { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 6px 12px; cursor: pointer; }
+  .invite-row + .invite-row { box-shadow: inset 0 0.5px 0 var(--border); }
+  .invite-row input { width: 20px; height: 20px; accent-color: var(--accent); flex-shrink: 0; }
+  .invite-row span.people-name { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ════════ INNBOKS ════════ */
+  .inbox-list { width: calc(100% - var(--gutter) * 2); max-width: 680px; margin: 16px auto 32px; display: flex; flex-direction: column; gap: 8px; }
+  .inbox-item { background: var(--surface); box-shadow: var(--shadow-card); border-radius: var(--r-card); overflow: hidden; }
+  .inbox-item.is-unread { box-shadow: 0 0 0 2px var(--accent), var(--shadow-card); }
+  .inbox-main { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; background: none; border: none; text-align: left; color: var(--text); }
+  .inbox-main:active { background: var(--surface2); }
+  .inbox-icon { background: var(--surface2); color: var(--text-muted); font-size: 1.25rem; }
+  .inbox-text { flex: 1; min-width: 0; font-size: 0.9375rem; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+  .inbox-time { display: block; font-size: 0.8125rem; font-weight: 400; color: var(--text-muted); margin-top: 2px; }
+  .inbox-actions { display: flex; gap: 8px; padding: 0 14px 12px 66px; }
+  .inbox-actions > * { flex: 1; min-height: 40px; font-size: 0.9375rem; }
+  .challenge-card-title, .challenge-card-sub { display: block; }
+
   /* ════════ LIGHTBOX ════════ */
   .lightbox-overlay {
     position: fixed;
@@ -2254,6 +2442,9 @@
     <div class="logo-sub">Laget av Georg Ferdinand Nilsen</div>
   </button>
   <div class="header-progress-row" id="header-progress-row" style="display:none" aria-label="Fremgang mot månedsmålet"></div>
+  <button type="button" class="icon-btn header-bell" id="header-bell" style="display:none" onclick="openInbox()" aria-label="Innboks">
+    <i class="ph ph-bell" aria-hidden="true"></i><span class="bell-dot" id="bell-dot" hidden></span>
+  </button>
 </header>
 
 <!-- ══════════════════════════════════════════
@@ -2273,26 +2464,12 @@
   <div class="login-screen">
     <div class="login-card">
       <h1 class="login-title" id="login-title">Logg inn</h1>
-      <div class="login-sub" id="login-sub">Skriv inn brukernavn og 4-sifret kode</div>
+      <div class="login-sub" id="login-sub">Logg inn med Google-kontoen din. Er du ny, velger du brukernavn etterpå.</div>
 
-      <div class="settings-field">
-        <label class="settings-label" for="login-username">Brukernavn</label>
-        <input type="text" class="settings-input" id="login-username" name="username" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="F.eks. Georg">
-      </div>
-      <div class="settings-field">
-        <label class="settings-label" for="login-code">Kode (4 sifre)</label>
-        <input type="tel" inputmode="numeric" maxlength="4" pattern="[0-9]*" class="settings-input" id="login-code" name="code" autocomplete="off" spellcheck="false" placeholder="••••">
-      </div>
+      <div class="google-btn" id="google-login-btn"></div>
+      <div class="login-error" id="login-error" aria-live="polite" style="margin-top:12px"></div>
 
-      <div class="login-error" id="login-error" aria-live="polite"></div>
-
-      <button type="button" class="btn-primary btn-block" id="login-submit-btn" onclick="submitLogin()">Logg inn</button>
       <button type="button" class="btn-secondary btn-block" style="margin-top:10px" onclick="useAppWithoutLogin()">Bruk appen uten bruker</button>
-      <button type="button" class="login-toggle" id="login-toggle-btn" onclick="toggleLoginMode()">Ny bruker? Opprett konto</button>
-      <div class="google-login-wrap" id="google-login-wrap" style="display:none">
-        <div class="or-divider"><span>eller</span></div>
-        <div class="google-btn" id="google-login-btn"></div>
-      </div>
       <div class="login-divider"></div>
       <button type="button" class="settings-link-row" onclick="openHowToAddOverlay()">
         <i class="ph ph-device-mobile" aria-hidden="true"></i>
@@ -2313,7 +2490,7 @@
     <div class="settings-field">
       <label class="settings-label" for="google-username-input">Brukernavn</label>
       <input type="text" class="settings-input" id="google-username-input" name="username" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="40" placeholder="F.eks. Georg" onkeydown="if(event.key==='Enter')submitGoogleUsername()">
-      <div class="settings-hint">Navnet vises på scoreboardet og i chatten.</div>
+      <div class="settings-hint">Navnet vises på profilen din og på scoreboardet.</div>
     </div>
     <div class="login-error" id="google-username-error" aria-live="polite"></div>
     <button type="button" class="btn-primary btn-block" id="google-username-btn" onclick="submitGoogleUsername()">Opprett bruker</button>
@@ -2621,7 +2798,6 @@
 <div class="screen" id="screen-calendar">
   <div class="screen-toolbar">
     <h1 class="section-title">Kalender</h1>
-    <button type="button" class="chat-refresh-btn" id="calendar-refresh-btn" onclick="refreshCalendarData()" aria-label="Oppdater kalenderen"><i class="ph ph-arrow-clockwise" aria-hidden="true"></i></button>
   </div>
 
   <div class="auth-required-box" id="calendar-auth-required" style="display:none">
@@ -2669,7 +2845,7 @@
   <div class="auth-required-box" id="scoreboard-auth-required" style="display:none">
     <div class="auth-required-icon" aria-hidden="true"><i class="ph ph-lock-simple"></i></div>
     <div class="auth-required-title">Logg inn for å se scoreboardet</div>
-    <div class="auth-required-sub">Månedsmål og chat er knyttet til en bruker.</div>
+    <div class="auth-required-sub">Scoreboardet og andres økter er knyttet til en bruker.</div>
     <button type="button" class="btn-primary" onclick="showScreen('screen-login')">Logg inn eller opprett bruker</button>
   </div>
 
@@ -2677,13 +2853,131 @@
     <h1 class="section-title" style="padding-top:18px">Scoreboard</h1>
     <div class="section-subtitle">Månedens fremgang. Nullstilles ved ny måned.</div>
 
+    <div class="people-search">
+      <div class="search-field">
+        <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+        <input type="search" class="search-input" id="people-search-input" placeholder="Finn en profil" aria-label="Finn en profil" autocomplete="off" spellcheck="false" oninput="onPeopleSearch()">
+      </div>
+      <div class="people-list" id="people-results" aria-live="polite"></div>
+    </div>
+
     <div class="scoreboard-list" id="scoreboard-list"></div>
 
     <div class="feed-head">
-      <h2 class="chat-section-title"><i class="ph ph-users-three" aria-hidden="true"></i>Siste økter</h2>
-      <button type="button" class="chat-refresh-btn" id="feed-refresh-btn" onclick="refreshFeed()" aria-label="Oppdater"><i class="ph ph-arrow-clockwise" aria-hidden="true"></i></button>
+      <h2 class="chat-section-title"><i class="ph ph-users-three" aria-hidden="true"></i>Andres økter</h2>
+      <div class="segmented" role="group" aria-label="Hvem sine økter">
+        <button type="button" id="feed-filter-following" aria-pressed="false" onclick="setFeedFilter('following')">Følger</button>
+        <button type="button" id="feed-filter-all" aria-pressed="true" onclick="setFeedFilter('all')">Alle</button>
+      </div>
     </div>
     <div class="feed-list" id="feed-list" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: PROFIL (egen og andres)
+══════════════════════════════════════════ -->
+<div class="screen" id="screen-profile">
+  <div class="auth-required-box" id="profile-auth-required" style="display:none">
+    <div class="auth-required-icon" aria-hidden="true"><i class="ph ph-user-circle"></i></div>
+    <div class="auth-required-title">Logg inn for å få en profil</div>
+    <div class="auth-required-sub">Profilen viser øktene og tallene dine, og lar deg følge og utfordre andre.</div>
+    <button type="button" class="btn-primary" onclick="showScreen('screen-login')">Logg inn</button>
+    <button type="button" class="btn-secondary" style="margin-top:10px" onclick="openSettings()"><i class="ph ph-gear-six" aria-hidden="true"></i>Innstillinger</button>
+  </div>
+
+  <div id="profile-content">
+    <div class="screen-toolbar">
+      <button type="button" class="icon-btn" id="profile-back-btn" onclick="profileBack()" aria-label="Tilbake"><i class="ph ph-arrow-left" aria-hidden="true"></i></button>
+      <span></span>
+      <button type="button" class="icon-btn" id="profile-settings-btn" onclick="openSettings()" aria-label="Innstillinger"><i class="ph ph-gear-six" aria-hidden="true"></i></button>
+    </div>
+    <div class="profile-wrap" id="profile-body"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: INNBOKS
+══════════════════════════════════════════ -->
+<div class="screen" id="screen-inbox">
+  <div class="screen-toolbar">
+    <h1 class="section-title">Innboks</h1>
+    <button type="button" class="icon-btn" onclick="inboxBack()" aria-label="Lukk innboksen"><i class="ph ph-x" aria-hidden="true"></i></button>
+  </div>
+  <div class="inbox-list" id="inbox-list" aria-live="polite"></div>
+</div>
+
+<!-- Ny utfordring -->
+<div class="wkt-popup-overlay" id="challenge-create-overlay" style="display:none" onclick="closeChallengeCreateIfBg(event)">
+  <div class="wkt-popup" role="dialog" aria-modal="true" aria-labelledby="challenge-create-title">
+    <div class="wkt-popup-header">
+      <h2 class="wkt-popup-title" id="challenge-create-title">Ny utfordring</h2>
+      <button type="button" class="wkt-popup-close" onclick="closeChallengeCreate()" aria-label="Lukk"><i class="ph ph-x" aria-hidden="true"></i></button>
+    </div>
+
+    <div class="settings-field">
+      <div class="settings-label" id="cc-type-label">Type</div>
+      <div class="mode-toggle row" role="group" aria-labelledby="cc-type-label" style="margin-bottom:6px">
+        <button type="button" class="mode-btn" id="cc-type-goal" onclick="setChallengeType('goal')"><i class="ph ph-target" aria-hidden="true"></i>Månedsmål</button>
+        <button type="button" class="mode-btn" id="cc-type-most" onclick="setChallengeType('most')"><i class="ph ph-trophy" aria-hidden="true"></i>Flest økter</button>
+      </div>
+      <div class="settings-hint" id="cc-type-hint"></div>
+    </div>
+
+    <div class="settings-field">
+      <div class="settings-group">
+        <div class="settings-row is-plain" id="cc-goal-row">
+          <span class="settings-row-title" style="font-weight:500">Økter per måned</span>
+          <div class="stepper">
+            <button type="button" class="stepper-btn" onclick="adjustChallenge('goal', -1)" aria-label="Færre økter">−</button>
+            <span class="stepper-val" id="cc-goal">8</span>
+            <button type="button" class="stepper-btn" onclick="adjustChallenge('goal', 1)" aria-label="Flere økter">+</button>
+          </div>
+        </div>
+        <div class="settings-row is-plain">
+          <span class="settings-row-title" style="font-weight:500">Antall måneder</span>
+          <div class="stepper">
+            <button type="button" class="stepper-btn" onclick="adjustChallenge('months', -1)" aria-label="Færre måneder">−</button>
+            <span class="stepper-val" id="cc-months">1</span>
+            <button type="button" class="stepper-btn" onclick="adjustChallenge('months', 1)" aria-label="Flere måneder">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-field">
+      <label class="settings-label" for="cc-start">Starter</label>
+      <select class="settings-input" id="cc-start" name="challenge-start"></select>
+      <div class="settings-hint">De inviterte må svare før startmåneden. De som ikke svarer, blir ikke med.</div>
+    </div>
+
+    <div class="settings-field">
+      <label class="settings-label" for="cc-prize">Taperpremie</label>
+      <input type="text" class="settings-input" id="cc-prize" name="challenge-prize" autocomplete="off" maxlength="120" placeholder="Spandere middag">
+    </div>
+
+    <div class="settings-field">
+      <div class="settings-label" id="cc-invite-label">Hvem vil du utfordre? <span id="cc-invite-count"></span></div>
+      <div class="search-field">
+        <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+        <input type="search" class="search-input" id="cc-invite-search" placeholder="Søk etter navn" aria-label="Søk etter navn" autocomplete="off" spellcheck="false" oninput="renderChallengeInvitees()">
+      </div>
+      <div class="invite-list" id="cc-invite-list" role="group" aria-labelledby="cc-invite-label"></div>
+    </div>
+
+    <div class="form-status" id="cc-status" aria-live="polite"></div>
+    <button type="button" class="btn-primary btn-block" id="cc-submit" onclick="submitChallenge()">Send utfordring</button>
+  </div>
+</div>
+
+<!-- Én utfordring: regler, stilling og svar -->
+<div class="wkt-popup-overlay" id="challenge-overlay" style="display:none" onclick="closeChallengeIfBg(event)">
+  <div class="wkt-popup" role="dialog" aria-modal="true" aria-labelledby="challenge-title">
+    <div class="wkt-popup-header">
+      <h2 class="wkt-popup-title" id="challenge-title"></h2>
+      <button type="button" class="wkt-popup-close" onclick="closeChallenge()" aria-label="Lukk"><i class="ph ph-x" aria-hidden="true"></i></button>
+    </div>
+    <div id="challenge-body"></div>
   </div>
 </div>
 
@@ -2976,11 +3270,15 @@
       </div>
     </div>
 
-    <div class="settings-field" id="google-link-field" style="display:none">
-      <div class="settings-label">Google-innlogging</div>
-      <p class="settings-note">Koble Google til brukeren din, så kan du logge inn uten kode.</p>
-      <div class="google-btn" id="google-link-btn"></div>
-      <div class="settings-hint" id="google-link-status" aria-live="polite"></div>
+    <div class="settings-field" id="push-field" style="display:none">
+      <div class="settings-label">Varsler</div>
+      <button type="button" class="settings-link-row" id="push-toggle-btn" onclick="togglePush()">
+        <i class="ph ph-bell" aria-hidden="true"></i><span id="push-toggle-label">Slå på varsler</span>
+      </button>
+      <button type="button" class="settings-link-row" id="push-test-btn" style="display:none" onclick="sendTestPush()">
+        <i class="ph ph-paper-plane-tilt" aria-hidden="true"></i><span id="push-test-label">Send et testvarsel</span>
+      </button>
+      <div class="settings-hint" id="push-hint" aria-live="polite"></div>
     </div>
 
     <div class="settings-field" id="admin-field" style="display:none">
@@ -3051,9 +3349,9 @@
     <i class="ph ph-trophy nav-ic-off" aria-hidden="true"></i><i class="ph-fill ph-trophy nav-ic-on" aria-hidden="true"></i>
     <span>Scoreboard</span>
   </button>
-  <button type="button" class="bottom-nav-btn" id="nav-btn-settings" onclick="openSettings()">
-    <i class="ph ph-gear-six nav-ic-off" aria-hidden="true"></i><i class="ph-fill ph-gear-six nav-ic-on" aria-hidden="true"></i>
-    <span>Innstillinger</span>
+  <button type="button" class="bottom-nav-btn" id="nav-btn-profile" onclick="openProfile()">
+    <span class="nav-avatar" id="nav-avatar"><i class="ph ph-user-circle" aria-hidden="true"></i></span>
+    <span>Du</span>
   </button>
 </nav>
 
@@ -3126,7 +3424,8 @@ const NAV_ACTIVE_MAP = {
   'screen-select': 'nav-btn-home',
   'screen-config': 'nav-btn-home',
   'screen-done': 'nav-btn-home',
-  'screen-scoreboard': 'nav-btn-scoreboard'
+  'screen-scoreboard': 'nav-btn-scoreboard',
+  'screen-profile': 'nav-btn-profile'
 };
 
 function updateBottomNav(screenId) {
@@ -4109,7 +4408,13 @@ function clearSession() {
   authToken = null;
   isGuest = false;
   isAdmin = false;
-  try { localStorage.removeItem(USER_KEY); localStorage.removeItem(GUEST_KEY); localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(ADMIN_KEY); } catch(e) {}
+  myAvatar = '';
+  unreadCount = 0;
+  profileData = null;
+  myChallenges = null;
+  inboxItems = null;
+  workoutIndex.clear();
+  try { [USER_KEY, GUEST_KEY, TOKEN_KEY, ADMIN_KEY, AVATAR_KEY].forEach(k => localStorage.removeItem(k)); } catch(e) {}
 }
 
 function sessionExpired() {
@@ -4123,7 +4428,6 @@ function enterAppAfterLogin() {
   showScreen('screen-select');
   fetchPersonalWorkouts();
 }
-let loginMode = 'login'; // 'login' | 'register'
 let calendarViewDate = new Date();
 let workoutHistory = null; // null = nothing to show yet (no cache, no fetch)
 let historyFetchedFresh = false; // true once a real network fetch has landed this session
@@ -4173,52 +4477,9 @@ function updateAuthUi() {
   if (titleEl) titleEl.textContent = currentUser ? `Hei ${currentUser}! Velg øvelser` : 'Velg øvelser';
   renderHeaderProgress();
   renderWeeklyPlanSection();
+  renderNavAvatar();
+  setUnread_(unreadCount);
   if (currentUser) { ensureScoreboardData(); ensureWeeklyPlan(); }
-}
-
-function toggleLoginMode() {
-  loginMode = loginMode === 'login' ? 'register' : 'login';
-  document.getElementById('login-title').textContent = loginMode === 'login' ? 'Logg inn' : 'Opprett bruker';
-  document.getElementById('login-sub').textContent = loginMode === 'login'
-    ? 'Skriv inn brukernavn og 4-sifret kode'
-    : 'Velg et brukernavn og en 4-sifret kode';
-  document.getElementById('login-submit-btn').textContent = loginMode === 'login' ? 'Logg inn' : 'Opprett bruker';
-  document.getElementById('login-toggle-btn').textContent = loginMode === 'login' ? 'Ny bruker? Opprett konto' : 'Tilbake til innlogging';
-  document.getElementById('login-error').textContent = '';
-}
-
-async function submitLogin() {
-  const username = document.getElementById('login-username').value.trim();
-  const code = document.getElementById('login-code').value.trim();
-  const errEl = document.getElementById('login-error');
-  errEl.textContent = '';
-
-  if (!username) { errEl.textContent = 'Skriv inn et brukernavn'; return; }
-  if (!/^\d{4}$/.test(code)) { errEl.textContent = 'Koden må være 4 siffer'; return; }
-  if (!appsScriptUrl) { errEl.textContent = 'Ingen server-URL satt opp ennå (se innstillinger)'; return; }
-
-  const btn = document.getElementById('login-submit-btn');
-  const originalText = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = 'Vent litt…';
-
-  try {
-    const action = loginMode === 'login' ? 'login' : 'register';
-    const url = `${appsScriptUrl}?action=${action}&username=${encodeURIComponent(username)}&code=${encodeURIComponent(code)}`;
-    const res = await apiFetch(url);
-    const data = await res.json();
-    if (data.success) {
-      setSession(data.username || username, data.token);
-      enterAppAfterLogin();
-    } else {
-      errEl.textContent = data.error || 'Noe gikk galt';
-    }
-  } catch(e) {
-    errEl.textContent = 'Fikk ikke kontakt med serveren';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = originalText;
-  }
 }
 
 // Clears everything tied to the departing account so the next user on this
@@ -4244,6 +4505,7 @@ function clearAccountCaches_() {
 }
 
 function logoutUser() {
+  dropPushSubscription_();
   clearSession();
   clearAccountCaches_();
   updateAuthUi();
@@ -4305,6 +4567,7 @@ async function performDeleteAccount() {
   } catch(e) {
     console.warn('Kunne ikke slette bruker på serveren:', e.message);
   }
+  dropPushSubscription_();
   clearSession();
   clearAccountCaches_();
   updateAuthUi();
@@ -4324,28 +4587,20 @@ function initGoogleLogin() {
     google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogleCredential });
     const opts = { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', locale: 'no', width: 300 };
     google.accounts.id.renderButton(document.getElementById('google-login-btn'), opts);
-    google.accounts.id.renderButton(document.getElementById('google-link-btn'), { ...opts, text: 'signin_with' });
-    document.getElementById('google-login-wrap').style.display = 'block';
-    document.getElementById('google-link-field').style.display = 'block';
+  };
+  script.onerror = () => {
+    document.getElementById('login-error').textContent = 'Fikk ikke lastet Google-innloggingen. Sjekk nettet og last siden på nytt.';
   };
   document.head.appendChild(script);
 }
 
-// Google kaller denne med et signert bevis på hvem som logget inn. Samme knapp
-// brukes til å koble Google til en eksisterende bruker (fra Innstillinger).
+// Google kaller denne med et signert bevis på hvem som logget inn.
 async function onGoogleCredential(response) {
   const credential = response && response.credential;
   if (!credential) return;
-  const linking = !!currentUser && document.getElementById('settings-overlay').style.display === 'flex';
-  const errEl = document.getElementById(linking ? 'google-link-status' : 'login-error');
-  errEl.textContent = linking ? 'Kobler til…' : '';
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
   try {
-    if (linking) {
-      const res = await apiFetch(`${appsScriptUrl}?action=googleLink&credential=${encodeURIComponent(credential)}`);
-      const data = await res.json();
-      errEl.textContent = data.success ? 'Google er koblet til. Du kan nå logge inn med Google.' : (data.error || 'Noe gikk galt');
-      return;
-    }
     const res = await apiFetch(`${appsScriptUrl}?action=googleLogin&credential=${encodeURIComponent(credential)}`);
     const data = await res.json();
     if (data.success) {
@@ -4527,15 +4782,6 @@ async function openCalendar() {
   ensureScoreboardData(true).then(() => { renderCalendarGrid(); renderWeeklyGoalUi(); });
 }
 
-async function refreshCalendarData() {
-  const btn = document.getElementById('calendar-refresh-btn');
-  if (btn) btn.disabled = true;
-  await Promise.all([ensureWorkoutHistory(true), ensureScoreboardData(true)]);
-  renderCalendarGrid();
-  renderWeeklyGoalUi();
-  if (btn) btn.disabled = false;
-}
-
 // Pass force=true to bypass the "already fetched this session" guard — used
 // right after finishing a workout so the calendar/goal data doesn't go stale.
 async function ensureWorkoutHistory(force) {
@@ -4675,6 +4921,7 @@ async function openScoreboard() {
   content.style.display = 'block';
 
   renderScoreboardList(); // instantly from cache
+  renderFeedFilter();
   renderFeed();
   // Feeden hentes på nytt hver gang siden åpnes: nye økter, likes og kommentarer.
   await Promise.all([ensureScoreboardData(), ensureFeed(true)]);
@@ -4695,10 +4942,10 @@ function renderScoreboardList() {
     const icons = buildProgressWidgetHtml_(u.goal, u.completed, 'scoreboard-icon');
     const isMe = currentUser && u.username.toLowerCase() === currentUser.toLowerCase();
     return `
-      <div class="scoreboard-row ${isMe ? 'is-me' : ''}">
-        <div class="scoreboard-name">${escapeHtml_(u.username)}</div>
-        <div class="scoreboard-icons">${icons}</div>
-      </div>`;
+      <button type="button" class="scoreboard-row ${isMe ? 'is-me' : ''}" data-user="${escAttr_(u.username)}" onclick="openProfile(this.dataset.user)">
+        <span class="scoreboard-who">${avatarHtml_(u.username, u.avatar, 'sm')}<span class="scoreboard-name">${escapeHtml_(u.username)}</span></span>
+        <span class="scoreboard-icons">${icons}</span>
+      </button>`;
   }).join('');
 
   const emptyIcons = Array.from({ length: 3 }, () => `<img class="scoreboard-icon" src="favicon_lightgray.png" alt="">`).join('');
@@ -4723,10 +4970,15 @@ async function ensureFeed(force) {
   if (feedData !== null && !force) return;
   if (!appsScriptUrl || !currentUser) { feedData = feedData || []; return; }
   try {
-    const res = await apiFetch(`${appsScriptUrl}?action=feed`);
-    const data = await res.json();
+    let data = await api_('feed', { filter: feedFilter === 'all' ? 'all' : 'following' });
+    // Første gang: vis «Følger» hvis det gir noe, ellers «Alle».
+    if (feedFilter === 'auto') {
+      feedFilter = data.success && data.workouts.length ? 'following' : 'all';
+      if (feedFilter === 'all') data = await api_('feed', { filter: 'all' });
+    }
+    renderFeedFilter();
     if (data.success) {
-      feedData = data.workouts;
+      feedData = indexWorkouts_(data.workouts);
       try { localStorage.setItem(FEED_CACHE_KEY, JSON.stringify(feedData)); } catch(e) {}
     } else if (feedData === null) {
       feedData = [];
@@ -4767,46 +5019,48 @@ function feedLikeButtonHtml_(w) {
     </button>`;
 }
 
-function renderFeed() {
-  const wrap = document.getElementById('feed-list');
-  if (!wrap) return;
-  if (feedData === null) { wrap.innerHTML = '<div class="feed-empty">Laster…</div>'; return; }
-  if (feedData.length === 0) { wrap.innerHTML = '<div class="feed-empty">Ingen økter ennå. Den første økten som logges, dukker opp her.</div>'; return; }
-  wrap.innerHTML = feedData.map(w => `
+function feedCardHtml_(w) {
+  return `
     <article class="feed-card">
-      <button type="button" class="feed-card-main" onclick="openFeedWorkout(${w.id})">
-        <span class="feed-avatar" aria-hidden="true">${escapeHtml_(String(w.username).charAt(0))}</span>
-        <span class="feed-card-body">
-          <span class="feed-card-top">
-            <span class="feed-user">${escapeHtml_(w.username)}${isMe_(w.username) ? ' (deg)' : ''}</span>
-            <span class="feed-time">${feedTimeLabel(w.date)}</span>
+      <div class="feed-card-row">
+        <button type="button" class="feed-avatar-btn" data-user="${escAttr_(w.username)}" onclick="openProfile(this.dataset.user)" aria-label="Profilen til ${escAttr_(w.username)}">${avatarHtml_(w.username, w.avatar)}</button>
+        <button type="button" class="feed-card-main" onclick="openFeedWorkout(${w.id})">
+          <span class="feed-card-body">
+            <span class="feed-card-top">
+              <span class="feed-user">${escapeHtml_(w.username)}${isMe_(w.username) ? ' (deg)' : ''}</span>
+              <span class="feed-time">${feedTimeLabel(w.date)}</span>
+            </span>
+            <span class="feed-title">${escapeHtml_(workoutDisplayName(w))}</span>
+            <span class="cal-card-chips">${feedChipsHtml_(w)}</span>
           </span>
-          <span class="feed-title">${escapeHtml_(workoutDisplayName(w))}</span>
-          <span class="cal-card-chips">${feedChipsHtml_(w)}</span>
-        </span>
-      </button>
+        </button>
+      </div>
       <div class="feed-actions">
         ${feedLikeButtonHtml_(w)}
         <button type="button" class="feed-action" onclick="openFeedWorkout(${w.id}, true)" aria-label="Kommentarer">
           <i class="ph ph-chat-circle" aria-hidden="true"></i><span data-comment-count="${w.id}">${w.comments || 0}</span>
         </button>
       </div>
-    </article>`).join('');
+    </article>`;
 }
 
-async function refreshFeed() {
-  const btn = document.getElementById('feed-refresh-btn');
-  if (btn) btn.disabled = true;
-  await Promise.all([ensureFeed(true), ensureScoreboardData(true)]);
-  renderFeed();
-  renderScoreboardList();
-  if (btn) btn.disabled = false;
+function renderFeed() {
+  const wrap = document.getElementById('feed-list');
+  if (!wrap) return;
+  if (feedData === null) { wrap.innerHTML = '<div class="feed-empty">Laster…</div>'; return; }
+  if (feedData.length === 0) {
+    wrap.innerHTML = `<div class="feed-empty">${feedFilter === 'following'
+      ? 'Ingen økter fra dem du følger ennå. Finn en profil i søket over, eller velg «Alle».'
+      : 'Ingen andre har logget økter ennå.'}</div>`;
+    return;
+  }
+  wrap.innerHTML = feedData.map(feedCardHtml_).join('');
 }
 
 // Ett like per bruker: trykk igjen for å angre. Oppdaterer både kortet i feeden
 // og knappen i økt-arket, siden samme økt kan vises begge steder.
 async function toggleFeedLike(id) {
-  const w = (feedData || []).find(x => x.id === id);
+  const w = findWorkout_(id);
   if (!w) return;
   const paint = () => document.querySelectorAll(`[data-like="${id}"]`).forEach(btn => {
     btn.classList.toggle('liked', !!w.liked);
@@ -4826,13 +5080,13 @@ async function toggleFeedLike(id) {
     Object.assign(w, before);
   }
   paint();
-  try { localStorage.setItem(FEED_CACHE_KEY, JSON.stringify(feedData)); } catch(e) {}
+  if (feedData) { try { localStorage.setItem(FEED_CACHE_KEY, JSON.stringify(feedData)); } catch(e) {} }
 }
 
 let openFeedWorkoutId = null;
 
 function openFeedWorkout(id, focusComment) {
-  const w = (feedData || []).find(x => x.id === id);
+  const w = findWorkout_(id);
   if (!w) return;
   openFeedWorkoutId = id;
   document.getElementById('feed-wkt-title').textContent = workoutDisplayName(w);
@@ -4844,7 +5098,7 @@ function openFeedWorkout(id, focusComment) {
     : w.mode === 'Repetisjoner' ? '<i class="ph ph-hash" aria-hidden="true"></i>' : '-';
 
   document.getElementById('feed-wkt-body').innerHTML = `
-    <div class="feed-meta">${escapeHtml_(w.username)}${mine ? ' (deg)' : ''}, ${feedTimeLabel(w.date).toLowerCase()}</div>
+    <div class="feed-meta"><button type="button" class="user-link" data-user="${escAttr_(w.username)}" onclick="closeFeedWorkout();openProfile(this.dataset.user)">${escapeHtml_(w.username)}</button>${mine ? ' (deg)' : ''}, ${feedTimeLabel(w.date).toLowerCase()}</div>
     ${w.duoWith ? `<div class="cal-duo-badge"><i class="ph ph-users" aria-hidden="true"></i>Duo-økt med ${escapeHtml_(w.duoWith)}</div>` : ''}
     <div class="cal-entry-stats">
       <div class="cal-stat"><div class="cal-stat-val">${escapeHtml_(w.rounds || '-')}</div><div class="cal-stat-key">Runder</div></div>
@@ -4887,7 +5141,7 @@ function closeFeedWorkoutIfBg(e) {
 
 // Laster øvelsene (og modus/runder) inn i Konfigurer, som "Kjør økten på nytt" i kalenderen.
 function tryFeedWorkout() {
-  const w = (feedData || []).find(x => x.id === openFeedWorkoutId);
+  const w = findWorkout_(openFeedWorkoutId);
   if (!w) return;
   closeFeedWorkout();
   restartLoggedWorkout(w.exercises, w.mode, parseInt(w.rounds) || 0);
@@ -4895,7 +5149,7 @@ function tryFeedWorkout() {
 
 // Lagrer økten under "Andres økter" på Trening-siden.
 async function saveFeedWorkout() {
-  const w = (feedData || []).find(x => x.id === openFeedWorkoutId);
+  const w = findWorkout_(openFeedWorkoutId);
   if (!w) return;
   const btn = document.getElementById('feed-save-btn');
   const status = document.getElementById('feed-status');
@@ -4925,7 +5179,7 @@ async function loadFeedComments() {
   if (openFeedWorkoutId !== id) return; // arket ble lukket eller byttet mens vi ventet
   if (comments === null) { wrap.innerHTML = '<div class="feed-comments-empty">Fikk ikke hentet kommentarene.</div>'; return; }
 
-  const w = (feedData || []).find(x => x.id === id);
+  const w = findWorkout_(id);
   if (w) w.comments = comments.length;
   document.querySelectorAll(`[data-comment-count="${id}"]`).forEach(el => { el.textContent = comments.length; });
 
@@ -5041,17 +5295,17 @@ function renderCalendarGrid() {
 function renderCalendarList() {
   const listEl = document.getElementById('calendar-list');
   if (!listEl) return;
-  const year = calendarViewDate.getFullYear();
-  const month = calendarViewDate.getMonth();
-
-  const monthEntries = (workoutHistory || [])
+  // De siste øktene uansett hvilken måned kalenderen over viser.
+  const thisYear = new Date().getFullYear();
+  const recent = (workoutHistory || [])
     .map(h => ({ ...h, _d: new Date(h.date) }))
-    .filter(h => h._d.getFullYear() === year && h._d.getMonth() === month)
-    .sort((a, b) => b._d - a._d);
+    .filter(h => !isNaN(h._d))
+    .sort((a, b) => b._d - a._d)
+    .slice(0, 20);
 
-  if (monthEntries.length === 0) { listEl.innerHTML = ''; return; }
+  if (recent.length === 0) { listEl.innerHTML = ''; return; }
 
-  listEl.innerHTML = `<div class="calendar-list-title">Økter denne måneden</div>` + monthEntries.map(entry => {
+  listEl.innerHTML = `<div class="calendar-list-title">Siste økter</div>` + recent.map(entry => {
     const key = dateKey(entry._d);
     const dayNum = entry._d.getDate();
     const monthShort = MONTH_NAMES[entry._d.getMonth()].slice(0, 3).toLowerCase();
@@ -5069,8 +5323,8 @@ function renderCalendarList() {
         <img class="cal-card-icon" src="favicon.png" alt="" onerror="this.style.visibility='hidden'">
         <div class="cal-card-body">
           <div class="cal-card-top">
-            <span class="cal-card-name">${name}</span>
-            <span class="cal-card-date">${dayNum}. ${monthShort}</span>
+            <span class="cal-card-name">${escapeHtml_(name)}</span>
+            <span class="cal-card-date">${dayNum}. ${monthShort}${entry._d.getFullYear() !== thisYear ? ' ' + entry._d.getFullYear() : ''}</span>
           </div>
           <div class="cal-card-chips">${modeChip}${duoChip}${countChip}</div>
         </div>
@@ -5191,8 +5445,7 @@ function openSettings() {
   document.getElementById('settings-current-user').textContent = currentUser || (isGuest ? 'Gjest' : 'Ikke innlogget');
   document.getElementById('settings-auth-btn').textContent = currentUser ? 'Logg ut' : 'Logg inn';
   document.getElementById('settings-delete-btn').style.display = currentUser ? 'inline-flex' : 'none';
-  document.getElementById('google-link-field').style.display = (currentUser && window.google && GOOGLE_CLIENT_ID) ? 'block' : 'none';
-  document.getElementById('google-link-status').textContent = '';
+  renderPushSettings();
   document.getElementById('add-exercise-row').style.display = currentUser ? 'flex' : 'none';
   document.getElementById('admin-field').style.display = (currentUser && isAdmin) ? 'block' : 'none';
   document.getElementById('appscript-url-input').value = appsScriptUrl;
@@ -5207,6 +5460,8 @@ function closeSettings() {
 const ESC_CLOSERS = [
   ['google-username-overlay', () => closeGoogleUsername()],
   ['feed-workout-overlay', () => closeFeedWorkout()],
+  ['challenge-create-overlay', () => closeChallengeCreate()],
+  ['challenge-overlay', () => closeChallengeIfOpen_()],
   ['add-exercise-overlay', () => closeAddExercise()],
   ['plan-exercise-picker-overlay', () => closePlanExercisePicker()],
   ['weekly-plan-editor-overlay', () => closeWeeklyPlanEditor()],
@@ -5259,6 +5514,9 @@ async function refreshAdminFlag() {
     if (data.success) {
       isAdmin = !!data.isAdmin;
       try { localStorage.setItem(ADMIN_KEY, String(isAdmin)); } catch(e) {}
+      vapidKey = data.vapidKey || '';
+      setMyAvatar_(data.avatar);
+      setUnread_(data.unread);
     }
   } catch(e) {}
 }
@@ -5644,21 +5902,25 @@ function renderWeeklyPlanSection() {
     const nrs = String(d.exercises || '').split('-').map(s => parseInt(s)).filter(x => !isNaN(x));
     const done = isPlanDayCompletedThisWeek_(nrs, range);
     const label = (d.name || '').trim() || `Økt ${n + 1}`;
-    return `<button type="button" class="plan-tile ${done ? 'done' : ''}" onclick="startPlanDay(${d.idx})">${done ? '<i class="ph ph-check" aria-hidden="true"></i>' : ''}${escapeHtml_(label)}${done ? '<span class="visually-hidden"> (fullført)</span>' : ''}</button>`;
+    return `<button type="button" class="plan-tile ${done ? 'done' : ''}" onclick="startPlanDay(${d.idx}, ${n + 1})">${done ? '<i class="ph ph-check" aria-hidden="true"></i>' : ''}${escapeHtml_(label)}${done ? '<span class="visually-hidden"> (fullført)</span>' : ''}</button>`;
   }).join('');
   wrap.innerHTML = `<div class="plan-tiles-row">${tiles}<button type="button" class="plan-tile-edit" onclick="openWeeklyPlanEditor()" aria-label="Rediger ukesplan"><i class="ph ph-pencil-simple" aria-hidden="true"></i></button></div>`;
   section.style.display = 'block';
 }
 
-function startPlanDay(dayIdx) {
+// Viser økten først (som en favorittøkt); «Start økt» går videre til Konfigurer.
+function startPlanDay(dayIdx, number) {
   const day = weeklyPlan && weeklyPlan.days && weeklyPlan.days[dayIdx];
   if (!day) return;
   const nrs = String(day.exercises || '').split('-').map(s => parseInt(s)).filter(n => !isNaN(n));
   const exList = nrs.map(nr => EXERCISES.find(e => e.nr === nr)).filter(Boolean);
   if (exList.length === 0) return;
-  selectedExercises = exList;
-  currentWorkoutName = day.name || '';
-  goToConfig();
+  const name = (day.name || '').trim();
+  openWorkoutPreview_({ name: name || `Økt ${number}`, cat: 'Ukesplan', exercises: exList }, () => {
+    selectedExercises = exList;
+    currentWorkoutName = name;
+    goToConfig();
+  });
 }
 
 function openWeeklyPlanEditor() {
@@ -5881,6 +6143,11 @@ async function saveWeeklyPlan() {
 function showWorkoutDetail(index) {
   const wkt = renderedWorkoutList[index];
   if (!wkt) return;
+  openWorkoutPreview_(wkt, () => { loadSavedWorkout(index); goToConfig(); });
+}
+
+// Arket som viser en økt før den startes. Brukes av favorittøkter og ukesplanen.
+function openWorkoutPreview_(wkt, onStart) {
 
   document.getElementById('wkt-popup-title').textContent = wkt.name;
   const catEl = document.getElementById('wkt-popup-cat');
@@ -5909,8 +6176,7 @@ function showWorkoutDetail(index) {
 
   document.getElementById('wkt-popup-start-btn').onclick = () => {
     closeWorkoutPopup();
-    loadSavedWorkout(index);
-    goToConfig();
+    onStart();
   };
 
   const deleteBtn = document.getElementById('wkt-popup-delete-btn');
@@ -6076,6 +6342,773 @@ async function refreshCatalog() {
   return parsed;
 }
 
+// ════════════════════════════════════════
+// PROFILER, FØLGING, INNBOKS, UTFORDRINGER, VARSLER
+// ════════════════════════════════════════
+const AVATAR_KEY = 'ironbell_avatar';
+const FEED_FILTER_KEY = 'ironbell_feed_filter';
+let myAvatar = '';
+try { myAvatar = localStorage.getItem(AVATAR_KEY) || ''; } catch(e) {}
+let unreadCount = 0;
+let vapidKey = ''; // serverens offentlige nøkkel for push-varsler
+
+// Til bruk inne i HTML-attributter, der også anførselstegn må escapes.
+const escAttr_ = (s) => escapeHtml_(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+const api_ = async (action, params) => (await apiFetch(`${appsScriptUrl}?${new URLSearchParams({ action, ...params })}`)).json();
+const NUM_FMT = new Intl.NumberFormat('nb-NO');
+
+function avatarHtml_(username, url, size) {
+  const cls = 'avatar' + (size ? ' ' + size : '');
+  return url
+    ? `<span class="${cls}"><img src="${escAttr_(url)}" alt="" loading="lazy"></span>`
+    : `<span class="${cls}" aria-hidden="true">${escapeHtml_(String(username || '?').charAt(0))}</span>`;
+}
+
+// Samme økt kan vises i feeden, på en profil og i et ark. Ett objekt per økt,
+// så et like eller en ny kommentar oppdateres alle steder.
+const workoutIndex = new Map();
+function indexWorkouts_(list) {
+  return (list || []).map(w => {
+    const known = workoutIndex.get(w.id);
+    if (known) return Object.assign(known, w);
+    workoutIndex.set(w.id, w);
+    return w;
+  });
+}
+const findWorkout_ = (id) => workoutIndex.get(id) || null;
+if (feedData) feedData = indexWorkouts_(feedData);
+
+function setMyAvatar_(url) {
+  myAvatar = url || '';
+  try { if (myAvatar) localStorage.setItem(AVATAR_KEY, myAvatar); else localStorage.removeItem(AVATAR_KEY); } catch(e) {}
+  renderNavAvatar();
+}
+function renderNavAvatar() {
+  const el = document.getElementById('nav-avatar');
+  if (el) el.innerHTML = currentUser ? avatarHtml_(currentUser, myAvatar) : '<i class="ph ph-user-circle" aria-hidden="true"></i>';
+}
+function setUnread_(n) {
+  unreadCount = currentUser ? (n || 0) : 0;
+  const bell = document.getElementById('header-bell');
+  if (!bell) return;
+  bell.style.display = currentUser ? 'inline-flex' : 'none';
+  bell.setAttribute('aria-label', unreadCount ? `Innboks, ${unreadCount} nye` : 'Innboks');
+  document.getElementById('bell-dot').hidden = !unreadCount;
+}
+
+// Tilbake til en skjerm via funksjonen som også henter innholdet på nytt.
+function returnTo_(screenId) {
+  if (screenId === 'screen-calendar') openCalendar();
+  else if (screenId === 'screen-scoreboard') openScoreboard();
+  else if (screenId === 'screen-inbox') openInbox();
+  else if (screenId === 'screen-profile') openProfile(profileData && !profileData.isMe ? profileData.username : undefined);
+  else showScreen(screenId || 'screen-select');
+}
+const activeScreenId_ = () => document.querySelector('.screen.active')?.id || '';
+
+// ─── Profil ───
+let profileData = null; // profilen som vises nå
+let profileError = '';
+let profileReturnScreen = null;
+let profileRequest = 0;
+let myChallenges = null;
+
+async function openProfile(username) {
+  const from = activeScreenId_();
+  if (from === 'workout-screen') return;
+  const own = !username || isMe_(username);
+  showScreen('screen-profile');
+  document.getElementById('nav-btn-profile').classList.toggle('active', own);
+  const gate = document.getElementById('profile-auth-required');
+  const content = document.getElementById('profile-content');
+  if (!currentUser) { gate.style.display = 'block'; content.style.display = 'none'; return; }
+  gate.style.display = 'none';
+  content.style.display = 'block';
+
+  if (!own && from && from !== 'screen-profile') profileReturnScreen = from;
+  document.getElementById('profile-back-btn').style.visibility = own ? 'hidden' : 'visible';
+  document.getElementById('profile-settings-btn').style.visibility = own ? 'visible' : 'hidden';
+
+  const target = own ? currentUser : username;
+  if (!profileData || profileData.username.toLowerCase() !== target.toLowerCase()) profileData = null;
+  profileError = '';
+  renderProfile();
+
+  const request = ++profileRequest;
+  let data = null;
+  try { data = await api_('profile', own ? {} : { user: username }); } catch(e) {}
+  if (request !== profileRequest) return; // en annen profil ble åpnet mens vi ventet
+  if (data && data.success) {
+    data.profile.workouts = indexWorkouts_(data.profile.workouts);
+    profileData = data.profile;
+    if (profileData.isMe) setMyAvatar_(profileData.avatar);
+  } else if (!profileData) {
+    profileError = (data && data.error) || 'Fikk ikke kontakt med serveren';
+  }
+  renderProfile();
+  if (own) loadMyChallenges();
+}
+
+function profileBack() { returnTo_(profileReturnScreen || 'screen-scoreboard'); }
+
+function renderProfile() {
+  const body = document.getElementById('profile-body');
+  const p = profileData;
+  if (!p) { body.innerHTML = `<div class="feed-empty">${escapeHtml_(profileError || 'Laster…')}</div>`; return; }
+
+  const since = new Date(p.memberSince);
+  const meta = [
+    isNaN(since) ? '' : `Medlem siden ${MONTH_NAMES[since.getMonth()].toLowerCase()} ${since.getFullYear()}`,
+    `Følgere: ${p.followers}`,
+    `Følger: ${p.followingCount}`,
+  ].filter(Boolean).join(' · ');
+
+  const s = p.stats;
+  const stat = (value, key) => `<div class="profile-stat"><div class="profile-stat-val">${value}</div><div class="profile-stat-key">${key}</div></div>`;
+  const stats = [
+    stat(NUM_FMT.format(s.month), 'Økter denne mnd'),
+    stat(NUM_FMT.format(s.year), 'Økter i år'),
+    stat(NUM_FMT.format(s.total), 'Økter totalt'),
+    stat(NUM_FMT.format(s.minutesYear), 'Minutter i år'),
+    stat(NUM_FMT.format(s.minutesTotal), 'Minutter totalt'),
+    stat(s.rank ? `#${s.rank}` : '–', 'Plass denne mnd'),
+  ].join('');
+
+  const name = escapeHtml_(p.username);
+  const avatarBlock = p.isMe
+    ? `<div class="profile-avatar-wrap">
+        ${avatarHtml_(p.username, p.avatar, 'xl')}
+        <label class="profile-camera" for="avatar-input"><i class="ph ph-camera" aria-hidden="true"></i></label>
+        <input type="file" id="avatar-input" class="visually-hidden" accept="image/*" aria-label="Bytt profilbilde" onchange="onAvatarPicked(this)">
+      </div>`
+    : `<div class="profile-avatar-wrap">${avatarHtml_(p.username, p.avatar, 'xl')}</div>`;
+
+  const actions = p.isMe
+    ? (p.avatar ? '<button type="button" class="link-btn" onclick="removeAvatar()">Fjern bildet</button>' : '')
+    : `<div class="profile-actions">
+        <button type="button" class="${p.following ? 'btn-secondary' : 'btn-primary'}" onclick="toggleFollow()">
+          ${p.following ? '<i class="ph ph-check" aria-hidden="true"></i>Følger' : '<i class="ph ph-plus" aria-hidden="true"></i>Følg'}
+        </button>
+        ${p.following ? `<button type="button" class="icon-btn" aria-pressed="${p.notify ? 'true' : 'false'}" aria-label="Varsle meg når ${name} fullfører en økt" onclick="toggleFollowNotify()"><i class="${p.notify ? 'ph-fill ph-bell-ringing' : 'ph ph-bell'}" aria-hidden="true"></i></button>` : ''}
+        <button type="button" class="btn-secondary" onclick="openChallengeCreate(profileData.username)"><i class="ph ph-sword" aria-hidden="true"></i>Utfordre</button>
+      </div>`;
+
+  const challenges = p.isMe
+    ? `<div class="profile-section-head">
+        <h2>Utfordringer</h2>
+        <button type="button" class="btn-secondary btn-sm" onclick="openChallengeCreate()"><i class="ph ph-plus" aria-hidden="true"></i>Ny</button>
+      </div>
+      <div class="profile-list" id="profile-challenges"></div>`
+    : '';
+
+  body.innerHTML = `
+    <div class="profile-head">
+      ${avatarBlock}
+      <h1 class="profile-name">${name}</h1>
+      <div class="profile-meta">${meta}</div>
+      ${actions}
+      <div class="profile-status" id="profile-status" aria-live="polite"></div>
+    </div>
+    <div class="profile-stats">${stats}</div>
+    ${challenges}
+    <div class="profile-section-head"><h2>Siste økter</h2></div>
+    <div class="profile-list">
+      ${p.workouts.length ? p.workouts.map(feedCardHtml_).join('') : `<div class="feed-empty">${p.isMe ? 'Du har ikke logget noen økter ennå.' : 'Ingen økter ennå.'}</div>`}
+    </div>`;
+  if (p.isMe) renderMyChallenges();
+}
+
+function setProfileStatus_(msg, isError) {
+  const el = document.getElementById('profile-status');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.classList.toggle('is-error', !!isError);
+}
+
+async function setFollow_(on, notify) {
+  const p = profileData;
+  if (!p || p.isMe) return;
+  const before = { following: p.following, notify: p.notify, followers: p.followers };
+  p.followers += (on ? 1 : 0) - (p.following ? 1 : 0);
+  p.following = on;
+  p.notify = on && notify;
+  renderProfile();
+  let ok = false;
+  try { ok = (await api_('follow', { user: p.username, on: on ? '1' : '0', notify: notify ? '1' : '0' })).success; } catch(e) {}
+  if (!ok) { Object.assign(p, before); renderProfile(); setProfileStatus_('Fikk ikke lagret. Prøv igjen.', true); return; }
+  if (p.notify) {
+    const sub = await currentPushSub_();
+    setProfileStatus_(sub ? `Du får varsel når ${p.username} fullfører en økt.` : 'Varselet kommer i innboksen. Slå på varsler i Innstillinger for å få det på telefonen.');
+  }
+  feedData = null; // «Følger»-lista har endret seg
+}
+function toggleFollow() { if (profileData) setFollow_(!profileData.following, false); }
+function toggleFollowNotify() { if (profileData) setFollow_(true, !profileData.notify); }
+
+// ─── Profilbilde: beskjæres til kvadrat og krympes før opplasting ───
+function loadImage_(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Kunne ikke lese bildet')); };
+    img.src = url;
+  });
+}
+
+async function onAvatarPicked(input) {
+  const file = input.files && input.files[0];
+  input.value = '';
+  if (!file) return;
+  setProfileStatus_('Laster opp…');
+  try {
+    const img = await loadImage_(file);
+    const SIZE = 256;
+    const side = Math.min(img.naturalWidth, img.naturalHeight);
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = SIZE;
+    canvas.getContext('2d').drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, SIZE, SIZE);
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.85));
+    if (!blob) throw new Error('Kunne ikke lese bildet');
+
+    const form = new FormData();
+    form.append('action', 'setAvatar');
+    form.append('image', blob, 'avatar.jpg');
+    const res = await fetch(appsScriptUrl, { method: 'POST', headers: { authorization: 'Bearer ' + (authToken || '') }, body: form });
+    const data = await res.json();
+    if (data.code === 'AUTH') { sessionExpired(); return; }
+    if (!data.success) { setProfileStatus_(data.error || 'Noe gikk galt', true); return; }
+    if (profileData && profileData.isMe) profileData.avatar = data.avatar;
+    setMyAvatar_(data.avatar);
+    renderProfile();
+    ensureScoreboardData(true);
+  } catch(e) {
+    setProfileStatus_(e.message === 'Kunne ikke lese bildet' ? 'Kunne ikke lese bildet. Prøv et annet.' : 'Fikk ikke kontakt med serveren', true);
+  }
+}
+
+async function removeAvatar() {
+  let ok = false;
+  try { ok = (await api_('deleteAvatar')).success; } catch(e) {}
+  if (!ok) { setProfileStatus_('Fikk ikke fjernet bildet. Prøv igjen.', true); return; }
+  if (profileData && profileData.isMe) profileData.avatar = '';
+  setMyAvatar_('');
+  renderProfile();
+  ensureScoreboardData(true);
+}
+
+// ─── Profilsøk (Scoreboard-siden) ───
+let peopleSearchTimer = null;
+let peopleSearchRequest = 0;
+
+const peopleRowHtml_ = (u) => `
+  <button type="button" class="people-row" data-user="${escAttr_(u.username)}" onclick="openProfile(this.dataset.user)">
+    ${avatarHtml_(u.username, u.avatar)}
+    <span class="people-name">${escapeHtml_(u.username)}</span>
+    ${u.following ? '<span class="people-note">Følger</span>' : ''}
+    <i class="ph ph-caret-right" aria-hidden="true"></i>
+  </button>`;
+
+function onPeopleSearch() {
+  clearTimeout(peopleSearchTimer);
+  const q = document.getElementById('people-search-input').value.trim();
+  const list = document.getElementById('people-results');
+  const request = ++peopleSearchRequest;
+  if (!q) { list.innerHTML = ''; return; }
+  peopleSearchTimer = setTimeout(async () => {
+    let users = null;
+    try { const data = await api_('searchUsers', { q }); if (data.success) users = data.users; } catch(e) {}
+    if (request !== peopleSearchRequest) return;
+    list.innerHTML = users === null ? '<div class="people-empty">Fikk ikke søkt. Prøv igjen.</div>'
+      : users.length ? users.map(peopleRowHtml_).join('')
+      : '<div class="people-empty">Ingen treff</div>';
+  }, 250);
+}
+
+// ─── Andres økter: «Følger» eller «Alle» ───
+let feedFilter = 'auto'; // 'auto' = «Følger» hvis det gir treff, ellers «Alle»
+try { const f = localStorage.getItem(FEED_FILTER_KEY); if (f === 'following' || f === 'all') feedFilter = f; } catch(e) {}
+
+function renderFeedFilter() {
+  const following = feedFilter === 'following';
+  document.getElementById('feed-filter-following').setAttribute('aria-pressed', following ? 'true' : 'false');
+  document.getElementById('feed-filter-all').setAttribute('aria-pressed', following ? 'false' : 'true');
+}
+async function setFeedFilter(filter) {
+  feedFilter = filter;
+  try { localStorage.setItem(FEED_FILTER_KEY, filter); } catch(e) {}
+  feedData = null;
+  renderFeed();
+  await ensureFeed(true);
+  renderFeed();
+}
+
+// ─── Innboks ───
+let inboxItems = null;
+let inboxReturnScreen = 'screen-select';
+const INBOX_ICONS = { started: 'ph-flag', cancelled: 'ph-prohibit', result: 'ph-trophy' };
+
+async function openInbox() {
+  const from = activeScreenId_();
+  if (from === 'workout-screen') return; // ikke avbryt en økt som pågår
+  if (!currentUser) { showScreen('screen-login'); return; }
+  if (from && from !== 'screen-inbox') inboxReturnScreen = from;
+  showScreen('screen-inbox');
+  renderInbox();
+  await loadInbox();
+}
+function inboxBack() { returnTo_(inboxReturnScreen); }
+
+async function loadInbox() {
+  let data = null;
+  try { data = await api_('inbox'); } catch(e) {}
+  if (data && data.success) {
+    inboxItems = data.items;
+    if (data.unread) api_('markInboxRead').catch(() => {});
+    setUnread_(0);
+  } else if (inboxItems === null) {
+    inboxItems = [];
+  }
+  renderInbox();
+}
+
+function renderInbox() {
+  const list = document.getElementById('inbox-list');
+  if (inboxItems === null) { list.innerHTML = '<div class="feed-empty">Laster…</div>'; return; }
+  if (inboxItems.length === 0) { list.innerHTML = '<div class="feed-empty">Ingenting her ennå. Utfordringer, likes og kommentarer dukker opp her.</div>'; return; }
+  list.innerHTML = inboxItems.map(n => {
+    const icon = n.actor ? avatarHtml_(n.actor, n.avatar)
+      : `<span class="avatar inbox-icon" aria-hidden="true"><i class="ph ${INBOX_ICONS[n.type] || 'ph-bell'}"></i></span>`;
+    const target = n.challengeId ? `openChallenge(${n.challengeId})` : n.workoutId ? `openWorkoutById(${n.workoutId})` : '';
+    const actions = n.canRespond ? `
+      <div class="inbox-actions">
+        <button type="button" class="btn-secondary" onclick="respondChallenge(${n.challengeId}, false)">Avslå</button>
+        <button type="button" class="btn-primary" onclick="respondChallenge(${n.challengeId}, true)">Godta</button>
+      </div>` : '';
+    return `
+      <div class="inbox-item ${n.read ? '' : 'is-unread'}">
+        <button type="button" class="inbox-main" ${target ? `onclick="${target}"` : ''}>
+          ${icon}
+          <span class="inbox-text">${escapeHtml_(n.text)}${n.read ? '' : '<span class="visually-hidden"> (nytt)</span>'}<span class="inbox-time">${feedTimeLabel(n.time)}</span></span>
+          ${target ? '<i class="ph ph-caret-right" aria-hidden="true" style="color:var(--text-muted)"></i>' : ''}
+        </button>${actions}
+      </div>`;
+  }).join('');
+}
+
+async function openWorkoutById(id) {
+  if (!findWorkout_(id)) {
+    try {
+      const data = await api_('workout', { workoutId: id });
+      if (data.success) indexWorkouts_([data.workout]); else { alert(data.error || 'Fant ikke økten'); return; }
+    } catch(e) { alert('Fikk ikke kontakt med serveren'); return; }
+  }
+  openFeedWorkout(id);
+}
+
+// ─── Utfordringer ───
+const MAX_CHALLENGE_INVITES = 10; // samme grense som serveren håndhever
+const thisMonthKey_ = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; };
+const addMonths_ = (ym, n) => { const [y, m] = ym.split('-').map(Number); const t = y * 12 + (m - 1) + n; return `${Math.floor(t / 12)}-${String((t % 12) + 1).padStart(2, '0')}`; };
+const monthLabel_ = (ym) => { const [y, m] = ym.split('-').map(Number); return `${MONTH_NAMES[m - 1].toLowerCase()} ${y}`; };
+const challengeTitle_ = (c) => c.type === 'goal' ? `Månedsmål: ${c.goal} økter per måned` : 'Flest økter';
+const challengePeriod_ = (c) => c.months === 1 ? monthLabel_(c.startMonth) : `${monthLabel_(c.startMonth)} til ${monthLabel_(c.endMonth)}`;
+
+function challengeStatus_(c) {
+  if (c.status === 'pending') return c.myStatus === 'invited' ? { label: 'Svar', cls: 'is-on' } : { label: 'Venter', cls: '' };
+  if (c.status === 'active') return { label: 'Pågår', cls: 'is-on' };
+  if (c.status === 'cancelled') return { label: 'Avlyst', cls: '' };
+  return c.losers.some(isMe_) ? { label: 'Tapte', cls: 'is-bad' } : { label: 'Ferdig', cls: '' };
+}
+
+async function loadMyChallenges() {
+  try {
+    const data = await api_('challenges');
+    if (data.success) myChallenges = data.challenges;
+  } catch(e) {}
+  if (myChallenges === null) myChallenges = [];
+  renderMyChallenges();
+}
+
+function renderMyChallenges() {
+  const wrap = document.getElementById('profile-challenges');
+  if (!wrap) return;
+  if (myChallenges === null) { wrap.innerHTML = '<div class="feed-empty">Laster…</div>'; return; }
+  if (myChallenges.length === 0) { wrap.innerHTML = '<div class="feed-empty">Ingen utfordringer ennå. Utfordre noen til et månedsmål eller flest økter.</div>'; return; }
+  wrap.innerHTML = myChallenges.map(c => {
+    const st = challengeStatus_(c);
+    const joined = c.members.filter(m => m.status === 'accepted').length;
+    const invited = c.members.filter(m => m.status === 'invited').length;
+    const people = c.status === 'pending' && invited ? `${joined} med, ${invited} har ikke svart` : `${joined} deltakere`;
+    return `
+      <button type="button" class="challenge-card" onclick="openChallenge(${c.id})">
+        <i class="ph ${c.type === 'goal' ? 'ph-target' : 'ph-trophy'}" aria-hidden="true"></i>
+        <span class="challenge-card-body">
+          <span class="challenge-card-title">${challengeTitle_(c)}</span>
+          <span class="challenge-card-sub" style="display:block">${challengePeriod_(c)} · ${people}</span>
+        </span>
+        <span class="status-chip ${st.cls}">${st.label}</span>
+      </button>`;
+  }).join('');
+}
+
+let openChallengeId = null;
+
+async function openChallenge(id) {
+  openChallengeId = id;
+  document.getElementById('challenge-title').textContent = 'Utfordring';
+  document.getElementById('challenge-body').innerHTML = '<div class="feed-comments-empty">Laster…</div>';
+  document.getElementById('challenge-overlay').style.display = 'flex';
+  let data = null;
+  try { data = await api_('challenge', { challengeId: id }); } catch(e) {}
+  if (openChallengeId !== id) return;
+  if (!data || !data.success) {
+    document.getElementById('challenge-body').innerHTML = `<div class="feed-comments-empty">${escapeHtml_((data && data.error) || 'Fikk ikke kontakt med serveren')}</div>`;
+    return;
+  }
+  renderChallenge(data.challenge);
+}
+
+function renderChallenge(c) {
+  document.getElementById('challenge-title').textContent = challengeTitle_(c);
+  const now = thisMonthKey_();
+  const months = Array.from({ length: c.months }, (_, i) => addMonths_(c.startMonth, i));
+  const started = c.status === 'active' || c.status === 'done';
+
+  const rule = c.type === 'goal'
+    ? 'Den som ikke når målet hver måned, taper, så lenge minst én annen klarer det.'
+    : 'Den med færrest økter i perioden taper. Uavgjort gir ingen taper.';
+  const state = c.status === 'pending' ? `Starter 1. ${monthLabel_(c.startMonth)}. Venter på svar.`
+    : c.status === 'active' ? 'Pågår nå.'
+    : c.status === 'cancelled' ? 'Avlyst.'
+    : c.losers.length ? `Ferdig. ${c.losers.join(', ')} tapte.` : 'Ferdig. Ingen tapte.';
+
+  const rank = { accepted: 0, invited: 1, declined: 2 };
+  const members = [...c.members].sort((a, b) => (rank[a.status] - rank[b.status]) || (b.total - a.total));
+  const rows = members.map(m => {
+    let right;
+    if (m.status !== 'accepted') {
+      right = `<span class="status-chip">${m.status === 'invited' ? 'Ikke svart' : started ? 'Ikke med' : 'Avslo'}</span>`;
+    } else if (!started) {
+      right = '<span class="status-chip is-on">Med</span>';
+    } else if (c.type === 'goal') {
+      right = `<span class="standing-months">${m.perMonth.map((n, i) => {
+        const cls = n >= c.goal ? 'ok' : (months[i] < now ? 'miss' : '');
+        return `<span class="${cls}" title="${monthLabel_(months[i])}">${n}</span>`;
+      }).join('')}</span>`;
+    } else {
+      right = `<span class="standing-score">${m.total}</span>`;
+    }
+    const lost = c.status === 'done' && c.losers.includes(m.username);
+    return `
+      <div class="standing-row">
+        ${avatarHtml_(m.username, m.avatar, 'sm')}
+        <span class="standing-name">${escapeHtml_(m.username)}${isMe_(m.username) ? ' (deg)' : ''}</span>
+        ${lost ? '<span class="status-chip is-bad">Tapte</span>' : ''}
+        ${right}
+      </div>`;
+  }).join('');
+
+  let actions = '';
+  if (c.status === 'pending' && c.myStatus === 'invited') {
+    actions = `<div class="sheet-actions">
+      <button type="button" class="btn-secondary" onclick="respondChallenge(${c.id}, false)">Avslå</button>
+      <button type="button" class="btn-primary" onclick="respondChallenge(${c.id}, true)">Godta</button>
+    </div>`;
+  } else if (c.status === 'pending' && c.mine) {
+    actions = `<div class="sheet-actions"><button type="button" class="btn-secondary btn-danger-ghost" onclick="cancelChallenge(${c.id})">Trekk utfordringen</button></div>`;
+  }
+
+  document.getElementById('challenge-body').innerHTML = `
+    <div class="challenge-facts">
+      <div><i class="ph ph-calendar-blank" aria-hidden="true"></i><span>${challengePeriod_(c)}${c.months > 1 ? ` (${c.months} måneder)` : ''}</span></div>
+      <div><i class="ph ph-gift" aria-hidden="true"></i><span>Taperpremie: ${c.prize ? escapeHtml_(c.prize) : 'ingen satt'}</span></div>
+      <div><i class="ph ph-info" aria-hidden="true"></i><span>${rule}</span></div>
+      <div><i class="ph ph-flag" aria-hidden="true"></i><span>${escapeHtml_(state)}</span></div>
+      ${c.creator ? `<div><i class="ph ph-user" aria-hidden="true"></i><span>Sendt av ${escapeHtml_(c.creator)}</span></div>` : ''}
+    </div>
+    ${rows}
+    <div class="form-status" id="challenge-status" aria-live="polite" style="margin-top:12px"></div>
+    ${actions}`;
+}
+
+function closeChallenge() {
+  document.getElementById('challenge-overlay').style.display = 'none';
+  openChallengeId = null;
+}
+function closeChallengeIfBg(e) {
+  if (e.target === document.getElementById('challenge-overlay')) closeChallenge();
+}
+
+// Oppdaterer det som viser utfordringer akkurat nå: arket, innboksen og profilen.
+function refreshChallengeViews_() {
+  if (openChallengeId) openChallenge(openChallengeId);
+  if (activeScreenId_() === 'screen-inbox') loadInbox();
+  if (activeScreenId_() === 'screen-profile' && profileData && profileData.isMe) loadMyChallenges();
+}
+
+async function respondChallenge(id, accept) {
+  let data = null;
+  try { data = await api_('respondChallenge', { challengeId: id, accept: accept ? '1' : '0' }); } catch(e) {}
+  if (!data || !data.success) {
+    const msg = (data && data.error) || 'Fikk ikke kontakt med serveren';
+    const status = document.getElementById('challenge-status');
+    if (openChallengeId && status) { status.textContent = msg; status.classList.add('is-error'); } else alert(msg);
+    return;
+  }
+  if (!accept && openChallengeId === id) closeChallenge();
+  refreshChallengeViews_();
+}
+
+async function cancelChallenge(id) {
+  if (!confirm('Trekke utfordringen? De inviterte får beskjed.')) return;
+  let data = null;
+  try { data = await api_('cancelChallenge', { challengeId: id }); } catch(e) {}
+  if (!data || !data.success) {
+    const status = document.getElementById('challenge-status');
+    if (status) { status.textContent = (data && data.error) || 'Fikk ikke kontakt med serveren'; status.classList.add('is-error'); }
+    return;
+  }
+  closeChallenge();
+  refreshChallengeViews_();
+}
+
+// ─── Ny utfordring ───
+let ccState = { type: 'goal', goal: 8, months: 1, selected: new Set() };
+const ccUsers = new Map(); // brukernavn (små bokstaver) → { username, avatar }
+let ccSearchTimer = null;
+
+function openChallengeCreate(preselect) {
+  if (!currentUser) { showScreen('screen-login'); return; }
+  ccState = { type: 'goal', goal: 8, months: 1, selected: new Set() };
+  if (preselect && !isMe_(preselect)) {
+    ccState.selected.add(preselect.toLowerCase());
+    if (!ccUsers.has(preselect.toLowerCase())) ccUsers.set(preselect.toLowerCase(), { username: preselect, avatar: profileData ? profileData.avatar : '' });
+  }
+  const now = thisMonthKey_();
+  document.getElementById('cc-start').innerHTML = [1, 2, 3].map(n => {
+    const ym = addMonths_(now, n);
+    return `<option value="${ym}">1. ${monthLabel_(ym)}</option>`;
+  }).join('');
+  document.getElementById('cc-prize').value = '';
+  document.getElementById('cc-invite-search').value = '';
+  const status = document.getElementById('cc-status');
+  status.textContent = '';
+  status.classList.remove('is-error');
+  renderChallengeCreate();
+  renderChallengeInvitees();
+  document.getElementById('challenge-create-overlay').style.display = 'flex';
+  searchChallengeInvitees_('');
+}
+function closeChallengeCreate() {
+  document.getElementById('challenge-create-overlay').style.display = 'none';
+}
+function closeChallengeCreateIfBg(e) {
+  if (e.target === document.getElementById('challenge-create-overlay')) closeChallengeCreate();
+}
+
+function renderChallengeCreate() {
+  const goal = ccState.type === 'goal';
+  ['goal', 'most'].forEach(t => {
+    const btn = document.getElementById('cc-type-' + t);
+    btn.classList.toggle('active', ccState.type === t);
+    btn.setAttribute('aria-pressed', ccState.type === t ? 'true' : 'false');
+  });
+  document.getElementById('cc-type-hint').textContent = goal
+    ? 'Alle skal nå samme antall økter hver måned. Den som ryker på målet, taper.'
+    : 'Den som har færrest økter når perioden er over, taper.';
+  document.getElementById('cc-goal-row').style.display = goal ? 'flex' : 'none';
+  document.getElementById('cc-goal').textContent = ccState.goal;
+  document.getElementById('cc-months').textContent = ccState.months;
+}
+function setChallengeType(type) { ccState.type = type; renderChallengeCreate(); }
+function adjustChallenge(key, delta) {
+  const [min, max] = key === 'goal' ? [2, 30] : [1, 12];
+  ccState[key] = Math.max(min, Math.min(max, ccState[key] + delta));
+  renderChallengeCreate();
+}
+
+async function searchChallengeInvitees_(q) {
+  try {
+    const data = await api_('searchUsers', { q });
+    if (data.success) data.users.forEach(u => ccUsers.set(u.username.toLowerCase(), u));
+  } catch(e) {}
+  renderChallengeInvitees(true);
+}
+
+// Kalles også fra søkefeltet: filtrerer det vi har, og spør serveren om flere.
+function renderChallengeInvitees(fromServer) {
+  const q = document.getElementById('cc-invite-search').value.trim().toLowerCase();
+  if (fromServer !== true) {
+    clearTimeout(ccSearchTimer);
+    if (q) ccSearchTimer = setTimeout(() => searchChallengeInvitees_(q), 250);
+  }
+  const full = ccState.selected.size >= MAX_CHALLENGE_INVITES;
+  const users = [...ccUsers.values()]
+    .filter(u => !isMe_(u.username) && (!q || u.username.toLowerCase().includes(q) || ccState.selected.has(u.username.toLowerCase())))
+    .sort((a, b) => a.username.localeCompare(b.username, 'nb'));
+  document.getElementById('cc-invite-count').textContent = `(${ccState.selected.size} av ${MAX_CHALLENGE_INVITES})`;
+  document.getElementById('cc-invite-list').innerHTML = users.length ? users.map(u => {
+    const key = u.username.toLowerCase();
+    const checked = ccState.selected.has(key);
+    return `
+      <label class="invite-row">
+        <input type="checkbox" data-user="${escAttr_(key)}" ${checked ? 'checked' : ''} ${!checked && full ? 'disabled' : ''} onchange="toggleChallengeInvitee(this)">
+        ${avatarHtml_(u.username, u.avatar, 'sm')}
+        <span class="people-name">${escapeHtml_(u.username)}</span>
+      </label>`;
+  }).join('') : '<div class="people-empty">Ingen andre brukere å invitere ennå.</div>';
+}
+function toggleChallengeInvitee(box) {
+  if (box.checked) ccState.selected.add(box.dataset.user); else ccState.selected.delete(box.dataset.user);
+  renderChallengeInvitees(true);
+}
+
+async function submitChallenge() {
+  const status = document.getElementById('cc-status');
+  status.classList.add('is-error');
+  if (ccState.selected.size === 0) { status.textContent = 'Velg minst én å utfordre.'; return; }
+  const btn = document.getElementById('cc-submit');
+  btn.disabled = true;
+  status.classList.remove('is-error');
+  status.textContent = 'Sender…';
+  try {
+    const data = await api_('createChallenge', {
+      type: ccState.type,
+      goal: ccState.goal,
+      months: ccState.months,
+      startMonth: document.getElementById('cc-start').value,
+      prize: document.getElementById('cc-prize').value.trim(),
+      invitees: JSON.stringify([...ccState.selected]),
+    });
+    if (!data.success) { status.classList.add('is-error'); status.textContent = data.error || 'Noe gikk galt'; return; }
+    closeChallengeCreate();
+    setProfileStatus_('Utfordringen er sendt.');
+    if (activeScreenId_() === 'screen-profile' && profileData && profileData.isMe) loadMyChallenges();
+  } catch(e) {
+    status.classList.add('is-error');
+    status.textContent = 'Fikk ikke kontakt med serveren';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ─── Push-varsler (krever at appen ligger på hjemskjermen på iPhone) ───
+const pushSupported_ = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+const b64uToBytes_ = (text) => Uint8Array.from(atob(text.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+let pushSubscribed = false; // sist kjente tilstand for denne enheten
+
+function initServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+  // Et trykk på et varsel mens appen er åpen: gå til innboksen.
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data && e.data.type === 'open-inbox') openInbox();
+  });
+}
+
+async function currentPushSub_() {
+  if (!pushSupported_()) return null;
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    return reg ? await reg.pushManager.getSubscription() : null;
+  } catch(e) { return null; }
+}
+
+async function renderPushSettings() {
+  const field = document.getElementById('push-field');
+  field.style.display = currentUser ? 'block' : 'none';
+  if (!currentUser) return;
+  const btn = document.getElementById('push-toggle-btn');
+  const test = document.getElementById('push-test-btn');
+  const hint = document.getElementById('push-hint');
+  test.style.display = 'none';
+  if (!pushSupported_()) {
+    btn.style.display = 'none';
+    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+    hint.textContent = ios
+      ? 'På iPhone virker varsler når appen ligger på hjemskjermen og åpnes derfra.'
+      : 'Denne nettleseren støtter ikke varsler.';
+    return;
+  }
+  btn.style.display = 'flex';
+  if (Notification.permission === 'denied') {
+    btn.style.display = 'none';
+    hint.textContent = 'Varsler er blokkert for KETTL. Tillat dem i innstillingene på enheten.';
+    return;
+  }
+  pushSubscribed = !!(await currentPushSub_());
+  document.getElementById('push-toggle-label').textContent = pushSubscribed ? 'Slå av varsler' : 'Slå på varsler';
+  test.style.display = pushSubscribed ? 'flex' : 'none';
+  hint.textContent = pushSubscribed
+    ? 'Varsler er på for denne enheten.'
+    : 'Få beskjed om utfordringer, likes, kommentarer og økter fra dem du har bjelle på.';
+}
+
+async function togglePush() {
+  const hint = document.getElementById('push-hint');
+  try {
+    if (pushSubscribed) {
+      const sub = await currentPushSub_();
+      if (sub) {
+        await api_('pushUnsubscribe', { endpoint: sub.endpoint });
+        await sub.unsubscribe();
+      }
+    } else {
+      // Tillatelsen må spørres om direkte i trykket, før noe annet venter.
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') { renderPushSettings(); return; }
+      if (!vapidKey) await refreshAdminFlag();
+      if (!vapidKey) { hint.textContent = 'Varsler er ikke satt opp på serveren.'; return; }
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uToBytes_(vapidKey) });
+      const keys = sub.toJSON().keys || {};
+      const data = await api_('pushSubscribe', { endpoint: sub.endpoint, p256dh: keys.p256dh || '', auth: keys.auth || '' });
+      if (!data.success) { await sub.unsubscribe(); hint.textContent = data.error || 'Fikk ikke slått på varsler.'; return; }
+    }
+  } catch(e) {
+    hint.textContent = 'Fikk ikke endret varsler. Prøv igjen.';
+    return;
+  }
+  renderPushSettings();
+}
+
+async function sendTestPush() {
+  const label = document.getElementById('push-test-label');
+  label.textContent = 'Sender…';
+  let data = null;
+  try { data = await api_('pushTest'); } catch(e) {}
+  label.textContent = data && data.success ? 'Sendt. Det kommer om noen sekunder.' : ((data && data.error) || 'Fikk ikke sendt.');
+  setTimeout(() => { label.textContent = 'Send et testvarsel'; }, 4000);
+}
+
+// Ved utlogging: denne enheten skal ikke lenger få varsler for brukeren som logger ut.
+function dropPushSubscription_() {
+  const token = authToken;
+  if (!pushSupported_()) return;
+  currentPushSub_().then(sub => {
+    if (!sub) return;
+    if (token) {
+      fetch(appsScriptUrl, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token },
+        body: JSON.stringify({ action: 'pushUnsubscribe', endpoint: sub.endpoint }),
+      }).catch(() => {});
+    }
+    return sub.unsubscribe();
+  }).catch(() => {});
+}
+
+// Nye varsler mens appen har ligget i bakgrunnen: oppdater prikken på bjella.
+let lastMeCheck = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible' || !currentUser || Date.now() - lastMeCheck < 30000) return;
+  lastMeCheck = Date.now();
+  refreshAdminFlag();
+});
+
+const closeChallengeIfOpen_ = () => closeChallenge();
+
 async function init() {
   updateThemeButtons(currentThemeChoice());
   updateBottomNavHomeIcon();
@@ -6096,7 +7129,13 @@ async function init() {
   if (!hasCache) applyExerciseData(OFFLINE_EXERCISES, OFFLINE_WORKOUTS);
   showScreen((currentUser || isGuest) ? 'screen-select' : 'screen-login');
   initGoogleLogin();
+  initServiceWorker();
   if (currentUser) { fetchPersonalWorkouts(); refreshAdminFlag(); }
+  // Åpnet fra et varsel: rett til innboksen.
+  if (new URLSearchParams(location.search).has('inbox')) {
+    history.replaceState(null, '', location.pathname);
+    if (currentUser) openInbox();
+  }
 
   // 3. Fetch fresh data — replace generics with real exercises if successful
   try {
