@@ -2306,6 +2306,10 @@
   .inbox-actions { display: flex; gap: 8px; padding: 0 14px 12px 66px; }
   .inbox-actions > * { flex: 1; min-height: 40px; font-size: 0.9375rem; }
   .challenge-card-title, .challenge-card-sub { display: block; }
+  .edit-ex-actions { display: flex; gap: 4px; flex-shrink: 0; margin-left: auto; }
+  .edit-ex-actions .icon-btn { width: 34px; height: 34px; font-size: 1rem; }
+  .edit-ex-actions .icon-btn:disabled { opacity: 0.35; }
+  #edit-workout-list .wkt-popup-ex { flex-wrap: wrap; }
 
   /* ════════ LIGHTBOX ════════ */
   .lightbox-overlay {
@@ -2866,8 +2870,8 @@
     <div class="feed-head">
       <h2 class="chat-section-title"><i class="ph ph-users-three" aria-hidden="true"></i>Andres økter</h2>
       <div class="segmented" role="group" aria-label="Hvem sine økter">
-        <button type="button" id="feed-filter-following" aria-pressed="false" onclick="setFeedFilter('following')">Følger</button>
-        <button type="button" id="feed-filter-all" aria-pressed="true" onclick="setFeedFilter('all')">Alle</button>
+        <button type="button" id="feed-filter-following" aria-pressed="true" onclick="setFeedFilter('following')">Følger</button>
+        <button type="button" id="feed-filter-all" aria-pressed="false" onclick="setFeedFilter('all')">Alle</button>
       </div>
     </div>
     <div class="feed-list" id="feed-list" aria-live="polite"></div>
@@ -3156,6 +3160,25 @@
 </div>
 
 <!-- Exercise picker for a ukesplan slot -->
+<!-- Rediger en egen favorittøkt -->
+<div class="wkt-popup-overlay" id="edit-workout-overlay" style="display:none" onclick="closeEditWorkoutIfBg(event)">
+  <div class="wkt-popup" role="dialog" aria-modal="true" aria-labelledby="edit-workout-title">
+    <div class="wkt-popup-header">
+      <h2 class="wkt-popup-title" id="edit-workout-title">Rediger økt</h2>
+      <button type="button" class="wkt-popup-close" onclick="closeEditWorkout()" aria-label="Lukk"><i class="ph ph-x" aria-hidden="true"></i></button>
+    </div>
+    <div class="settings-field">
+      <label class="settings-label" for="edit-workout-name">Navn</label>
+      <input type="text" class="settings-input" id="edit-workout-name" name="workout-name" autocomplete="off" maxlength="60">
+    </div>
+    <div class="settings-label">Øvelser</div>
+    <div class="wkt-popup-ex-list" id="edit-workout-list" style="margin-bottom:10px"></div>
+    <button type="button" class="btn-secondary btn-block" id="edit-workout-add" onclick="pickEditWorkoutExercise(-1)"><i class="ph ph-plus" aria-hidden="true"></i>Legg til øvelse</button>
+    <div class="form-status" id="edit-workout-status" aria-live="polite" style="margin-top:12px"></div>
+    <button type="button" class="btn-primary btn-block" id="edit-workout-save" onclick="saveEditWorkout()">Lagre</button>
+  </div>
+</div>
+
 <div class="wkt-popup-overlay" id="plan-exercise-picker-overlay" style="display:none" onclick="closePlanExercisePickerIfBg(event)">
   <div class="wkt-popup fullscreen" role="dialog" aria-modal="true" aria-labelledby="plan-picker-title">
     <div class="wkt-popup-header">
@@ -3220,6 +3243,7 @@
     <div class="wkt-popup-instructions" id="wkt-popup-instructions" style="display:none"></div>
     <div class="wkt-popup-ex-list" id="wkt-popup-ex-list"></div>
     <button type="button" class="btn-primary btn-block" id="wkt-popup-start-btn"><i class="ph-fill ph-play" aria-hidden="true"></i>Start økt</button>
+    <button type="button" class="btn-secondary btn-block" id="wkt-popup-edit-btn" style="display:none;margin-top:10px"><i class="ph ph-pencil-simple" aria-hidden="true"></i>Rediger økt</button>
     <button type="button" class="btn-secondary btn-danger-ghost btn-block" id="wkt-popup-delete-btn" style="display:none;margin-top:10px">Slett økt</button>
   </div>
 </div>
@@ -3522,15 +3546,33 @@ function toggleExercise(id) {
   document.getElementById('btn-to-config').disabled = selectedExercises.length === 0;
 }
 
+// Trekker øvelser som er mest mulig ulike. For hver plass velges det blant de
+// øvelsene som gjentar færrest muskelgrupper; står flere likt, færrest
+// kroppsområder, og så færrest variasjoner. Er det ikke nok ulike øvelser,
+// brukes de som ligner minst. Tom variasjon regnes ikke som en gruppe.
+function pickVariedExercises_(all, count) {
+  const pool = [...all];
+  const picked = [];
+  const clashes = (ex, key) => (ex[key] ? picked.filter(p => p[key] === ex[key]).length : 0);
+  while (picked.length < count && pool.length > 0) {
+    let best = [];
+    let bestScore = null;
+    for (const ex of pool) {
+      const score = [clashes(ex, 'muscles'), clashes(ex, 'cat'), clashes(ex, 'variation')];
+      const diff = bestScore === null ? -1 : (score[0] - bestScore[0]) || (score[1] - bestScore[1]) || (score[2] - bestScore[2]);
+      if (diff < 0) { best = [ex]; bestScore = score; } else if (diff === 0) best.push(ex);
+    }
+    const choice = best[Math.floor(Math.random() * best.length)];
+    picked.push(choice);
+    pool.splice(pool.indexOf(choice), 1);
+  }
+  return picked;
+}
+
 function pickRandomWorkout() {
   currentWorkoutName = ''; // random selection has no saved name
   const count = parseInt(document.getElementById('random-count-slider').value);
-  const pool = [...EXERCISES];
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
-  }
-  selectedExercises = pool.slice(0, Math.min(count, pool.length));
+  selectedExercises = pickVariedExercises_(EXERCISES, count);
   updateExerciseCardStates();
   renderSelectedStrip();
   document.getElementById('btn-to-config').disabled = selectedExercises.length === 0;
@@ -4970,13 +5012,7 @@ async function ensureFeed(force) {
   if (feedData !== null && !force) return;
   if (!appsScriptUrl || !currentUser) { feedData = feedData || []; return; }
   try {
-    let data = await api_('feed', { filter: feedFilter === 'all' ? 'all' : 'following' });
-    // Første gang: vis «Følger» hvis det gir noe, ellers «Alle».
-    if (feedFilter === 'auto') {
-      feedFilter = data.success && data.workouts.length ? 'following' : 'all';
-      if (feedFilter === 'all') data = await api_('feed', { filter: 'all' });
-    }
-    renderFeedFilter();
+    const data = await api_('feed', { filter: feedFilter });
     if (data.success) {
       feedData = indexWorkouts_(data.workouts);
       try { localStorage.setItem(FEED_CACHE_KEY, JSON.stringify(feedData)); } catch(e) {}
@@ -5464,6 +5500,7 @@ const ESC_CLOSERS = [
   ['challenge-overlay', () => closeChallengeIfOpen_()],
   ['add-exercise-overlay', () => closeAddExercise()],
   ['plan-exercise-picker-overlay', () => closePlanExercisePicker()],
+  ['edit-workout-overlay', () => closeEditWorkout()],
   ['weekly-plan-editor-overlay', () => closeWeeklyPlanEditor()],
   ['delete-account-confirm-overlay', () => cancelDeleteAccount()],
   ['create-workout-overlay', () => closeCreateWorkout()],
@@ -5799,7 +5836,7 @@ function personalWorkoutToSavedShape(pw) {
   const nrs = String(pw.exercises || '').split('-').map(s => parseInt(s)).filter(n => !isNaN(n));
   const exercises = nrs.map(nr => EXERCISES.find(e => e.nr === nr)).filter(Boolean);
   return {
-    name: pw.name, cat: pw.region, exercises, instructions: pw.instructions, isPersonal: true,
+    id: pw.id, name: pw.name, cat: pw.region, exercises, instructions: pw.instructions, isPersonal: true,
     fromUser: pw.sourceUser || '', // satt når økten er lagret fra en annens økt i feeden
     mode: pw.mode, reps: pw.reps, time: pw.time, rounds: pw.rounds, restEx: pw.restEx, restRound: pw.restRound
   };
@@ -6055,6 +6092,102 @@ function togglePlanPickerFilter(key, value, btn) {
   renderPlanExercisePickerList();
 }
 
+// Samme velger brukes av ukesplanen (dag + plass) og av «Rediger økt» (en
+// funksjon som får nummeret til øvelsen som ble valgt).
+let exercisePickerCallback = null;
+function openExercisePicker_(onPick) {
+  openPlanExercisePicker(null, null);
+  planPickerTarget = null;
+  exercisePickerCallback = onPick;
+}
+
+// ─── Rediger favorittøkt: navn, rekkefølge, bytt, fjern og legg til øvelser ───
+const MAX_WORKOUT_EXERCISES = 10;
+let editWorkout = null; // { id, nrs: [øvelsesnummer] }
+
+function openEditWorkout(wkt) {
+  editWorkout = { id: wkt.id, nrs: wkt.exercises.map(e => e.nr) };
+  document.getElementById('edit-workout-name').value = wkt.name || '';
+  const status = document.getElementById('edit-workout-status');
+  status.textContent = '';
+  status.classList.remove('is-error');
+  renderEditWorkout();
+  document.getElementById('edit-workout-overlay').style.display = 'flex';
+}
+function closeEditWorkout() {
+  document.getElementById('edit-workout-overlay').style.display = 'none';
+  editWorkout = null;
+}
+function closeEditWorkoutIfBg(e) {
+  if (e.target === document.getElementById('edit-workout-overlay')) closeEditWorkout();
+}
+
+function renderEditWorkout() {
+  const nrs = editWorkout.nrs;
+  document.getElementById('edit-workout-list').innerHTML = nrs.map((nr, i) => {
+    const ex = EXERCISES.find(e => e.nr === nr) || { name: `#${nr}`, img: '', muscles: '' };
+    const name = escapeHtml_(ex.name);
+    return `
+      <div class="wkt-popup-ex">
+        <div class="wkt-popup-ex-num">${i + 1}</div>
+        <img class="wkt-popup-ex-img" src="${ex.img || 'favicon.png'}" alt="" onerror="this.src='favicon.png'">
+        <div class="wkt-popup-ex-info">
+          <div class="wkt-popup-ex-name">${name}</div>
+          ${ex.muscles ? `<div class="wkt-popup-ex-muscles">${escapeHtml_(ex.muscles)}</div>` : ''}
+        </div>
+        <div class="edit-ex-actions">
+          <button type="button" class="icon-btn" onclick="moveEditWorkoutExercise(${i}, -1)" aria-label="Flytt ${name} opp" ${i === 0 ? 'disabled' : ''}><i class="ph ph-arrow-up" aria-hidden="true"></i></button>
+          <button type="button" class="icon-btn" onclick="moveEditWorkoutExercise(${i}, 1)" aria-label="Flytt ${name} ned" ${i === nrs.length - 1 ? 'disabled' : ''}><i class="ph ph-arrow-down" aria-hidden="true"></i></button>
+          <button type="button" class="icon-btn" onclick="pickEditWorkoutExercise(${i})" aria-label="Bytt ut ${name}"><i class="ph ph-swap" aria-hidden="true"></i></button>
+          <button type="button" class="icon-btn" onclick="removeEditWorkoutExercise(${i})" aria-label="Fjern ${name}"><i class="ph ph-x" aria-hidden="true"></i></button>
+        </div>
+      </div>`;
+  }).join('') || '<div class="feed-comments-empty">Ingen øvelser. Legg til minst én.</div>';
+  document.getElementById('edit-workout-add').style.display = nrs.length >= MAX_WORKOUT_EXERCISES ? 'none' : 'flex';
+}
+function moveEditWorkoutExercise(index, delta) {
+  const nrs = editWorkout.nrs;
+  const to = index + delta;
+  if (to < 0 || to >= nrs.length) return;
+  [nrs[index], nrs[to]] = [nrs[to], nrs[index]];
+  renderEditWorkout();
+}
+function removeEditWorkoutExercise(index) {
+  editWorkout.nrs.splice(index, 1);
+  renderEditWorkout();
+}
+// index -1 = legg til på slutten, ellers bytt ut øvelsen på den plassen.
+function pickEditWorkoutExercise(index) {
+  openExercisePicker_(nr => {
+    if (!editWorkout) return;
+    if (index < 0) editWorkout.nrs.push(nr); else editWorkout.nrs[index] = nr;
+    renderEditWorkout();
+  });
+}
+
+async function saveEditWorkout() {
+  const status = document.getElementById('edit-workout-status');
+  const name = document.getElementById('edit-workout-name').value.trim();
+  status.classList.add('is-error');
+  if (!name) { status.textContent = 'Økten må ha et navn.'; document.getElementById('edit-workout-name').focus(); return; }
+  if (editWorkout.nrs.length === 0) { status.textContent = 'Legg til minst én øvelse.'; return; }
+  const btn = document.getElementById('edit-workout-save');
+  btn.disabled = true;
+  status.classList.remove('is-error');
+  status.textContent = 'Lagrer…';
+  try {
+    const data = await api_('updatePersonalWorkout', { id: editWorkout.id, name, exercises: editWorkout.nrs.join('-') });
+    if (!data.success) { status.classList.add('is-error'); status.textContent = data.error || 'Noe gikk galt'; return; }
+    closeEditWorkout();
+    await fetchPersonalWorkouts();
+  } catch(e) {
+    status.classList.add('is-error');
+    status.textContent = 'Fikk ikke kontakt med serveren';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 function openPlanExercisePicker(dayIndex, slotIndex) {
   planPickerTarget = { dayIndex, slotIndex };
   document.getElementById('plan-exercise-search').value = '';
@@ -6066,6 +6199,7 @@ function openPlanExercisePicker(dayIndex, slotIndex) {
 function closePlanExercisePicker() {
   document.getElementById('plan-exercise-picker-overlay').style.display = 'none';
   planPickerTarget = null;
+  exercisePickerCallback = null;
 }
 function closePlanExercisePickerIfBg(e) {
   if (e.target === document.getElementById('plan-exercise-picker-overlay')) closePlanExercisePicker();
@@ -6095,6 +6229,12 @@ function renderPlanExercisePickerList() {
 }
 
 function pickPlanExercise(nr) {
+  if (exercisePickerCallback) {
+    const done = exercisePickerCallback;
+    closePlanExercisePicker();
+    done(nr);
+    return;
+  }
   if (!planPickerTarget) return;
   const { dayIndex, slotIndex } = planPickerTarget;
   planEditorDays[dayIndex].exercises[slotIndex] = nr;
@@ -6178,6 +6318,10 @@ function openWorkoutPreview_(wkt, onStart) {
     closeWorkoutPopup();
     onStart();
   };
+
+  const editBtn = document.getElementById('wkt-popup-edit-btn');
+  editBtn.style.display = (wkt.isPersonal && wkt.id) ? 'flex' : 'none';
+  editBtn.onclick = () => { closeWorkoutPopup(); openEditWorkout(wkt); };
 
   const deleteBtn = document.getElementById('wkt-popup-delete-btn');
   if (wkt.isPersonal) {
@@ -6626,8 +6770,8 @@ function onPeopleSearch() {
 }
 
 // ─── Andres økter: «Følger» eller «Alle» ───
-let feedFilter = 'auto'; // 'auto' = «Følger» hvis det gir treff, ellers «Alle»
-try { const f = localStorage.getItem(FEED_FILTER_KEY); if (f === 'following' || f === 'all') feedFilter = f; } catch(e) {}
+let feedFilter = 'following'; // standard; brukeren kan selv bytte til «Alle»
+try { if (localStorage.getItem(FEED_FILTER_KEY) === 'all') feedFilter = 'all'; } catch(e) {}
 
 function renderFeedFilter() {
   const following = feedFilter === 'following';
@@ -6646,7 +6790,7 @@ async function setFeedFilter(filter) {
 // ─── Innboks ───
 let inboxItems = null;
 let inboxReturnScreen = 'screen-select';
-const INBOX_ICONS = { started: 'ph-flag', cancelled: 'ph-prohibit', result: 'ph-trophy' };
+const INBOX_ICONS = { started: 'ph-flag', cancelled: 'ph-prohibit', result: 'ph-trophy', progress: 'ph-trend-up' };
 
 async function openInbox() {
   const from = activeScreenId_();
