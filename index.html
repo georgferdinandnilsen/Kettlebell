@@ -2310,6 +2310,8 @@
   .edit-ex-actions .icon-btn { width: 34px; height: 34px; font-size: 1rem; }
   .edit-ex-actions .icon-btn:disabled { opacity: 0.35; }
   #edit-workout-list .wkt-popup-ex { flex-wrap: wrap; }
+  .download-row { display: flex; gap: 8px; margin: 0 0 8px; }
+  .download-row a { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; background: var(--surface2); }
 
   /* ════════ LIGHTBOX ════════ */
   .lightbox-overlay {
@@ -3317,19 +3319,19 @@
       <button type="button" class="settings-link-row" id="add-exercise-row" onclick="openAddExercise()">
         <i class="ph ph-plus-circle" aria-hidden="true"></i>Legg til øvelse<i class="ph ph-caret-right" aria-hidden="true"></i>
       </button>
-      <button type="button" class="settings-link-row" id="refresh-sheet-btn" onclick="forceRefreshSheet()">
-        <i class="ph ph-arrow-clockwise" aria-hidden="true"></i><span id="refresh-sheet-label">Hent øvelser på nytt</span>
-      </button>
+      <div id="gif-maker-downloads" style="margin-top:12px">
+        <p class="settings-note">Trenger du et program som kan lage GIF-er på PC-en fra en YouTube-lenke og laste dem rett opp til KETTL? Last ned dette:</p>
+        <div class="download-row">
+          <a class="btn-secondary btn-sm" id="gif-maker-mac" download><i class="ph ph-apple-logo" aria-hidden="true"></i>Mac</a>
+          <a class="btn-secondary btn-sm" id="gif-maker-windows" download><i class="ph ph-windows-logo" aria-hidden="true"></i>Windows</a>
+        </div>
+        <div class="settings-hint">Mac: ferdig program (60 MB). Windows: kildekode som må bygges først, se README i mappen.</div>
+      </div>
       <button type="button" class="settings-link-row" onclick="openHowToAddOverlay()">
         <i class="ph ph-device-mobile" aria-hidden="true"></i>Legg appen på hjemskjermen<i class="ph ph-caret-right" aria-hidden="true"></i>
       </button>
     </div>
 
-    <div class="settings-field" style="margin-bottom:0">
-      <label class="settings-label" for="appscript-url-input">Treningslogg-server</label>
-      <input type="text" class="settings-input" id="appscript-url-input" readonly>
-      <div class="settings-hint">Satt i koden, kun til kontroll.</div>
-    </div>
   </div>
 </div>
 
@@ -5483,8 +5485,10 @@ function openSettings() {
   document.getElementById('settings-delete-btn').style.display = currentUser ? 'inline-flex' : 'none';
   renderPushSettings();
   document.getElementById('add-exercise-row').style.display = currentUser ? 'flex' : 'none';
+  document.getElementById('gif-maker-downloads').style.display = currentUser ? 'block' : 'none';
+  document.getElementById('gif-maker-mac').href = appsScriptUrl + '/download/mac';
+  document.getElementById('gif-maker-windows').href = appsScriptUrl + '/download/windows';
   document.getElementById('admin-field').style.display = (currentUser && isAdmin) ? 'block' : 'none';
-  document.getElementById('appscript-url-input').value = appsScriptUrl;
   document.getElementById('settings-overlay').style.display = 'flex';
 }
 function closeSettings() {
@@ -5519,20 +5523,6 @@ document.addEventListener('keydown', e => {
   });
   if (open) { e.preventDefault(); open[1](); }
 });
-async function forceRefreshSheet() {
-  const btn = document.getElementById('refresh-sheet-btn');
-  const label = document.getElementById('refresh-sheet-label') || btn;
-  const IDLE = 'Hent øvelser på nytt';
-  btn.disabled = true;
-  label.textContent = 'Henter…';
-  try {
-    const parsed = await refreshCatalog();
-    label.textContent = parsed.exercises.length > 0 ? `${parsed.exercises.length} øvelser hentet` : 'Fant ingen øvelser.';
-  } catch(e) {
-    label.textContent = 'Fikk ikke hentet. Prøv igjen.';
-  }
-  setTimeout(() => { btn.disabled = false; label.textContent = IDLE; }, 2000);
-}
 
 // ─── Øvelsesskjema (legg til / rediger) og admin-tilgang ───
 const ADMIN_KEY = 'ironbell_admin';
