@@ -4509,7 +4509,8 @@ try {
 const WEEKLY_PLAN_CACHE_KEY = 'ironbell_weekly_plan_cache';
 let weeklyPlan = null; // { planName, days: [{name,exercises}|null, ...7] }
 let weeklyPlanFetched = false;
-let planEditorDays = []; // editor scratch state: [{name, exercises:[nr|null x8]}, ...7]
+let planEditorDays = []; // editor scratch state: [{name, exercises:[nr|null x10]}, ...7]
+const PLAN_DAY_SLOTS = 10; // samme maks som en økt
 let planPickerTarget = null; // {dayIndex, slotIndex} while the exercise picker is open
 try {
   const cachedPlan = localStorage.getItem(WEEKLY_PLAN_CACHE_KEY);
@@ -5954,10 +5955,10 @@ function openWeeklyPlanEditor() {
     const existing = weeklyPlan && weeklyPlan.days && weeklyPlan.days[i];
     if (existing) {
       const nrs = String(existing.exercises || '').split('-').map(s => parseInt(s)).filter(n => !isNaN(n));
-      const slots = Array.from({ length: 8 }, (_, s) => nrs[s] || null);
+      const slots = Array.from({ length: PLAN_DAY_SLOTS }, (_, s) => nrs[s] || null);
       return { name: existing.name || '', exercises: slots };
     }
-    return { name: '', exercises: Array(8).fill(null) };
+    return { name: '', exercises: Array(PLAN_DAY_SLOTS).fill(null) };
   });
   document.getElementById('weekly-plan-name').value = (weeklyPlan && weeklyPlan.planName) || '';
   document.getElementById('weekly-plan-error').textContent = '';
@@ -6044,7 +6045,7 @@ function clearPlanDay(dayIndex) {
   if ((day.name || '').trim() || day.exercises.some(Boolean)) {
     if (!confirm('Fjerne denne dagen fra ukesplanen?')) return;
   }
-  planEditorDays[dayIndex] = { name: '', exercises: Array(8).fill(null) };
+  planEditorDays[dayIndex] = { name: '', exercises: Array(PLAN_DAY_SLOTS).fill(null) };
   renderWeeklyPlanEditorGrid();
 }
 
